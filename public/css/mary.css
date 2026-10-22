@@ -1,0 +1,40 @@
+/* Identidade visual Mary Modas — mesma paleta dos wireframes da documentação */
+:root {
+    --mm-rosa: #B0707C;
+    --mm-rosa-claro: #F6E9EB;
+    --mm-laranja: #D9620B;
+    --mm-laranja-escuro: #B9520A;
+    --mm-fundo: #F4F3F2;
+    --mm-borda: #E2E0DE;
+}
+
+body { background: var(--mm-fundo); color: #2b2b2b; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; }
+
+/* Topo rosado */
+.mm-topo { background: var(--mm-rosa); }
+.mm-topo .navbar-brand { font-weight: 700; color: #fff; letter-spacing: .3px; }
+.mm-topo .navbar-brand small { font-weight: 500; font-size: .75rem; opacity: .85; margin-left: .5rem; }
+.mm-topo .nav-link, .mm-topo .navbar-text { color: rgba(255, 255, 255, .92); }
+.mm-topo .nav-link:hover { color: #fff; }
+.mm-busca { max-width: 360px; border-radius: 20px; border: none; }
+
+/* Botão principal laranja */
+.btn-mm { background: var(--mm-laranja); border-color: var(--mm-laranja); color: #fff; font-weight: 600; }
+.btn-mm:hover, .btn-mm:focus { background: var(--mm-laranja-escuro); border-color: var(--mm-laranja-escuro); color: #fff; }
+
+/* Cartões e formulários */
+.mm-card { background: #fff; border: 1px solid var(--mm-borda); border-radius: 10px; }
+.form-label { font-weight: 600; font-size: .85rem; color: #444; }
+.form-label .obrigatorio { color: var(--mm-laranja); }
+.form-label .opcional { font-weight: 400; color: #999; }
+.form-control:focus, .form-select:focus { border-color: var(--mm-rosa); box-shadow: 0 0 0 .2rem rgba(176, 112, 124, .2); }
+
+/* Painel: menu lateral */
+.mm-lateral { width: 220px; min-height: calc(100vh - 56px); background: #fff; border-right: 1px solid var(--mm-borda); }
+.mm-lateral .nav-link { color: #555; padding: .6rem 1.25rem; border-left: 3px solid transparent; display: flex; justify-content: space-between; align-items: center; }
+.mm-lateral .nav-link.active { background: var(--mm-rosa-claro); color: var(--mm-rosa); font-weight: 600; border-left-color: var(--mm-rosa); }
+.mm-lateral .nav-link.disabled { color: #aaa; }
+.mm-lateral .badge-fase { font-size: .65rem; background: #eee; color: #888; font-weight: 500; }
+
+.mm-crumb { font-size: .75rem; color: #888; }
+.badge-perfil { background: var(--mm-rosa-claro); color: var(--mm-rosa); font-weight: 600; }
