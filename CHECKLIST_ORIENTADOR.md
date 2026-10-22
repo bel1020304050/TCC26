@@ -1,7 +1,7 @@
 # Checklist rápido para reunião com o orientador
 
 ## CRUDs demonstráveis
-- [x] Produtos
+- [x] Produto
 - [x] Clientes/Usuários
 - [x] Categorias
 - [x] Subgrupos
