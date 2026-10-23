@@ -38,13 +38,13 @@
                                 <x-modal-status :id="'categoria-'.$categoria->id" :ativo="$categoria->isAtivo()" tipo="categoria"
                                     :acao-inativar="route('painel.categorias.inativar', $categoria)"
                                     :acao-reativar="route('painel.categorias.reativar', $categoria)"
-                                    :titulo="$categoria->nome.' · '.$categoria->produtos_vinculados_count.' produto(s) vinculado(s)'">
+                                    :titulo="$categoria->nome.' · '.$categoria->produtos_vinculados_count.' produto(s) vinculado(s)'"
+                                    :bloqueio="$categoria->produtos_ativos_count > 0
+                                        ? 'A categoria tem '.$categoria->produtos_ativos_count.' produto(s) ativo(s). Mova os produtos para outra categoria ou inative-os antes de inativar a categoria.'
+                                        : null">
                                     @if ($categoria->isAtivo())
                                         A categoria deixa de aparecer nos filtros da vitrine e no cadastro de produtos.
                                         O histórico é mantido e ela pode ser reativada depois.
-                                        @if ($categoria->produtos_ativos_count > 0)
-                                            <div class="alert alert-warning py-2 mt-2 mb-0">Atenção: há {{ $categoria->produtos_ativos_count }} produto(s) ativo(s). A inativação será bloqueada.</div>
-                                        @endif
                                     @else
                                         A categoria volta a aparecer na vitrine e no cadastro de produtos.
                                     @endif

@@ -11,7 +11,7 @@
         // "perfis" = quem vê o item. O Funcionário não vê Usuários (seção 2.2).
         $menu = [
             ['titulo' => 'Início', 'icone' => 'house', 'rota' => 'painel.inicio', 'perfis' => ['admin', 'funcionario']],
-            ['titulo' => 'Produtos', 'icone' => 'tag', 'fase' => 3, 'perfis' => ['admin', 'funcionario']],
+            ['titulo' => 'Produtos', 'icone' => 'tag', 'rota' => 'painel.produtos.index', 'ativo' => 'painel.produtos.*', 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Categorias', 'icone' => 'grid', 'rota' => 'painel.categorias.index', 'ativo' => 'painel.categorias.*', 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Pedidos', 'icone' => 'receipt', 'fase' => 5, 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Promoções', 'icone' => 'percent', 'fase' => 8, 'perfis' => ['admin', 'funcionario']],

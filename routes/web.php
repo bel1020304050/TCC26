@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Loja\VitrineController;
 use App\Http\Controllers\Painel\CategoriaController;
 use App\Http\Controllers\Painel\FornecedorController;
 use App\Http\Controllers\Painel\InicioController;
+use App\Http\Controllers\Painel\ProdutoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -12,7 +14,8 @@ use Illuminate\Support\Facades\Route;
 | Loja (área pública e do cliente)
 |--------------------------------------------------------------------------
 */
-Route::view('/', 'loja.inicio')->name('loja.inicio');
+// Vitrine — story 3.2 (aberta para visitantes)
+Route::get('/', VitrineController::class)->name('loja.inicio');
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +38,13 @@ Route::post('/sair', [LoginController::class, 'destroy'])->middleware('auth')->n
 */
 Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,funcionario'])->group(function () {
     Route::get('/', InicioController::class)->name('inicio');
+
+    // Fase 3 — Produtos (3.1, 3.3, 3.4). Funcionário cadastra e edita; só o Administrador inativa.
+    Route::resource('produtos', ProdutoController::class)
+        ->except(['show', 'destroy'])
+        ->parameters(['produtos' => 'produto']);
+    Route::patch('produtos/{produto}/inativar', [ProdutoController::class, 'inativar'])->name('produtos.inativar');
+    Route::patch('produtos/{produto}/reativar', [ProdutoController::class, 'reativar'])->name('produtos.reativar');
 
     // Fase 2 — Categorias (3.14–3.17) e Fornecedores (3.26–3.29).
     // Funcionário só consulta; cadastrar, editar e inativar são do Administrador (Policies).

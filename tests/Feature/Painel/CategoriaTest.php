@@ -180,6 +180,20 @@ class CategoriaTest extends TestCase
         $this->assertStringContainsString('2 produto(s) ativo(s)', session('erro'));
     }
 
+    // Melhoria da Fase 3: com produtos ativos, o modal mostra só o aviso e "Entendi"
+    public function test_modal_de_categoria_com_produtos_ativos_nao_tem_botao_de_confirmar(): void
+    {
+        $vestidos = Categoria::factory()->create(['nome' => 'Vestidos']);
+        Produto::factory()->count(2)->create(['categoria_id' => $vestidos->id]);
+        $acessorios = Categoria::factory()->create(['nome' => 'Acessórios']);
+
+        $html = $this->actingAs($this->admin)->get('/painel/categorias')->assertOk()->getContent();
+
+        $this->assertStringContainsString('Entendi', $html);
+        $this->assertStringNotContainsString('action="'.route('painel.categorias.inativar', $vestidos).'"', $html);
+        $this->assertStringContainsString('action="'.route('painel.categorias.inativar', $acessorios).'"', $html);
+    }
+
     public function test_reativa_categoria(): void
     {
         $categoria = Categoria::factory()->inativa()->create();

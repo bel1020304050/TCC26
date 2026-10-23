@@ -42,3 +42,11 @@ body { background: var(--mm-fundo); color: #2b2b2b; font-family: 'Inter', system
 /* Modais abertos de dentro de tabelas não herdam o "não quebrar linha" das células */
 .modal { white-space: normal; }
 .main-painel { min-width: 0; }
+
+/* Vitrine */
+.mm-produto img { aspect-ratio: 1 / 1; object-fit: cover; background: var(--mm-rosa-claro); }
+.mm-produto { transition: box-shadow .15s; }
+.mm-produto:hover { box-shadow: 0 4px 14px rgba(0, 0, 0, .08); }
+.mm-preco { color: var(--mm-laranja); font-weight: 700; }
+.pagination .page-link { color: var(--mm-rosa); }
+.pagination .active > .page-link { background: var(--mm-rosa); border-color: var(--mm-rosa); color: #fff; }

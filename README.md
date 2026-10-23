@@ -67,7 +67,14 @@ O **PHP já vem no XAMPP** e o **Laravel não se instala no computador**: o Comp
    ```
    **Esperado:** as migrations aparecem como `DONE` e os seeders `AdminSeeder` e `UsuariosTesteSeeder` rodam.
 
-6. **Subir o servidor**
+6. **Liberar a pasta de imagens dos produtos** (só uma vez)
+   ```
+   php artisan storage:link
+   ```
+   **Esperado:** `The [public/storage] link has been connected to [storage/app/public].`
+   Sem isso, as imagens enviadas no cadastro de produtos não aparecem na vitrine.
+
+7. **Subir o servidor**
    ```
    php artisan serve
    ```
@@ -111,7 +118,16 @@ e depois **Acessórios** (sem produtos → inativa).
 - **Inativar/Reativar** com janela de confirmação (exclusão lógica). Categoria ou fornecedor com **produtos ativos não pode ser inativado**.
 - **Permissões**: Administrador faz tudo; Funcionário só consulta (sem botões e barrado pela URL); Cliente não acessa.
 - **Auditoria**: criar, editar, inativar e reativar ficam registrados na tabela `auditorias` (quem, o quê e quando).
-- A tabela **`produtos`** já existe (necessária para a regra acima), com produtos de exemplo. As telas de Produtos chegam na Fase 3.
+- A tabela **`produtos`** já existe (necessária para a regra acima), com produtos de exemplo.
+
+### Fase 3 — Produtos e vitrine (stories 3.1–3.4)
+- **Vitrine** na página inicial, aberta para visitantes: só produtos **ativos, com estoque e de categoria ativa**.
+  Pesquisa por parte do nome (sem diferenciar maiúsculas), filtros de categoria, tamanho e cor, ordenação por preço/recentes e **20 produtos por página**.
+- **Painel de Produtos**: listagem com filtros, **cadastro com imagem** (JPG/PNG até 2 MB, com prévia), edição e reposição de estoque.
+  Preço aceita o formato brasileiro (`129,90`). Não pode repetir **Nome + Categoria + Tamanho + Cor**.
+- Só categorias e fornecedores **ativos** aparecem para seleção.
+- **Permissões**: Funcionário cadastra e edita; só o **Administrador** inativa/reativa.
+- **Melhoria**: em Categorias e Fornecedores com produtos ativos, a janela de inativação mostra só o aviso e o botão **Entendi**.
 
 ## 6. Ordem de desenvolvimento
 
@@ -119,7 +135,7 @@ e depois **Acessórios** (sem produtos → inativa).
 |---|---|---|---|
 | 0 e 1 | Base, login e perfis | 3.9, 3.13 | ✅ Pronta |
 | 2 | Categorias e Fornecedores | 3.14–3.17, 3.26–3.29 | ✅ Pronta |
-| 3 | Produtos e vitrine | 3.1–3.4 | A fazer |
+| 3 | Produtos e vitrine | 3.1–3.4 | ✅ Pronta |
 | 4 | Usuários internos e permissões | 3.5–3.8 | A fazer |
 | 5 | Carrinho e Pedidos | 3.30, 3.18, 3.19 | A fazer |
 | 6 | Processo de Pagamento ⭐ | 3.31 | A fazer |
@@ -132,6 +148,7 @@ e depois **Acessórios** (sem produtos → inativa).
 
 ```
 app/Http/Controllers/Auth/      Login, logout e criar conta
+app/Http/Controllers/Loja/      Vitrine (área pública)
 app/Http/Controllers/Painel/    Telas do painel administrativo
 app/Http/Middleware/            VerificaPerfil (perfil:admin,...) e EncerraSessaoInativa
 app/Http/Requests/              Validações (Form Requests)
@@ -146,6 +163,8 @@ database/seeders/               Administrador inicial e usuários de teste
 lang/pt_BR/                     Mensagens em português
 public/css/mary.css             Cores e estilo da Mary Modas
 public/js/viacep.js             Preenchimento do endereço pelo CEP
+public/img/                     Imagem padrão de produto
+storage/app/public/produtos/    Imagens enviadas no cadastro (não vão para o Git)
 resources/views/                Telas (Blade)
 routes/web.php                  Rotas
 tests/Feature/                  Testes automatizados
@@ -157,7 +176,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (61 testes até a Fase 2) |
+| `php artisan test` | Roda os testes automatizados (87 testes até a Fase 3) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 
@@ -171,6 +190,7 @@ tests/Feature/                  Testes automatizados
 | `SQLSTATE[HY000] [1049] Unknown database 'mary_modas'` | Banco não criado | Crie o banco no phpMyAdmin (passo 3.4) |
 | `SQLSTATE[HY000] [2002] Connection refused` | MySQL do XAMPP parado | Clique em **Start** no MySQL |
 | `No application encryption key has been specified` | Falta a chave | `php artisan key:generate` |
+| Imagem do produto não aparece (ícone quebrado) | Falta o link da pasta de imagens | `php artisan storage:link` |
 
 ## 10. Padrão de branches e commits
 
