@@ -12,10 +12,10 @@
         $menu = [
             ['titulo' => 'Início', 'icone' => 'house', 'rota' => 'painel.inicio', 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Produtos', 'icone' => 'tag', 'fase' => 3, 'perfis' => ['admin', 'funcionario']],
-            ['titulo' => 'Categorias', 'icone' => 'grid', 'fase' => 2, 'perfis' => ['admin', 'funcionario']],
+            ['titulo' => 'Categorias', 'icone' => 'grid', 'rota' => 'painel.categorias.index', 'ativo' => 'painel.categorias.*', 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Pedidos', 'icone' => 'receipt', 'fase' => 5, 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Promoções', 'icone' => 'percent', 'fase' => 8, 'perfis' => ['admin', 'funcionario']],
-            ['titulo' => 'Fornecedores', 'icone' => 'truck', 'fase' => 2, 'perfis' => ['admin', 'funcionario']],
+            ['titulo' => 'Fornecedores', 'icone' => 'truck', 'rota' => 'painel.fornecedores.index', 'ativo' => 'painel.fornecedores.*', 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Usuários', 'icone' => 'people', 'rota' => 'painel.usuarios.index', 'fase' => 4, 'perfis' => ['admin']],
             ['titulo' => 'Relatórios', 'icone' => 'bar-chart', 'fase' => 10, 'perfis' => ['admin', 'funcionario']],
         ];
@@ -39,7 +39,7 @@
                 @foreach ($menu as $item)
                     @continue(! in_array($usuario->perfil, $item['perfis'], true))
                     @php
-                        $ativo = isset($item['rota']) && request()->routeIs($item['rota']);
+                        $ativo = isset($item['rota']) && request()->routeIs($item['ativo'] ?? $item['rota']);
                         $link = isset($item['rota']) ? route($item['rota']) : null;
                     @endphp
                     @if ($link)
@@ -65,7 +65,7 @@
             </nav>
         </aside>
 
-        <main class="flex-grow-1 p-4">
+        <main class="flex-grow-1 p-4 main-painel">
             <div class="mm-crumb mb-1">@yield('trilha', 'Início')</div>
             <h1 class="h4 mb-3">@yield('titulo', 'Início')</h1>
             @include('partials.alertas')

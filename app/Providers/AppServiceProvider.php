@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,5 +21,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Paginação com o visual do Bootstrap 5
         Paginator::useBootstrapFive();
+
+        // URLs em português nos CRUDs: /categorias/novo e /categorias/1/editar
+        Route::resourceVerbs(['create' => 'novo', 'edit' => 'editar']);
     }
 }

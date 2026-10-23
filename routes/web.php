@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Painel\CategoriaController;
+use App\Http\Controllers\Painel\FornecedorController;
 use App\Http\Controllers\Painel\InicioController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +35,20 @@ Route::post('/sair', [LoginController::class, 'destroy'])->middleware('auth')->n
 */
 Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,funcionario'])->group(function () {
     Route::get('/', InicioController::class)->name('inicio');
+
+    // Fase 2 — Categorias (3.14–3.17) e Fornecedores (3.26–3.29).
+    // Funcionário só consulta; cadastrar, editar e inativar são do Administrador (Policies).
+    Route::resource('categorias', CategoriaController::class)
+        ->except(['show', 'destroy'])
+        ->parameters(['categorias' => 'categoria']);
+    Route::patch('categorias/{categoria}/inativar', [CategoriaController::class, 'inativar'])->name('categorias.inativar');
+    Route::patch('categorias/{categoria}/reativar', [CategoriaController::class, 'reativar'])->name('categorias.reativar');
+
+    Route::resource('fornecedores', FornecedorController::class)
+        ->except(['show', 'destroy'])
+        ->parameters(['fornecedores' => 'fornecedor']);
+    Route::patch('fornecedores/{fornecedor}/inativar', [FornecedorController::class, 'inativar'])->name('fornecedores.inativar');
+    Route::patch('fornecedores/{fornecedor}/reativar', [FornecedorController::class, 'reativar'])->name('fornecedores.reativar');
 
     // Módulos só do Administrador. Por enquanto é um aviso; o CRUD entra na Fase 4.
     Route::middleware('perfil:admin')->group(function () {

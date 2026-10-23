@@ -87,7 +87,13 @@ Criados pelo `php artisan migrate --seed` (os de teste só em `APP_ENV=local`):
 | Funcionário inativo | juliana@marymodas.com.br | `func12345` | Não consegue entrar (teste) |
 | Cliente | ana@email.com | `cliente123` | Endereço completo em Umuarama/PR |
 
-## 5. O que já funciona (Fases 0 e 1)
+O seeder também cria o **catálogo de exemplo** dos wireframes: categorias (Vestidos, Blusas, Saias, Acessórios e Jaquetas inativa),
+4 fornecedores com CNPJ válido e 7 produtos. Dica de teste: tente inativar **Vestidos** (tem produtos ativos → bloqueia)
+e depois **Acessórios** (sem produtos → inativa).
+
+## 5. O que já funciona
+
+### Fases 0 e 1 — base, login e perfis
 
 - Layouts da **loja** (topo rosa) e do **painel** (menu lateral), com Bootstrap 5 via CDN — sem precisar de Node.
 - **Login e logout** únicos para os 3 perfis, com redirecionamento por perfil (story 3.13).
@@ -99,12 +105,20 @@ Criados pelo `php artisan migrate --seed` (os de teste só em `APP_ENV=local`):
 - Quem é **inativado durante a sessão** é desconectado na próxima página.
 - Mensagens de validação em **português**.
 
+### Fase 2 — Categorias e Fornecedores (stories 3.14–3.17 e 3.26–3.29)
+- Listagem com **pesquisa** (fornecedor também por CPF/CNPJ, com ou sem pontuação), filtro de status e paginação.
+- **Cadastrar e editar** com validação: nome de categoria único (sem diferenciar maiúsculas e incluindo inativas); CPF/CNPJ opcional, com dígitos verificadores e único.
+- **Inativar/Reativar** com janela de confirmação (exclusão lógica). Categoria ou fornecedor com **produtos ativos não pode ser inativado**.
+- **Permissões**: Administrador faz tudo; Funcionário só consulta (sem botões e barrado pela URL); Cliente não acessa.
+- **Auditoria**: criar, editar, inativar e reativar ficam registrados na tabela `auditorias` (quem, o quê e quando).
+- A tabela **`produtos`** já existe (necessária para a regra acima), com produtos de exemplo. As telas de Produtos chegam na Fase 3.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
 |---|---|---|---|
 | 0 e 1 | Base, login e perfis | 3.9, 3.13 | ✅ Pronta |
-| 2 | Categorias e Fornecedores | 3.14–3.17, 3.26–3.29 | A fazer |
+| 2 | Categorias e Fornecedores | 3.14–3.17, 3.26–3.29 | ✅ Pronta |
 | 3 | Produtos e vitrine | 3.1–3.4 | A fazer |
 | 4 | Usuários internos e permissões | 3.5–3.8 | A fazer |
 | 5 | Carrinho e Pedidos | 3.30, 3.18, 3.19 | A fazer |
@@ -121,7 +135,11 @@ app/Http/Controllers/Auth/      Login, logout e criar conta
 app/Http/Controllers/Painel/    Telas do painel administrativo
 app/Http/Middleware/            VerificaPerfil (perfil:admin,...) e EncerraSessaoInativa
 app/Http/Requests/              Validações (Form Requests)
-app/Models/User.php             Perfis, status e regras do usuário
+app/Models/                     User, Categoria, Fornecedor, Produto, Auditoria
+app/Models/Concerns/TemStatus   Comportamento comum de Ativo/Inativo (exclusão lógica)
+app/Policies/                   Quem pode fazer o quê em cada cadastro (Admin x Funcionário)
+app/Rules/CpfCnpj.php           Regra de validação de CPF/CNPJ
+app/Support/                    Status, Documento (CPF/CNPJ) e Auditoria
 config/mary.php                 Configurações próprias do sistema
 database/migrations/            Estrutura das tabelas
 database/seeders/               Administrador inicial e usuários de teste
@@ -139,7 +157,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (27 testes nesta fase) |
+| `php artisan test` | Roda os testes automatizados (61 testes até a Fase 2) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 
