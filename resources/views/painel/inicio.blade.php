@@ -17,7 +17,7 @@
     $fases = [
         ['Fase 0 e 1', 'Base do projeto, login e perfis', true],
         ['Fase 2', 'Categorias e Fornecedores', true],
-        ['Fase 3', 'Produtos e vitrine', false],
+        ['Fase 3', 'Produtos e vitrine', true],
         ['Fase 4', 'Usuários internos e permissões', false],
         ['Fase 5', 'Carrinho e Pedidos', false],
         ['Fase 6', 'Processo de Pagamento', false],

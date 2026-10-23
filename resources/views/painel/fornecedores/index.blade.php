@@ -40,13 +40,13 @@
                                 <x-modal-status :id="'fornecedor-'.$fornecedor->id" :ativo="$fornecedor->isAtivo()" tipo="fornecedor"
                                     :acao-inativar="route('painel.fornecedores.inativar', $fornecedor)"
                                     :acao-reativar="route('painel.fornecedores.reativar', $fornecedor)"
-                                    :titulo="$fornecedor->nome.' · '.$fornecedor->produtos_ativos_count.' produto(s) ativo(s) vinculado(s)'">
+                                    :titulo="$fornecedor->nome.' · '.$fornecedor->produtos_ativos_count.' produto(s) ativo(s) vinculado(s)'"
+                                    :bloqueio="$fornecedor->produtos_ativos_count > 0
+                                        ? 'Há '.$fornecedor->produtos_ativos_count.' produto(s) ativo(s) deste fornecedor. Troque o fornecedor desses produtos ou inative-os antes de inativar o fornecedor.'
+                                        : null">
                                     @if ($fornecedor->isAtivo())
                                         O fornecedor deixa de aparecer como opção em novos produtos.
                                         O cadastro e o histórico são mantidos, e ele pode ser reativado depois.
-                                        @if ($fornecedor->produtos_ativos_count > 0)
-                                            <div class="alert alert-warning py-2 mt-2 mb-0">Atenção: há produtos ativos vinculados. A inativação será bloqueada.</div>
-                                        @endif
                                     @else
                                         O fornecedor volta a aparecer como opção no cadastro de produtos.
                                     @endif
