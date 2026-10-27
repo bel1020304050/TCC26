@@ -76,12 +76,24 @@
     <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
         @foreach ($produtos as $produto)
             <div class="col">
-                <div class="mm-card h-100 p-2 mm-produto">
+                <div class="mm-card h-100 p-2 mm-produto d-flex flex-column">
                     <img src="{{ $produto->imagemUrl() }}" alt="{{ $produto->nome }}" class="w-100 rounded mb-2" loading="lazy">
-                    <div class="px-1 pb-1">
+                    <div class="px-1 pb-1 d-flex flex-column flex-grow-1">
                         <div class="fw-semibold">{{ $produto->nome }}</div>
                         <div class="text-muted small mb-1">{{ $produto->categoria->nome }} · {{ $produto->tamanho }} · {{ $produto->cor }}</div>
-                        <div class="mm-preco">{{ $produto->precoFormatado() }}</div>
+                        <div class="mm-preco mb-2 mt-auto">{{ $produto->precoFormatado() }}</div>
+                        {{-- Story 3.30: só cliente logado adiciona; visitante vai para o login --}}
+                        @auth
+                            @if (auth()->user()->isCliente())
+                                <form method="POST" action="{{ route('loja.carrinho.adicionar') }}">
+                                    @csrf
+                                    <input type="hidden" name="produto_id" value="{{ $produto->id }}">
+                                    <button type="submit" class="btn btn-sm btn-mm w-100"><i class="bi bi-bag-plus"></i> Adicionar ao carrinho</button>
+                                </form>
+                            @endif
+                        @else
+                            <a href="{{ route('login') }}" class="btn btn-sm btn-outline-secondary w-100">Entrar para comprar</a>
+                        @endauth
                     </div>
                 </div>
             </div>
@@ -94,6 +106,6 @@
 @endif
 
 <p class="text-muted small mt-3 mb-0">
-    <i class="bi bi-info-circle"></i> Carrinho na Fase 5 · Preço promocional na Fase 8.
+    <i class="bi bi-info-circle"></i> Preço promocional na Fase 8.
 </p>
 @endsection

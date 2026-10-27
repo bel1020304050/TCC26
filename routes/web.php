@@ -2,11 +2,14 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Loja\CarrinhoController;
+use App\Http\Controllers\Loja\PedidoController;
 use App\Http\Controllers\Loja\VitrineController;
 use App\Http\Controllers\Painel\CategoriaController;
 use App\Http\Controllers\Painel\FornecedorController;
 use App\Http\Controllers\Painel\InicioController;
 use App\Http\Controllers\Painel\MinhaContaController;
+use App\Http\Controllers\Painel\PedidoController as PainelPedidoController;
 use App\Http\Controllers\Painel\ProdutoController;
 use App\Http\Controllers\Painel\UsuarioController;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +21,19 @@ use Illuminate\Support\Facades\Route;
 */
 // Vitrine — story 3.2 (aberta para visitantes)
 Route::get('/', VitrineController::class)->name('loja.inicio');
+
+// Área do cliente: carrinho (3.30) e pedidos (3.18, 3.19). Só clientes logados.
+Route::name('loja.')->middleware(['auth', 'perfil:cliente'])->group(function () {
+    Route::get('/carrinho', [CarrinhoController::class, 'index'])->name('carrinho');
+    Route::post('/carrinho/itens', [CarrinhoController::class, 'adicionar'])->name('carrinho.adicionar');
+    Route::patch('/carrinho/itens/{item}', [CarrinhoController::class, 'atualizar'])->name('carrinho.atualizar');
+    Route::delete('/carrinho/itens/{item}', [CarrinhoController::class, 'remover'])->name('carrinho.remover');
+
+    Route::get('/pedido/confirmar', [PedidoController::class, 'confirmar'])->name('pedidos.confirmar');
+    Route::post('/pedidos', [PedidoController::class, 'store'])->name('pedidos.store');
+    Route::get('/meus-pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
+    Route::get('/meus-pedidos/{pedido}', [PedidoController::class, 'show'])->name('pedidos.show');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +63,10 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,func
         ->parameters(['produtos' => 'produto']);
     Route::patch('produtos/{produto}/inativar', [ProdutoController::class, 'inativar'])->name('produtos.inativar');
     Route::patch('produtos/{produto}/reativar', [ProdutoController::class, 'reativar'])->name('produtos.reativar');
+
+    // Fase 5 — Pedidos: consulta com filtros (3.19). Status e cancelamento na Fase 7.
+    Route::get('pedidos', [PainelPedidoController::class, 'index'])->name('pedidos.index');
+    Route::get('pedidos/{pedido}', [PainelPedidoController::class, 'show'])->name('pedidos.show');
 
     // Fase 2 — Categorias (3.14–3.17) e Fornecedores (3.26–3.29).
     // Funcionário só consulta; cadastrar, editar e inativar são do Administrador (Policies).
