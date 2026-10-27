@@ -6,7 +6,9 @@ use App\Http\Controllers\Loja\VitrineController;
 use App\Http\Controllers\Painel\CategoriaController;
 use App\Http\Controllers\Painel\FornecedorController;
 use App\Http\Controllers\Painel\InicioController;
+use App\Http\Controllers\Painel\MinhaContaController;
 use App\Http\Controllers\Painel\ProdutoController;
+use App\Http\Controllers\Painel\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -60,8 +62,15 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,func
     Route::patch('fornecedores/{fornecedor}/inativar', [FornecedorController::class, 'inativar'])->name('fornecedores.inativar');
     Route::patch('fornecedores/{fornecedor}/reativar', [FornecedorController::class, 'reativar'])->name('fornecedores.reativar');
 
-    // Módulos só do Administrador. Por enquanto é um aviso; o CRUD entra na Fase 4.
-    Route::middleware('perfil:admin')->group(function () {
-        Route::view('/usuarios', 'painel.em-breve', ['modulo' => 'Usuários', 'fase' => 4])->name('usuarios.index');
-    });
+    // Minha conta da equipe (nome, telefone e senha)
+    Route::get('minha-conta', [MinhaContaController::class, 'edit'])->name('minha-conta');
+    Route::put('minha-conta', [MinhaContaController::class, 'update'])->name('minha-conta.update');
+    Route::put('minha-conta/senha', [MinhaContaController::class, 'senha'])->name('minha-conta.senha');
+
+    // Fase 4 — Usuários internos (3.5–3.8). Só o Administrador (UserPolicy).
+    Route::resource('usuarios', UsuarioController::class)
+        ->except(['show', 'destroy'])
+        ->parameters(['usuarios' => 'usuario']);
+    Route::patch('usuarios/{usuario}/inativar', [UsuarioController::class, 'inativar'])->name('usuarios.inativar');
+    Route::patch('usuarios/{usuario}/reativar', [UsuarioController::class, 'reativar'])->name('usuarios.reativar');
 });
