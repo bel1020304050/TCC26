@@ -16,7 +16,7 @@
             ['titulo' => 'Pedidos', 'icone' => 'receipt', 'fase' => 5, 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Promoções', 'icone' => 'percent', 'fase' => 8, 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Fornecedores', 'icone' => 'truck', 'rota' => 'painel.fornecedores.index', 'ativo' => 'painel.fornecedores.*', 'perfis' => ['admin', 'funcionario']],
-            ['titulo' => 'Usuários', 'icone' => 'people', 'rota' => 'painel.usuarios.index', 'fase' => 4, 'perfis' => ['admin']],
+            ['titulo' => 'Usuários', 'icone' => 'people', 'rota' => 'painel.usuarios.index', 'ativo' => 'painel.usuarios.*', 'perfis' => ['admin']],
             ['titulo' => 'Relatórios', 'icone' => 'bar-chart', 'fase' => 10, 'perfis' => ['admin', 'funcionario']],
         ];
     @endphp
@@ -55,7 +55,9 @@
                     @endif
                 @endforeach
                 <hr class="mx-3">
-                <span class="nav-link disabled"><span><i class="bi bi-person me-2"></i>Minha conta</span></span>
+                <a class="nav-link {{ request()->routeIs('painel.minha-conta*') ? 'active' : '' }}" href="{{ route('painel.minha-conta') }}">
+                    <span><i class="bi bi-person me-2"></i>Minha conta</span>
+                </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="nav-link border-0 bg-transparent w-100 text-start">

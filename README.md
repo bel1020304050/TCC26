@@ -35,8 +35,9 @@ O **PHP já vem no XAMPP** e o **Laravel não se instala no computador**: o Comp
    extension=pdo_mysql
    extension=mbstring
    extension=openssl
+   extension=gd
    ```
-   **Esperado:** `php -m` lista `zip`, `fileinfo` e `pdo_mysql`.
+   **Esperado:** `php -m` lista `zip`, `fileinfo`, `pdo_mysql` e `gd` (o `gd` é usado pelos testes de imagem de produto).
 
 ## 3. Rodar o projeto
 
@@ -90,6 +91,7 @@ Criados pelo `php artisan migrate --seed` (os de teste só em `APP_ENV=local`):
 | Perfil | E-mail | Senha | Observação |
 |---|---|---|---|
 | Administrador | mary@marymodas.com.br | `admin12345` | Dona da loja (vem do `SEED_ADMIN_PASSWORD` do `.env`) |
+| Administrador | bruno@marymodas.com.br | `admin12345` | Gerente |
 | Funcionário | rafael@marymodas.com.br | `func12345` | Subgerente |
 | Funcionário inativo | juliana@marymodas.com.br | `func12345` | Não consegue entrar (teste) |
 | Cliente | ana@email.com | `cliente123` | Endereço completo em Umuarama/PR |
@@ -129,6 +131,15 @@ e depois **Acessórios** (sem produtos → inativa).
 - **Permissões**: Funcionário cadastra e edita; só o **Administrador** inativa/reativa.
 - **Melhoria**: em Categorias e Fornecedores com produtos ativos, a janela de inativação mostra só o aviso e o botão **Entendi**.
 
+### Fase 4 — Usuários internos e permissões (stories 3.5–3.8)
+- Tela **Usuários** (só Administrador): lista só a equipe (clientes não aparecem), com pesquisa por nome/e-mail e filtros de perfil e status.
+- **Cadastrar e editar** Funcionário ou Administrador, com cargo (só informativo), telefone e senha (mín. 8, com confirmação).
+  Na edição, senha em branco mantém a atual. O e-mail é único no sistema todo, inclusive entre clientes.
+- **Inativar/Reativar**: quem é inativado perde o acesso na hora (as sessões abertas dele são apagadas).
+- Travas de segurança: ninguém altera o **próprio perfil** nem **inativa a própria conta**, e o sistema nunca fica sem pelo menos **um Administrador ativo**.
+- **Minha conta** da equipe: alterar nome, telefone e senha (pedindo a senha atual).
+- Auditoria registra criar, editar (com perfil antes/depois), inativar, reativar e troca de senha.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -136,7 +147,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | 0 e 1 | Base, login e perfis | 3.9, 3.13 | ✅ Pronta |
 | 2 | Categorias e Fornecedores | 3.14–3.17, 3.26–3.29 | ✅ Pronta |
 | 3 | Produtos e vitrine | 3.1–3.4 | ✅ Pronta |
-| 4 | Usuários internos e permissões | 3.5–3.8 | A fazer |
+| 4 | Usuários internos e permissões | 3.5–3.8 | ✅ Pronta |
 | 5 | Carrinho e Pedidos | 3.30, 3.18, 3.19 | A fazer |
 | 6 | Processo de Pagamento ⭐ | 3.31 | A fazer |
 | 7 | Andamento do pedido | 3.20, 3.21 | A fazer |
@@ -176,7 +187,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (87 testes até a Fase 3) |
+| `php artisan test` | Roda os testes automatizados (109 testes até a Fase 4) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 
@@ -191,6 +202,7 @@ tests/Feature/                  Testes automatizados
 | `SQLSTATE[HY000] [2002] Connection refused` | MySQL do XAMPP parado | Clique em **Start** no MySQL |
 | `No application encryption key has been specified` | Falta a chave | `php artisan key:generate` |
 | Imagem do produto não aparece (ícone quebrado) | Falta o link da pasta de imagens | `php artisan storage:link` |
+| Testes falham com `GD extension is not installed` | Extensão `gd` desligada | Tire o `;` de `extension=gd` no `php.ini` |
 
 ## 10. Padrão de branches e commits
 

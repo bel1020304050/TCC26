@@ -28,6 +28,7 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 @if (auth()->user()->isEquipe())
                                     <li><a class="dropdown-item" href="{{ route('painel.inicio') }}">Painel administrativo</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('painel.minha-conta') }}">Minha conta</a></li>
                                 @else
                                     <li><span class="dropdown-item-text text-muted small">Minha conta (Fase 9)</span></li>
                                 @endif
