@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call(AdminSeeder::class);
 
         if (app()->environment('local')) {
-            $this->call([UsuariosTesteSeeder::class, CatalogoTesteSeeder::class]);
+            $this->call([UsuariosTesteSeeder::class, CatalogoTesteSeeder::class, PedidosTesteSeeder::class]);
         }
     }
 }

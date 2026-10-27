@@ -140,6 +140,20 @@ e depois **Acessórios** (sem produtos → inativa).
 - **Minha conta** da equipe: alterar nome, telefone e senha (pedindo a senha atual).
 - Auditoria registra criar, editar (com perfil antes/depois), inativar, reativar e troca de senha.
 
+### Fase 5 — Carrinho e Pedidos (stories 3.30, 3.18 e 3.19)
+- **Carrinho** (só cliente logado): botão **Adicionar ao carrinho** na vitrine, botões − e +, remover item, quantidade disponível e totais
+  sempre calculados no servidor. Não deixa passar do estoque nem adicionar produto inativo, sem estoque ou de categoria inativa.
+- **Confirmar pedido**: resumo do carrinho e endereço de entrega. Ao confirmar, cria **um único pedido** "Aguardando Pagamento"
+  (cliques repetidos não duplicam), copia itens, preços e endereço ("congelados") e **bloqueia o carrinho** ("Em Pagamento").
+- **O estoque não é baixado ao criar o pedido**: isso acontece só no pagamento aprovado (Fase 6), como manda a documentação.
+- Se faltar estoque na hora de confirmar, o pedido não é criado e o sistema diz qual item ajustar e quanto há disponível.
+- **Meus pedidos**: lista do mais recente ao mais antigo e detalhes com itens, valores, endereço, pagamento e **histórico de status**.
+  Um cliente não consegue abrir o pedido de outro, nem trocando o número na URL.
+- **Painel › Pedidos** (Funcionário e Administrador): todos os pedidos, com pesquisa por nº ou cliente e filtros de período e status.
+  O histórico mostra quem fez cada mudança.
+- Cupom aparece desativado até a Fase 8; o botão **Pagar** fica desativado até a Fase 6.
+- Dados de teste: a cliente **Ana** já tem 2 pedidos antigos (um Entregue e um Cancelado) e um carrinho com 2 itens.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -148,7 +162,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | 2 | Categorias e Fornecedores | 3.14–3.17, 3.26–3.29 | ✅ Pronta |
 | 3 | Produtos e vitrine | 3.1–3.4 | ✅ Pronta |
 | 4 | Usuários internos e permissões | 3.5–3.8 | ✅ Pronta |
-| 5 | Carrinho e Pedidos | 3.30, 3.18, 3.19 | A fazer |
+| 5 | Carrinho e Pedidos | 3.30, 3.18, 3.19 | ✅ Pronta |
 | 6 | Processo de Pagamento ⭐ | 3.31 | A fazer |
 | 7 | Andamento do pedido | 3.20, 3.21 | A fazer |
 | 8 | Promoções | 3.22–3.25 | A fazer |
@@ -159,18 +173,18 @@ e depois **Acessórios** (sem produtos → inativa).
 
 ```
 app/Http/Controllers/Auth/      Login, logout e criar conta
-app/Http/Controllers/Loja/      Vitrine (área pública)
+app/Http/Controllers/Loja/      Vitrine, carrinho e pedidos do cliente
 app/Http/Controllers/Painel/    Telas do painel administrativo
 app/Http/Middleware/            VerificaPerfil (perfil:admin,...) e EncerraSessaoInativa
 app/Http/Requests/              Validações (Form Requests)
-app/Models/                     User, Categoria, Fornecedor, Produto, Auditoria
+app/Models/                     User, Categoria, Fornecedor, Produto, Auditoria, Carrinho, Pedido
 app/Models/Concerns/TemStatus   Comportamento comum de Ativo/Inativo (exclusão lógica)
 app/Policies/                   Quem pode fazer o quê em cada cadastro (Admin x Funcionário)
 app/Rules/CpfCnpj.php           Regra de validação de CPF/CNPJ
 app/Support/                    Status, Documento (CPF/CNPJ) e Auditoria
 config/mary.php                 Configurações próprias do sistema
 database/migrations/            Estrutura das tabelas
-database/seeders/               Administrador inicial e usuários de teste
+database/seeders/               Administrador inicial, usuários, catálogo e pedidos de teste
 lang/pt_BR/                     Mensagens em português
 public/css/mary.css             Cores e estilo da Mary Modas
 public/js/viacep.js             Preenchimento do endereço pelo CEP
@@ -187,7 +201,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (109 testes até a Fase 4) |
+| `php artisan test` | Roda os testes automatizados (135 testes até a Fase 5) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

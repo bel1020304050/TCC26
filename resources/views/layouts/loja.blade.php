@@ -19,7 +19,17 @@
                 </form>
                 <ul class="navbar-nav ms-auto align-items-md-center">
                     <li class="nav-item"><a class="nav-link" href="{{ route('loja.inicio') }}">Início</a></li>
-                    <li class="nav-item"><span class="nav-link" title="Disponível na Fase 5"><i class="bi bi-bag"></i> Carrinho</span></li>
+                    {{-- Carrinho: só clientes têm (3.30). Visitante é levado ao login. Equipe não compra pelo painel. --}}
+                    @if (! auth()->check() || auth()->user()->isCliente())
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('loja.carrinho') ? 'fw-semibold' : '' }}" href="{{ route('loja.carrinho') }}">
+                                <i class="bi bi-bag"></i> Carrinho
+                                @if (auth()->check())
+                                    <span class="badge rounded-pill text-bg-light">{{ \App\Models\Carrinho::quantidadeDoCliente(auth()->user()) }}</span>
+                                @endif
+                            </a>
+                        </li>
+                    @endif
                     @auth
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -30,6 +40,7 @@
                                     <li><a class="dropdown-item" href="{{ route('painel.inicio') }}">Painel administrativo</a></li>
                                     <li><a class="dropdown-item" href="{{ route('painel.minha-conta') }}">Minha conta</a></li>
                                 @else
+                                    <li><a class="dropdown-item" href="{{ route('loja.pedidos.index') }}">Meus pedidos</a></li>
                                     <li><span class="dropdown-item-text text-muted small">Minha conta (Fase 9)</span></li>
                                 @endif
                                 <li><hr class="dropdown-divider"></li>

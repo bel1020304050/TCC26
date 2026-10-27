@@ -19,7 +19,7 @@
         ['Fase 2', 'Categorias e Fornecedores', true],
         ['Fase 3', 'Produtos e vitrine', true],
         ['Fase 4', 'Usuários internos e permissões', true],
-        ['Fase 5', 'Carrinho e Pedidos', false],
+        ['Fase 5', 'Carrinho e Pedidos', true],
         ['Fase 6', 'Processo de Pagamento', false],
         ['Fase 7', 'Andamento do pedido', false],
         ['Fase 8', 'Promoções', false],
