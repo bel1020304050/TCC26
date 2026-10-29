@@ -34,7 +34,7 @@ O **PHP já vem no XAMPP** e o **Laravel não se instala no computador**: o Comp
    extension=fileinfo
    extension=pdo_mysql
    extension=mbstring
-   extension=openssl
+   extension=openssl, não antes de install o composer.
    extension=gd
    ```
    **Esperado:** `php -m` lista `zip`, `fileinfo`, `pdo_mysql` e `gd` (o `gd` é usado pelos testes de imagem de produto).
