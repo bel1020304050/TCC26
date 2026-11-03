@@ -24,7 +24,7 @@
         ['Fase 7', 'Andamento do pedido', true],
         ['Fase 8', 'Promoções', true],
         ['Fase 9', 'Conta do cliente', true],
-        ['Fase 10', 'Relatórios', false],
+        ['Fase 10', 'Relatórios', true],
     ];
 @endphp
 <div class="mm-card p-4">

@@ -39,6 +39,9 @@ class Pedido extends Model
         self::CANCELADO => 'text-bg-danger',
     ];
 
+    // Contam como venda paga / faturamento (regra das stories 3.32 e 3.34)
+    public const VENDA_PAGA = [self::PAGO, self::EM_SEPARACAO, self::ENVIADO, self::ENTREGUE];
+
     public const FORMAS_PAGAMENTO = ['pix' => 'PIX', 'cartao' => 'Cartão de Crédito', 'boleto' => 'Boleto Bancário'];
 
     // Status, valores e endereço não entram por preenchimento em massa: só o servidor define
