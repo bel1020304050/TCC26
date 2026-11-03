@@ -10,8 +10,24 @@
     <span><i class="bi bi-person"></i> {{ $pedido->cliente->name }}
         <span class="text-muted small">· {{ $pedido->cliente->email }} @if ($pedido->cliente->telefone) · {{ $pedido->cliente->telefone }} @endif</span>
     </span>
-    <a href="{{ route('painel.pedidos.index') }}" class="btn btn-outline-secondary btn-sm ms-auto">Voltar</a>
+    <div class="ms-auto d-flex gap-2">
+        @if ($pedido->proximoStatusManual())
+            @include('partials.modal-status-pedido', ['pedido' => $pedido])
+        @endif
+        @can('cancelar', $pedido)
+            @include('partials.modal-cancelar-pedido', ['pedido' => $pedido, 'acao' => route('painel.pedidos.cancelar', $pedido), 'motivoObrigatorio' => true])
+        @endcan
+        <a href="{{ route('painel.pedidos.index') }}" class="btn btn-outline-secondary btn-sm">Voltar</a>
+    </div>
 </div>
+
+@php $bloqueio = \App\Policies\PedidoPolicy::motivoBloqueioCancelamento(auth()->user(), $pedido); @endphp
+@if ($bloqueio && in_array($pedido->status, [\App\Models\Pedido::PAGO, \App\Models\Pedido::EM_SEPARACAO], true))
+    <div class="alert alert-light border small py-2"><i class="bi bi-info-circle"></i> {{ $bloqueio }}</div>
+@endif
+@if ($errors->has('motivo'))
+    <div class="alert alert-danger small py-2">{{ $errors->first('motivo') }}</div>
+@endif
 
 @include('partials.pedido-detalhes', ['pedido' => $pedido, 'comResponsavel' => true])
 @endsection

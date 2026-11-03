@@ -30,6 +30,7 @@
                                 <a href="{{ route('loja.pedidos.show', $pedido) }}" class="btn btn-sm btn-outline-secondary">Detalhes</a>
                                 @if ($pedido->aguardandoPagamento())
                                     <a href="{{ route('loja.pagamento.create', $pedido) }}" class="btn btn-sm btn-mm">Pagar</a>
+                                    @include('partials.modal-cancelar-pedido', ['pedido' => $pedido, 'acao' => route('loja.pedidos.cancelar', $pedido), 'motivoObrigatorio' => false])
                                 @endif
                             </td>
                         </tr>

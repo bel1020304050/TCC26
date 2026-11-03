@@ -35,6 +35,7 @@ Route::name('loja.')->middleware(['auth', 'perfil:cliente'])->group(function () 
     Route::post('/pedidos', [PedidoController::class, 'store'])->name('pedidos.store');
     Route::get('/meus-pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
     Route::get('/meus-pedidos/{pedido}', [PedidoController::class, 'show'])->name('pedidos.show');
+    Route::patch('/meus-pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
 
     // Processo 3.31 — Finalizar Compra / Pagamento (provedor simulado no MVP)
     Route::get('/meus-pedidos/{pedido}/pagamento', [PagamentoController::class, 'create'])->name('pagamento.create');
@@ -72,9 +73,12 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,func
     Route::patch('produtos/{produto}/inativar', [ProdutoController::class, 'inativar'])->name('produtos.inativar');
     Route::patch('produtos/{produto}/reativar', [ProdutoController::class, 'reativar'])->name('produtos.reativar');
 
-    // Fase 5 — Pedidos: consulta com filtros (3.19). Status e cancelamento na Fase 7.
+    // Fase 5 — Pedidos: consulta com filtros (3.19).
     Route::get('pedidos', [PainelPedidoController::class, 'index'])->name('pedidos.index');
     Route::get('pedidos/{pedido}', [PainelPedidoController::class, 'show'])->name('pedidos.show');
+    // Fase 7 — Atualizar status (3.20) e cancelar (3.21)
+    Route::patch('pedidos/{pedido}/status', [PainelPedidoController::class, 'atualizarStatus'])->name('pedidos.status');
+    Route::patch('pedidos/{pedido}/cancelar', [PainelPedidoController::class, 'cancelar'])->name('pedidos.cancelar');
     // Fase 6 — Boleto simulado: o Administrador confirma a compensação
     Route::post('pagamentos/{pagamento}/confirmar-boleto', [PainelPagamentoController::class, 'confirmarBoleto'])->name('pagamentos.confirmar-boleto');
 

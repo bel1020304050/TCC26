@@ -21,7 +21,7 @@
         ['Fase 4', 'Usuários internos e permissões', true],
         ['Fase 5', 'Carrinho e Pedidos', true],
         ['Fase 6', 'Processo de Pagamento', true],
-        ['Fase 7', 'Andamento do pedido', false],
+        ['Fase 7', 'Andamento do pedido', true],
         ['Fase 8', 'Promoções', false],
         ['Fase 9', 'Conta do cliente', false],
         ['Fase 10', 'Relatórios', false],

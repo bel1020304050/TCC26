@@ -53,6 +53,9 @@
                     <li>
                         <span class="text-muted small">{{ $registro->created_at->format('d/m/Y H:i') }}</span>
                         · {{ $registro->statusLabel() }}
+                        @if ($comResponsavel && $registro->statusAnteriorLabel())
+                            <span class="text-muted small">(antes: {{ $registro->statusAnteriorLabel() }})</span>
+                        @endif
                         @if ($comResponsavel)
                             <span class="text-muted small">— {{ $registro->responsavel?->name ?? 'Sistema' }}</span>
                         @endif
