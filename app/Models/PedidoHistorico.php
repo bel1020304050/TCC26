@@ -10,7 +10,7 @@ class PedidoHistorico extends Model
 {
     public const UPDATED_AT = null;
 
-    protected $fillable = ['status', 'user_id', 'observacao'];
+    protected $fillable = ['status_anterior', 'status', 'user_id', 'observacao'];
 
     protected function casts(): array
     {
@@ -20,6 +20,11 @@ class PedidoHistorico extends Model
     public function responsavel(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function statusAnteriorLabel(): ?string
+    {
+        return $this->status_anterior ? (Pedido::STATUS[$this->status_anterior] ?? $this->status_anterior) : null;
     }
 
     public function statusLabel(): string

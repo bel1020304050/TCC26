@@ -19,7 +19,10 @@
     <div class="alert alert-info d-flex flex-wrap align-items-center gap-2">
         <i class="bi bi-hourglass-split"></i>
         <span>Este pedido aguarda o pagamento por PIX, Cartão ou Boleto.</span>
-        <a href="{{ route('loja.pagamento.create', $pedido) }}" class="btn btn-mm btn-sm ms-auto">Pagar</a>
+        <span class="ms-auto d-flex gap-2">
+            @include('partials.modal-cancelar-pedido', ['pedido' => $pedido, 'acao' => route('loja.pedidos.cancelar', $pedido), 'motivoObrigatorio' => false])
+            <a href="{{ route('loja.pagamento.create', $pedido) }}" class="btn btn-mm btn-sm">Pagar</a>
+        </span>
     </div>
 @endif
 

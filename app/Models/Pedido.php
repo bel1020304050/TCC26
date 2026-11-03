@@ -94,14 +94,39 @@ class Pedido extends Model
     // Grava a mudança de status junto com data/hora e responsável
     public function registrarStatus(string $status, ?User $responsavel = null, ?string $observacao = null): void
     {
+        // Na criação do pedido não há status anterior
+        $anterior = $this->historico()->exists() ? $this->getOriginal('status') : null;
+
         $this->status = $status;
         $this->save();
 
         $this->historico()->create([
+            'status_anterior' => $anterior,
             'status' => $status,
             'user_id' => $responsavel?->id,
             'observacao' => $observacao,
         ]);
+    }
+
+    // Fluxo operacional (3.20): cada status só pode ir para o próximo. "Pago" vem só do pagamento (3.31).
+    public const FLUXO = [
+        self::AGUARDANDO_PAGAMENTO => self::PAGO,
+        self::PAGO => self::EM_SEPARACAO,
+        self::EM_SEPARACAO => self::ENVIADO,
+        self::ENVIADO => self::ENTREGUE,
+    ];
+
+    public function proximoStatus(): ?string
+    {
+        return self::FLUXO[$this->status] ?? null;
+    }
+
+    // Próximo status que a equipe pode marcar à mão (Em Separação, Enviado ou Entregue)
+    public function proximoStatusManual(): ?string
+    {
+        $proximo = $this->proximoStatus();
+
+        return $proximo && $proximo !== self::PAGO ? $proximo : null;
     }
 
     public function numero(): string

@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Painel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pedido;
+use App\Pagamentos\PagamentoException;
+use App\Policies\PedidoPolicy;
+use App\Services\AndamentoPedido;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -11,7 +15,7 @@ use Illuminate\View\View;
 
 /**
  * Pedidos na área administrativa — story 3.19 (consulta com pesquisa e filtros).
- * Atualizar status (3.20) e cancelar (3.21) chegam na Fase 7.
+ * Atualizar status (3.20) e cancelar (3.21): Fase 7.
  */
 class PedidoController extends Controller
 {
@@ -61,6 +65,43 @@ class PedidoController extends Controller
         $pedido->load(['itens', 'historico.responsavel', 'cliente', 'pagamentos.confirmadoPor']);
 
         return view('painel.pedidos.show', compact('pedido'));
+    }
+
+    // 3.20 – Atualizar status (só o próximo passo do fluxo)
+    public function atualizarStatus(Request $request, Pedido $pedido, AndamentoPedido $andamento): RedirectResponse
+    {
+        Gate::authorize('atualizarStatus', $pedido);
+        $dados = $request->validate(['status' => ['required', 'string']], [], ['status' => 'novo status']);
+
+        try {
+            $andamento->atualizarStatus($pedido, $dados['status'], $request->user());
+        } catch (PagamentoException $e) {
+            return back()->with('erro', $e->getMessage());
+        }
+
+        return back()->with('sucesso', "Pedido {$pedido->numero()} atualizado para ".Pedido::STATUS[$dados['status']].'.');
+    }
+
+    // 3.21 – Cancelar (motivo obrigatório para a equipe)
+    public function cancelar(Request $request, Pedido $pedido, AndamentoPedido $andamento): RedirectResponse
+    {
+        if ($bloqueio = PedidoPolicy::motivoBloqueioCancelamento($request->user(), $pedido)) {
+            return back()->with('erro', $bloqueio);
+        }
+        Gate::authorize('cancelar', $pedido);
+
+        $dados = $request->validate(['motivo' => ['required', 'string', 'min:5', 'max:255']], [], ['motivo' => 'motivo']);
+        $estava = $pedido->statusLabel();
+
+        try {
+            $andamento->cancelar($pedido, $request->user(), $dados['motivo']);
+        } catch (PagamentoException $e) {
+            return back()->with('erro', $e->getMessage());
+        }
+
+        return back()->with('sucesso', $estava === 'Aguardando Pagamento'
+            ? "Pedido {$pedido->numero()} cancelado."
+            : "Pedido {$pedido->numero()} cancelado: pagamento estornado e itens devolvidos ao estoque.");
     }
 
     // Data do filtro no formato do <input type="date"> (AAAA-MM-DD); inválida = sem filtro

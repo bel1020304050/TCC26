@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Loja;
 use App\Http\Controllers\Controller;
 use App\Models\Carrinho;
 use App\Models\Pedido;
+use App\Pagamentos\PagamentoException;
+use App\Policies\PedidoPolicy;
+use App\Services\AndamentoPedido;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +15,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * Pedidos do cliente — stories 3.18 (criar) e 3.19 (consultar e acompanhar).
+ * Pedidos do cliente — stories 3.18 (criar), 3.19 (consultar e acompanhar) e 3.21 (cancelar).
  */
 class PedidoController extends Controller
 {
@@ -126,5 +129,30 @@ class PedidoController extends Controller
         $pedido->load(['itens', 'historico', 'pagamentos']);
 
         return view('loja.pedidos.show', compact('pedido'));
+    }
+
+    // 3.21 – O cliente cancela o próprio pedido enquanto Aguardando Pagamento (motivo opcional)
+    public function cancelar(Request $request, Pedido $pedido, AndamentoPedido $andamento): RedirectResponse
+    {
+        Gate::authorize('view', $pedido); // pedido de outro cliente: acesso negado
+
+        if ($bloqueio = PedidoPolicy::motivoBloqueioCancelamento($request->user(), $pedido)) {
+            return back()->with('erro', $bloqueio);
+        }
+        if (! $request->user()->can('cancelar', $pedido)) {
+            return back()->with('erro', 'Este pedido já foi pago. Para cancelar, entre em contato com a loja.');
+        }
+
+        $request->validate(['motivo' => ['nullable', 'string', 'max:255']]);
+        $motivo = trim((string) $request->input('motivo')) ?: null; // opcional para o cliente
+
+        try {
+            $andamento->cancelar($pedido, $request->user(), $motivo);
+        } catch (PagamentoException $e) {
+            return back()->with('erro', $e->getMessage());
+        }
+
+        return redirect()->route('loja.pedidos.show', $pedido)
+            ->with('sucesso', "Pedido {$pedido->numero()} cancelado. Seu carrinho voltou a ficar disponível para alterações.");
     }
 }

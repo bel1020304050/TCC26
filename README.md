@@ -34,7 +34,7 @@ O **PHP já vem no XAMPP** e o **Laravel não se instala no computador**: o Comp
    extension=fileinfo
    extension=pdo_mysql
    extension=mbstring
-   extension=openssl
+   extension=openssl, não antes de install o composer.
    extension=gd
    ```
    **Esperado:** `php -m` lista `zip`, `fileinfo`, `pdo_mysql` e `gd` (o `gd` é usado pelos testes de imagem de produto).
@@ -175,6 +175,20 @@ e depois **Acessórios** (sem produtos → inativa).
 - O código usa a interface `ProvedorPagamento`: hoje quem responde é o `PagamentoSimulado`. Para usar o Mercado Pago, basta criar
   outra classe e trocar uma linha no `AppServiceProvider` (seção 4.1 da documentação).
 
+### Fase 7 — Andamento do pedido (stories 3.20 e 3.21)
+- **Atualizar status** (Funcionário e Administrador): botão na lista e nos detalhes do pedido, oferecendo **só o próximo passo**
+  (Pago → Em Separação → Enviado → Entregue). Não deixa pular etapas nem voltar, e "Pago" só vem do pagamento.
+- O **histórico** grava status anterior, status novo, data, hora e responsável (e aparece para o cliente).
+- **Cancelar pedido** (exclusão lógica, nada é apagado):
+
+  | Status do pedido | Quem pode cancelar | O que acontece |
+  |---|---|---|
+  | Aguardando Pagamento | Cliente, Funcionário ou Administrador | PIX/boleto em aberto deixa de valer e o carrinho volta a ficar editável |
+  | Pago ou Em Separação | **Só o Administrador** | Pagamento **estornado** e itens **devolvidos ao estoque**, numa única transação |
+  | Enviado ou Entregue | Ninguém | Bloqueado (troca e devolução ficam fora do MVP) |
+
+- O **motivo** é opcional para o cliente e obrigatório para a equipe. Tudo fica na auditoria.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -185,7 +199,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | 4 | Usuários internos e permissões | 3.5–3.8 | ✅ Pronta |
 | 5 | Carrinho e Pedidos | 3.30, 3.18, 3.19 | ✅ Pronta |
 | 6 | Processo de Pagamento ⭐ | 3.31 | ✅ Pronta |
-| 7 | Andamento do pedido | 3.20, 3.21 | A fazer |
+| 7 | Andamento do pedido | 3.20, 3.21 | ✅ Pronta |
 | 8 | Promoções | 3.22–3.25 | A fazer |
 | 9 | Conta do cliente (consultar, editar, encerrar) | 3.10–3.12 | A fazer |
 | 10 | Relatórios | 3.32–3.34 | A fazer |
@@ -203,6 +217,7 @@ app/Models/Concerns/TemStatus   Comportamento comum de Ativo/Inativo (exclusão 
 app/Pagamentos/                 Provedor de pagamento (interface + simulado)
 app/Policies/                   Quem pode fazer o quê em cada cadastro (Admin x Funcionário)
 app/Services/FinalizarCompra    O processo 3.31 (pagar, aprovar, baixar estoque, finalizar carrinho)
+app/Services/AndamentoPedido    Atualizar status (3.20) e cancelar pedido (3.21)
 app/Rules/CpfCnpj.php           Regra de validação de CPF/CNPJ
 app/Support/                    Status, Documento (CPF/CNPJ) e Auditoria
 config/mary.php                 Configurações próprias do sistema
@@ -224,7 +239,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (148 testes até a Fase 6) |
+| `php artisan test` | Roda os testes automatizados (161 testes até a Fase 7) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

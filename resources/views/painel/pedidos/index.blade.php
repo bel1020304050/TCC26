@@ -42,7 +42,12 @@
                         </td>
                         <td class="text-end text-nowrap">{{ $pedido->valor('total') }}</td>
                         <td><x-status-pedido :status="$pedido->status" /></td>
-                        <td class="text-end"><a href="{{ route('painel.pedidos.show', $pedido) }}" class="btn btn-sm btn-outline-secondary">Detalhes</a></td>
+                        <td class="text-end text-nowrap">
+                            <a href="{{ route('painel.pedidos.show', $pedido) }}" class="btn btn-sm btn-outline-secondary">Detalhes</a>
+                            @if ($pedido->proximoStatusManual())
+                                @include('partials.modal-status-pedido', ['pedido' => $pedido])
+                            @endif
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="6" class="text-center text-muted py-4">Nenhum pedido encontrado.</td></tr>
@@ -53,7 +58,7 @@
 </div>
 
 <div class="d-flex justify-content-between align-items-center mt-2">
-    <span class="text-muted small">{{ $pedidos->total() }} registro(s) · boletos pendentes são confirmados nos detalhes do pedido · atualizar status e cancelar chegam na Fase 7</span>
+    <span class="text-muted small">{{ $pedidos->total() }} registro(s) · boletos pendentes e cancelamentos ficam nos detalhes do pedido</span>
     {{ $pedidos->links() }}
 </div>
 @endsection
