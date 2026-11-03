@@ -3,12 +3,14 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Loja\CarrinhoController;
+use App\Http\Controllers\Loja\PagamentoController;
 use App\Http\Controllers\Loja\PedidoController;
 use App\Http\Controllers\Loja\VitrineController;
 use App\Http\Controllers\Painel\CategoriaController;
 use App\Http\Controllers\Painel\FornecedorController;
 use App\Http\Controllers\Painel\InicioController;
 use App\Http\Controllers\Painel\MinhaContaController;
+use App\Http\Controllers\Painel\PagamentoController as PainelPagamentoController;
 use App\Http\Controllers\Painel\PedidoController as PainelPedidoController;
 use App\Http\Controllers\Painel\ProdutoController;
 use App\Http\Controllers\Painel\UsuarioController;
@@ -33,6 +35,12 @@ Route::name('loja.')->middleware(['auth', 'perfil:cliente'])->group(function () 
     Route::post('/pedidos', [PedidoController::class, 'store'])->name('pedidos.store');
     Route::get('/meus-pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
     Route::get('/meus-pedidos/{pedido}', [PedidoController::class, 'show'])->name('pedidos.show');
+
+    // Processo 3.31 — Finalizar Compra / Pagamento (provedor simulado no MVP)
+    Route::get('/meus-pedidos/{pedido}/pagamento', [PagamentoController::class, 'create'])->name('pagamento.create');
+    Route::post('/meus-pedidos/{pedido}/pagamento', [PagamentoController::class, 'store'])->name('pagamento.store');
+    Route::post('/meus-pedidos/{pedido}/pagamento/{pagamento}/simular-pix', [PagamentoController::class, 'simularPix'])->name('pagamento.simular-pix');
+    Route::get('/meus-pedidos/{pedido}/concluido', [PagamentoController::class, 'concluido'])->name('pagamento.concluido');
 });
 
 /*
@@ -67,6 +75,8 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,func
     // Fase 5 — Pedidos: consulta com filtros (3.19). Status e cancelamento na Fase 7.
     Route::get('pedidos', [PainelPedidoController::class, 'index'])->name('pedidos.index');
     Route::get('pedidos/{pedido}', [PainelPedidoController::class, 'show'])->name('pedidos.show');
+    // Fase 6 — Boleto simulado: o Administrador confirma a compensação
+    Route::post('pagamentos/{pagamento}/confirmar-boleto', [PainelPagamentoController::class, 'confirmarBoleto'])->name('pagamentos.confirmar-boleto');
 
     // Fase 2 — Categorias (3.14–3.17) e Fornecedores (3.26–3.29).
     // Funcionário só consulta; cadastrar, editar e inativar são do Administrador (Policies).

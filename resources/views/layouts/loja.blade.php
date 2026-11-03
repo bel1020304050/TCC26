@@ -24,8 +24,8 @@
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('loja.carrinho') ? 'fw-semibold' : '' }}" href="{{ route('loja.carrinho') }}">
                                 <i class="bi bi-bag"></i> Carrinho
-                                @if (auth()->check())
-                                    <span class="badge rounded-pill text-bg-light">{{ \App\Models\Carrinho::quantidadeDoCliente(auth()->user()) }}</span>
+                                @if (auth()->check() && ($pecas = \App\Models\Carrinho::quantidadeDoCliente(auth()->user())) > 0)
+                                    <span class="badge rounded-pill text-bg-light">{{ $pecas }}</span>
                                 @endif
                             </a>
                         </li>

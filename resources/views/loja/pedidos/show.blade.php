@@ -18,8 +18,8 @@
 @if ($pedido->status === \App\Models\Pedido::AGUARDANDO_PAGAMENTO)
     <div class="alert alert-info d-flex flex-wrap align-items-center gap-2">
         <i class="bi bi-hourglass-split"></i>
-        <span>Próximo passo: pagamento por PIX, Cartão ou Boleto. <strong>A tela de pagamento chega na Fase 6.</strong></span>
-        <button type="button" class="btn btn-mm btn-sm ms-auto" disabled>Pagar</button>
+        <span>Este pedido aguarda o pagamento por PIX, Cartão ou Boleto.</span>
+        <a href="{{ route('loja.pagamento.create', $pedido) }}" class="btn btn-mm btn-sm ms-auto">Pagar</a>
     </div>
 @endif
 

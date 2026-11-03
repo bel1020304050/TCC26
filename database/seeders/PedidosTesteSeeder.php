@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Carrinho;
+use App\Models\Pagamento;
 use App\Models\Pedido;
 use App\Models\Produto;
 use App\Models\User;
@@ -81,6 +82,20 @@ class PedidosTesteSeeder extends Seeder
                 'produto_id' => $produto->id, 'nome' => $produto->nome, 'tamanho' => $produto->tamanho, 'cor' => $produto->cor,
                 'quantidade' => $quantidade, 'preco_unitario' => $produto->preco, 'subtotal' => round((float) $produto->preco * $quantidade, 2),
             ]);
+        }
+
+        // Pedido que chegou a ser pago tem a tentativa de pagamento aprovada registrada (3.31)
+        if ($forma) {
+            $pagamento = new Pagamento;
+            $pagamento->pedido_id = $pedido->id;
+            $pagamento->forma = $forma;
+            $pagamento->status = Pagamento::APROVADO;
+            $pagamento->valor = $pedido->total;
+            $pagamento->referencia = 'SIM-SEED'.$pedido->id;
+            $pagamento->mensagem = 'Pagamento aprovado.';
+            $pagamento->processado_em = Carbon::parse($historico[1][1]);
+            $pagamento->created_at = Carbon::parse($historico[1][1]);
+            $pagamento->save();
         }
 
         foreach ($historico as $registro) {

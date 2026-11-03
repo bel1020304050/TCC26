@@ -154,6 +154,27 @@ e depois **Acessórios** (sem produtos → inativa).
 - Cupom aparece desativado até a Fase 8; o botão **Pagar** fica desativado até a Fase 6.
 - Dados de teste: a cliente **Ana** já tem 2 pedidos antigos (um Entregue e um Cancelado) e um carrinho com 2 itens.
 
+### Fase 6 — Processo de Pagamento ⭐ (processo 3.31)
+- Depois de confirmar o pedido, o cliente vai direto para a **tela de pagamento** (etapa 3) e escolhe **PIX, Cartão de Crédito ou Boleto**.
+- **Pagamento simulado** (sem cobrança real), funcionando como o ambiente de testes de um provedor:
+
+  | Forma | Como testar | Resultado |
+  |---|---|---|
+  | PIX | Gerar PIX → **Simular pagamento recebido** | Aprovado |
+  | Cartão | Qualquer número que **não** termine em 0000 ou 9999 (ex.: `4111 1111 1111 1111`) | Aprovado na hora |
+  | Cartão | Final **0000** (ex.: `5555 4444 3333 0000`) | Recusado: o pedido continua aguardando e dá para tentar de novo |
+  | Cartão | Final **9999** | Provedor "fora do ar": mensagem clara, nada muda |
+  | Boleto | Gerar boleto → Administrador abre o pedido no painel → **Confirmar compensação do boleto** | Aprovado |
+
+- **Aprovado** = numa única transação: pedido **Pago**, **estoque baixado**, carrinho **Finalizado e limpo**, tela de **Concluído**.
+- **Recusado ou Pendente** = o estoque não é baixado e o pedido continua **Aguardando Pagamento**.
+- A mesma aprovação recebida duas vezes **baixa o estoque uma vez só** (idempotência). Se faltar estoque na hora da aprovação,
+  o pedido é **Cancelado**, o pagamento é **Estornado** e o carrinho volta a ficar editável.
+- **Dados do cartão não são salvos**: só a bandeira e os 4 últimos dígitos. Eles também não voltam preenchidos se der erro de validação.
+- Toda tentativa fica registrada (Pendente, Aprovado, Recusado ou Estornado) e aparece nos detalhes do pedido.
+- O código usa a interface `ProvedorPagamento`: hoje quem responde é o `PagamentoSimulado`. Para usar o Mercado Pago, basta criar
+  outra classe e trocar uma linha no `AppServiceProvider` (seção 4.1 da documentação).
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -163,7 +184,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | 3 | Produtos e vitrine | 3.1–3.4 | ✅ Pronta |
 | 4 | Usuários internos e permissões | 3.5–3.8 | ✅ Pronta |
 | 5 | Carrinho e Pedidos | 3.30, 3.18, 3.19 | ✅ Pronta |
-| 6 | Processo de Pagamento ⭐ | 3.31 | A fazer |
+| 6 | Processo de Pagamento ⭐ | 3.31 | ✅ Pronta |
 | 7 | Andamento do pedido | 3.20, 3.21 | A fazer |
 | 8 | Promoções | 3.22–3.25 | A fazer |
 | 9 | Conta do cliente (consultar, editar, encerrar) | 3.10–3.12 | A fazer |
@@ -179,7 +200,9 @@ app/Http/Middleware/            VerificaPerfil (perfil:admin,...) e EncerraSessa
 app/Http/Requests/              Validações (Form Requests)
 app/Models/                     User, Categoria, Fornecedor, Produto, Auditoria, Carrinho, Pedido
 app/Models/Concerns/TemStatus   Comportamento comum de Ativo/Inativo (exclusão lógica)
+app/Pagamentos/                 Provedor de pagamento (interface + simulado)
 app/Policies/                   Quem pode fazer o quê em cada cadastro (Admin x Funcionário)
+app/Services/FinalizarCompra    O processo 3.31 (pagar, aprovar, baixar estoque, finalizar carrinho)
 app/Rules/CpfCnpj.php           Regra de validação de CPF/CNPJ
 app/Support/                    Status, Documento (CPF/CNPJ) e Auditoria
 config/mary.php                 Configurações próprias do sistema
@@ -201,7 +224,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (135 testes até a Fase 5) |
+| `php artisan test` | Roda os testes automatizados (148 testes até a Fase 6) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Pagamentos\PagamentoSimulado;
+use App\Pagamentos\ProvedorPagamento;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -11,7 +13,9 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // Provedor de pagamento (processo 3.31). No MVP é simulado.
+        // Integração futura: trocar por \App\Pagamentos\MercadoPagoProvedor (seção 4.1 da documentação).
+        $this->app->bind(ProvedorPagamento::class, PagamentoSimulado::class);
     }
 
     public function boot(): void

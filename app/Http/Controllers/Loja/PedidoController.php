@@ -102,8 +102,9 @@ class PedidoController extends Controller
             $carrinho->status = Carrinho::EM_PAGAMENTO;
             $carrinho->save();
 
-            return redirect()->route('loja.pedidos.show', $pedido)
-                ->with('sucesso', "Pedido {$pedido->numero()} criado! Ele aguarda o pagamento.");
+            // 3.18: encaminha para a tela de pagamento do mesmo pedido (3.31)
+            return redirect()->route('loja.pagamento.create', $pedido)
+                ->with('sucesso', "Pedido {$pedido->numero()} criado! Escolha a forma de pagamento.");
         });
     }
 
@@ -122,7 +123,7 @@ class PedidoController extends Controller
     {
         Gate::authorize('view', $pedido);
 
-        $pedido->load(['itens', 'historico']);
+        $pedido->load(['itens', 'historico', 'pagamentos']);
 
         return view('loja.pedidos.show', compact('pedido'));
     }
