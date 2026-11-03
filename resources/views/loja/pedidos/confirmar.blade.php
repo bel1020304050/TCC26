@@ -31,7 +31,7 @@
             @endforeach
             <hr>
             <div class="d-flex justify-content-between mb-1"><span>Subtotal</span><span>R$ {{ number_format($totais['subtotal'], 2, ',', '.') }}</span></div>
-            <div class="d-flex justify-content-between text-success"><span>Desconto</span><span>- R$ {{ number_format($totais['desconto'], 2, ',', '.') }}</span></div>
+            <div class="d-flex justify-content-between text-success"><span>Desconto @if ($totais['promocao']) ({{ $totais['promocao']->codigo ? 'cupom '.$totais['promocao']->codigo.' – ' : '' }}{{ $totais['promocao']->nome }}, {{ $totais['promocao']->descontoLabel() }}) @endif</span><span>- R$ {{ number_format($totais['desconto'], 2, ',', '.') }}</span></div>
             <hr>
             <div class="d-flex justify-content-between fs-5 fw-bold"><span>Total</span><span class="mm-preco">R$ {{ number_format($totais['total'], 2, ',', '.') }}</span></div>
         </div>

@@ -189,6 +189,22 @@ e depois **Acessórios** (sem produtos → inativa).
 
 - O **motivo** é opcional para o cliente e obrigatório para a equipe. Tudo fica na auditoria.
 
+### Fase 8 — Promoções e cupons (stories 3.22–3.25)
+- **Painel › Promoções**: pesquisa por nome ou código e filtro por **situação**: Vigente, Agendada, Expirada ou Inativa.
+  A situação é calculada pelas datas no momento da consulta.
+- **Cadastrar e editar** (só o Administrador):
+  - Campos: modo **Automática** ou **Cupom** (código único), desconto **Percentual (1% a 50%)** ou **Valor fixo (> 0)**,
+    período e aplicação **Geral, Categoria ou Produto**.
+  - Promoção já usada em pedido não pode mudar modo nem código, e a edição registra os valores antes e depois.
+- **Inativar/Reativar** (só o Administrador): a promoção deixa de valer em novas compras, e os pedidos já feitos mantêm o desconto.
+  O Funcionário só consulta.
+- **Vitrine**: selo laranja e preço promocional para promoções **automáticas** vigentes.
+- **Carrinho**: campo de **cupom**. O servidor sempre recalcula e **os descontos não se somam**: vale só o maior
+  entre as automáticas e o cupom. Valor fixo nunca deixa o total negativo. Cupom inativado depois sai do carrinho com aviso.
+- O **pedido guarda o desconto e o cupom usados**, e o pagamento cobra esse valor congelado.
+- Dados de teste: cupom **MARY20** (20%, vigente), **VIP30** (agendado), **Queima de Saias** (15% automática nas saias),
+  **Desconto Blusas** (inativa) e **Liquidação Inverno** (expirada).
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -200,7 +216,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | 5 | Carrinho e Pedidos | 3.30, 3.18, 3.19 | ✅ Pronta |
 | 6 | Processo de Pagamento ⭐ | 3.31 | ✅ Pronta |
 | 7 | Andamento do pedido | 3.20, 3.21 | ✅ Pronta |
-| 8 | Promoções | 3.22–3.25 | A fazer |
+| 8 | Promoções | 3.22–3.25 | ✅ Pronta |
 | 9 | Conta do cliente (consultar, editar, encerrar) | 3.10–3.12 | A fazer |
 | 10 | Relatórios | 3.32–3.34 | A fazer |
 
@@ -239,7 +255,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (161 testes até a Fase 7) |
+| `php artisan test` | Roda os testes automatizados (183 testes até a Fase 8) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

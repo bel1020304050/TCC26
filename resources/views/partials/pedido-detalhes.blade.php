@@ -23,7 +23,10 @@
                     <tfoot>
                         <tr><td colspan="3" class="text-end">Subtotal</td><td class="text-end text-nowrap">{{ $pedido->valor('subtotal') }}</td></tr>
                         <tr>
-                            <td colspan="3" class="text-end">Desconto @if ($pedido->cupom) (cupom {{ $pedido->cupom }}) @endif</td>
+                            <td colspan="3" class="text-end">Desconto
+                                @if ($pedido->cupom) (cupom {{ $pedido->cupom }})
+                                @elseif ($pedido->promocao) ({{ $pedido->promocao->nome }})
+                                @endif</td>
                             <td class="text-end text-nowrap text-success">- {{ $pedido->valor('desconto') }}</td>
                         </tr>
                         <tr class="fw-bold"><td colspan="3" class="text-end border-0">Total</td><td class="text-end text-nowrap mm-preco border-0">{{ $pedido->valor('total') }}</td></tr>

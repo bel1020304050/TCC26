@@ -21,6 +21,9 @@ class Carrinho extends Model
 
     protected $fillable = ['user_id'];
 
+    // Promoções candidatas já carregadas (evita repetir a consulta na mesma página)
+    private ?\Illuminate\Support\Collection $promocoesCache = null;
+
     protected $attributes = ['status' => self::ABERTO];
 
     public function user(): BelongsTo
@@ -64,23 +67,49 @@ class Carrinho extends Model
     }
 
     /**
-     * Totais calculados SEMPRE no servidor, com o preço atual dos produtos (seção 2.3).
-     * Desconto por promoção/cupom entra na Fase 8; até lá é zero.
+     * Totais calculados SEMPRE no servidor, com preços e promoções atuais (seção 2.3).
+     * Descontos NÃO se somam: entre as automáticas vigentes e o cupom informado, vale só o maior (3.30).
      *
-     * @return array{subtotal: float, desconto: float, total: float}
+     * @return array{subtotal: float, desconto: float, total: float, promocao: ?Promocao}
      */
     public function totais(): array
     {
         $this->loadMissing('itens.produto');
 
         $subtotal = Dinheiro::arredondar($this->itens->sum(fn (CarrinhoItem $item) => $item->subtotal()));
+
+        $melhor = null;
         $desconto = 0.0;
+        foreach ($this->promocoesCandidatas() as $promocao) {
+            // Soma só os itens que a promoção alcança (Geral, Produto ou Categoria)
+            $elegivel = $this->itens->filter(fn (CarrinhoItem $item) => $promocao->aplicaA($item->produto))
+                ->sum(fn (CarrinhoItem $item) => $item->subtotal());
+            $valor = $promocao->descontoSobre($elegivel);
+
+            if ($valor > $desconto) {
+                [$melhor, $desconto] = [$promocao, $valor];
+            }
+        }
 
         return [
             'subtotal' => $subtotal,
             'desconto' => $desconto,
             'total' => Dinheiro::arredondar(max(0, $subtotal - $desconto)),
+            'promocao' => $melhor,
         ];
+    }
+
+    // Automáticas válidas + o cupom do carrinho (se ainda for válido)
+    private function promocoesCandidatas(): \Illuminate\Support\Collection
+    {
+        if ($this->promocoesCache === null) {
+            $this->promocoesCache = Promocao::validas()->where('modo', Promocao::AUTOMATICA)->get();
+            if ($cupom = Promocao::cupomValido($this->cupom)) {
+                $this->promocoesCache->push($cupom);
+            }
+        }
+
+        return $this->promocoesCache;
     }
 
     /**

@@ -60,6 +60,11 @@ class Pedido extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function promocao(): BelongsTo
+    {
+        return $this->belongsTo(Promocao::class);
+    }
+
     public function carrinho(): BelongsTo
     {
         return $this->belongsTo(Carrinho::class);

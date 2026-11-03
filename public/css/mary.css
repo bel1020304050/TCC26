@@ -67,3 +67,6 @@ body { background: var(--mm-fundo); color: #2b2b2b; font-family: 'Inter', system
 /* Pagamento: abas na cor da loja */
 .nav-pills .nav-link { color: var(--mm-rosa); }
 .nav-pills .nav-link.active { background: var(--mm-rosa); color: #fff; }
+
+/* Selo de promoção na vitrine */
+.mm-selo { background: var(--mm-laranja); color: #fff; font-weight: 700; }

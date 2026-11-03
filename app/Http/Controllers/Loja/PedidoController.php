@@ -80,6 +80,9 @@ class PedidoController extends Controller
             $pedido->subtotal = $totais['subtotal'];
             $pedido->desconto = $totais['desconto'];
             $pedido->total = $totais['total'];
+            // Promoção usada (o valor do desconto fica congelado; editar a promoção depois não muda o pedido)
+            $pedido->promocao_id = $totais['promocao']?->id;
+            $pedido->cupom = $totais['promocao']?->codigo;
             // Endereço copiado do cadastro (preserva o histórico se o cliente mudar depois)
             foreach (['cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf'] as $campo) {
                 $pedido->{$campo} = $cliente->{$campo};
