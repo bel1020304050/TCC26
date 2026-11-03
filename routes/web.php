@@ -15,6 +15,7 @@ use App\Http\Controllers\Painel\PagamentoController as PainelPagamentoController
 use App\Http\Controllers\Painel\PedidoController as PainelPedidoController;
 use App\Http\Controllers\Painel\ProdutoController;
 use App\Http\Controllers\Painel\PromocaoController;
+use App\Http\Controllers\Painel\RelatorioController;
 use App\Http\Controllers\Painel\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
@@ -99,6 +100,12 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,func
         ->parameters(['promocoes' => 'promocao']);
     Route::patch('promocoes/{promocao}/inativar', [PromocaoController::class, 'inativar'])->name('promocoes.inativar');
     Route::patch('promocoes/{promocao}/reativar', [PromocaoController::class, 'reativar'])->name('promocoes.reativar');
+
+    // Fase 10 — Relatórios (3.32–3.34). ?exportar=csv ou ?exportar=pdf
+    Route::get('relatorios', [RelatorioController::class, 'index'])->name('relatorios.index');
+    Route::get('relatorios/vendas', [RelatorioController::class, 'vendas'])->name('relatorios.vendas');
+    Route::get('relatorios/estoque', [RelatorioController::class, 'estoque'])->name('relatorios.estoque');
+    Route::get('relatorios/clientes', [RelatorioController::class, 'clientes'])->name('relatorios.clientes');
 
     // Fase 2 — Categorias (3.14–3.17) e Fornecedores (3.26–3.29).
     // Funcionário só consulta; cadastrar, editar e inativar são do Administrador (Policies).

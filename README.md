@@ -218,6 +218,22 @@ e depois **Acessórios** (sem produtos → inativa).
   - No painel, o pedido mostra "Cliente removido · Conta encerrada em dd/mm/aaaa".
 - Só o próprio cliente encerra a conta: a equipe não tem essa opção.
 
+### Fase 10 — Relatórios (stories 3.32–3.34)
+
+| Relatório | Quem acessa | Filtros | Indicadores |
+|---|---|---|---|
+| **Vendas** | Só Administrador | Período, status e forma de pagamento | Vendas pagas, faturamento e ticket médio |
+| **Produtos / Estoque** | Administrador e Funcionário | Categoria, fornecedor, status, tamanho, cor e "só estoque baixo" | Produtos, unidades e itens com estoque ≤ 10 (em destaque) |
+| **Clientes** | Só Administrador | Período de cadastro, com/sem compras e ordem | Clientes no período, com compras pagas e valor total |
+
+- **Venda paga** = Pago, Em Separação, Enviado ou Entregue. Aguardando Pagamento, Cancelado e estornos aparecem na lista, mas não entram no faturamento.
+- O período padrão é dos **últimos 30 dias**.
+- **Exportar CSV**: abre direto no Excel, com `;` e acentos certos.
+- **Exportar PDF**: abre uma versão para impressão e o diálogo do navegador. Basta escolher **"Salvar como PDF"**.
+  A tela, o CSV e o PDF têm exatamente as mesmas colunas.
+- Relatório de clientes sem telefone e endereço (LGPD). Conta encerrada aparece como "Cliente removido", sem e-mail.
+- As rotas e as exportações recusam quem não tem permissão (Cliente, ou Funcionário em Vendas e Clientes).
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -231,7 +247,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | 7 | Andamento do pedido | 3.20, 3.21 | ✅ Pronta |
 | 8 | Promoções | 3.22–3.25 | ✅ Pronta |
 | 9 | Conta do cliente (consultar, editar, encerrar) | 3.10–3.12 | ✅ Pronta |
-| 10 | Relatórios | 3.32–3.34 | A fazer |
+| 10 | Relatórios | 3.32–3.34 | ✅ Pronta |
 
 ## 7. Onde fica cada coisa
 
@@ -245,6 +261,7 @@ app/Models/                     User, Categoria, Fornecedor, Produto, Auditoria,
 app/Models/Concerns/TemStatus   Comportamento comum de Ativo/Inativo (exclusão lógica)
 app/Pagamentos/                 Provedor de pagamento (interface + simulado)
 app/Policies/                   Quem pode fazer o quê em cada cadastro (Admin x Funcionário)
+app/Relatorios/                 Os 3 relatórios (consulta, colunas, indicadores)
 app/Services/FinalizarCompra    O processo 3.31 (pagar, aprovar, baixar estoque, finalizar carrinho)
 app/Services/AndamentoPedido    Atualizar status (3.20) e cancelar pedido (3.21)
 app/Services/EncerrarConta      Encerrar a conta do cliente com anonimização (3.12)
@@ -269,7 +286,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (196 testes até a Fase 9) |
+| `php artisan test` | Roda os testes automatizados (212 testes até a Fase 10) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

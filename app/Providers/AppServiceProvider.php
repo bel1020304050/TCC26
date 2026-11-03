@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use App\Pagamentos\PagamentoSimulado;
 use App\Pagamentos\ProvedorPagamento;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -20,6 +22,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Relatórios (3.32–3.34): Vendas e Clientes só o Administrador; Estoque também o Funcionário
+        Gate::define('relatorio-vendas', fn (User $user) => $user->isAdmin());
+        Gate::define('relatorio-clientes', fn (User $user) => $user->isAdmin());
+        Gate::define('relatorio-estoque', fn (User $user) => $user->isEquipe());
+
         // Evita erro de tamanho de índice em versões antigas de MySQL/MariaDB (XAMPP)
         Schema::defaultStringLength(191);
 

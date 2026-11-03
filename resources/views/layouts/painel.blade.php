@@ -17,7 +17,7 @@
             ['titulo' => 'Promoções', 'icone' => 'percent', 'rota' => 'painel.promocoes.index', 'ativo' => 'painel.promocoes.*', 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Fornecedores', 'icone' => 'truck', 'rota' => 'painel.fornecedores.index', 'ativo' => 'painel.fornecedores.*', 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Usuários', 'icone' => 'people', 'rota' => 'painel.usuarios.index', 'ativo' => 'painel.usuarios.*', 'perfis' => ['admin']],
-            ['titulo' => 'Relatórios', 'icone' => 'bar-chart', 'fase' => 10, 'perfis' => ['admin', 'funcionario']],
+            ['titulo' => 'Relatórios', 'icone' => 'bar-chart', 'rota' => 'painel.relatorios.index', 'ativo' => 'painel.relatorios.*', 'perfis' => ['admin', 'funcionario']],
         ];
     @endphp
 
