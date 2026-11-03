@@ -29,7 +29,7 @@ class PedidoController extends Controller
         $ate = $this->data($request->query('ate'));
 
         $pedidos = Pedido::query()
-            ->with('cliente:id,name,email')
+            ->with('cliente:id,name,email,telefone,status,encerrada_em')
             // Pesquisa por nº do pedido (com ou sem #) ou por nome/e-mail do cliente
             ->when($busca !== '', function ($q) use ($busca) {
                 $numero = ltrim($busca, '#');

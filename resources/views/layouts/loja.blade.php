@@ -40,8 +40,8 @@
                                     <li><a class="dropdown-item" href="{{ route('painel.inicio') }}">Painel administrativo</a></li>
                                     <li><a class="dropdown-item" href="{{ route('painel.minha-conta') }}">Minha conta</a></li>
                                 @else
+                                    <li><a class="dropdown-item" href="{{ route('loja.conta') }}">Meus dados</a></li>
                                     <li><a class="dropdown-item" href="{{ route('loja.pedidos.index') }}">Meus pedidos</a></li>
-                                    <li><span class="dropdown-item-text text-muted small">Minha conta (Fase 9)</span></li>
                                 @endif
                                 <li><hr class="dropdown-divider"></li>
                                 <li>

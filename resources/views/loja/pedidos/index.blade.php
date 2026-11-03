@@ -6,6 +6,10 @@
 {{-- Story 3.19 – Consultar e Acompanhar Pedidos (Figura 20) --}}
 <h1 class="h3 mb-3">Meus pedidos</h1>
 
+<div class="row g-3">
+<div class="col-lg-3">@include('loja.conta._menu')</div>
+<div class="col-lg-9">
+
 @if ($pedidos->isEmpty())
     <div class="mm-card p-5 text-center text-muted">
         <i class="bi bi-receipt fs-2 d-block mb-2"></i>
@@ -41,4 +45,6 @@
     </div>
     <div class="mt-3">{{ $pedidos->links() }}</div>
 @endif
+</div>
+</div>
 @endsection

@@ -8,7 +8,7 @@
     <x-status-pedido :status="$pedido->status" />
     <span class="text-muted small">Criado em {{ $pedido->created_at->format('d/m/Y H:i') }}</span>
     <span><i class="bi bi-person"></i> {{ $pedido->cliente->name }}
-        <span class="text-muted small">· {{ $pedido->cliente->email }} @if ($pedido->cliente->telefone) · {{ $pedido->cliente->telefone }} @endif</span>
+        <span class="text-muted small">· {{ $pedido->cliente->contatoPainel() }}</span>
     </span>
     <div class="ms-auto d-flex gap-2">
         @if ($pedido->proximoStatusManual())

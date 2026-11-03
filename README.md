@@ -205,6 +205,19 @@ e depois **Acessórios** (sem produtos → inativa).
 - Dados de teste: cupom **MARY20** (20%, vigente), **VIP30** (agendado), **Queima de Saias** (15% automática nas saias),
   **Desconto Blusas** (inativa) e **Liquidação Inverno** (expirada).
 
+### Fase 9 — Conta do cliente (stories 3.10–3.12)
+- **Minha conta › Meus dados** (menu do nome no topo): nome, e-mail, telefone, endereço completo e "cliente desde".
+  A senha nunca aparece. Não há id na URL: a tela sempre mostra a conta de quem está logado.
+- **Editar meus dados**: mesmas regras do cadastro, com **ViaCEP** ao trocar o CEP. O e-mail continua único.
+  Os pedidos antigos mantêm o endereço que já estava copiado neles.
+- **Alterar senha**, pedindo a senha atual.
+- **Encerrar minha conta** (exige a senha atual):
+  - Bloqueado se houver pedido Aguardando Pagamento, Pago, Em Separação ou Enviado; a mensagem diz qual pedido.
+  - Numa única transação: status **Encerrada**, dados pessoais **anonimizados** ("Cliente removido"), todas as sessões derrubadas.
+  - Os pedidos ficam registrados, o login é bloqueado e o **e-mail fica livre** para uma conta nova.
+  - No painel, o pedido mostra "Cliente removido · Conta encerrada em dd/mm/aaaa".
+- Só o próprio cliente encerra a conta: a equipe não tem essa opção.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -217,7 +230,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | 6 | Processo de Pagamento ⭐ | 3.31 | ✅ Pronta |
 | 7 | Andamento do pedido | 3.20, 3.21 | ✅ Pronta |
 | 8 | Promoções | 3.22–3.25 | ✅ Pronta |
-| 9 | Conta do cliente (consultar, editar, encerrar) | 3.10–3.12 | A fazer |
+| 9 | Conta do cliente (consultar, editar, encerrar) | 3.10–3.12 | ✅ Pronta |
 | 10 | Relatórios | 3.32–3.34 | A fazer |
 
 ## 7. Onde fica cada coisa
@@ -234,6 +247,7 @@ app/Pagamentos/                 Provedor de pagamento (interface + simulado)
 app/Policies/                   Quem pode fazer o quê em cada cadastro (Admin x Funcionário)
 app/Services/FinalizarCompra    O processo 3.31 (pagar, aprovar, baixar estoque, finalizar carrinho)
 app/Services/AndamentoPedido    Atualizar status (3.20) e cancelar pedido (3.21)
+app/Services/EncerrarConta      Encerrar a conta do cliente com anonimização (3.12)
 app/Rules/CpfCnpj.php           Regra de validação de CPF/CNPJ
 app/Support/                    Status, Documento (CPF/CNPJ) e Auditoria
 config/mary.php                 Configurações próprias do sistema
@@ -255,7 +269,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (183 testes até a Fase 8) |
+| `php artisan test` | Roda os testes automatizados (196 testes até a Fase 9) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

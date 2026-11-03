@@ -97,6 +97,21 @@ class User extends Authenticatable
         return $this->status === self::STATUS_ATIVO;
     }
 
+    public function isEncerrado(): bool
+    {
+        return $this->status === self::STATUS_ENCERRADO;
+    }
+
+    // Contato mostrado à equipe: conta encerrada não exibe o e-mail técnico de anonimização (RNF.02 da 3.12)
+    public function contatoPainel(): string
+    {
+        if ($this->isEncerrado()) {
+            return 'Conta encerrada'.($this->encerrada_em ? ' em '.$this->encerrada_em->format('d/m/Y') : '');
+        }
+
+        return $this->email.($this->telefone ? ' · '.$this->telefone : '');
+    }
+
     public function perfilLabel(): string
     {
         return match ($this->perfil) {
