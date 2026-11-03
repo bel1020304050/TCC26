@@ -38,7 +38,7 @@
                         <td class="text-nowrap">{{ $pedido->created_at->format('d/m/Y H:i') }}</td>
                         <td>
                             <div>{{ $pedido->cliente->name }}</div>
-                            <div class="text-muted small">{{ $pedido->cliente->email }}</div>
+                            <div class="text-muted small">{{ $pedido->cliente->isEncerrado() ? $pedido->cliente->contatoPainel() : $pedido->cliente->email }}</div>
                         </td>
                         <td class="text-end text-nowrap">{{ $pedido->valor('total') }}</td>
                         <td><x-status-pedido :status="$pedido->status" /></td>

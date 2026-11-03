@@ -23,7 +23,7 @@
         ['Fase 6', 'Processo de Pagamento', true],
         ['Fase 7', 'Andamento do pedido', true],
         ['Fase 8', 'Promoções', true],
-        ['Fase 9', 'Conta do cliente', false],
+        ['Fase 9', 'Conta do cliente', true],
         ['Fase 10', 'Relatórios', false],
     ];
 @endphp

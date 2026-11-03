@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Loja\CarrinhoController;
+use App\Http\Controllers\Loja\ContaController;
 use App\Http\Controllers\Loja\PagamentoController;
 use App\Http\Controllers\Loja\PedidoController;
 use App\Http\Controllers\Loja\VitrineController;
@@ -27,6 +28,13 @@ Route::get('/', VitrineController::class)->name('loja.inicio');
 
 // Área do cliente: carrinho (3.30) e pedidos (3.18, 3.19). Só clientes logados.
 Route::name('loja.')->middleware(['auth', 'perfil:cliente'])->group(function () {
+    // Minha conta do cliente: consultar (3.10), editar (3.11) e encerrar (3.12). Sem id na URL: sempre a conta da sessão.
+    Route::get('/minha-conta', [ContaController::class, 'show'])->name('conta');
+    Route::get('/minha-conta/editar', [ContaController::class, 'edit'])->name('conta.edit');
+    Route::put('/minha-conta', [ContaController::class, 'update'])->name('conta.update');
+    Route::put('/minha-conta/senha', [ContaController::class, 'senha'])->name('conta.senha');
+    Route::delete('/minha-conta', [ContaController::class, 'destroy'])->name('conta.destroy');
+
     Route::get('/carrinho', [CarrinhoController::class, 'index'])->name('carrinho');
     Route::post('/carrinho/itens', [CarrinhoController::class, 'adicionar'])->name('carrinho.adicionar');
     Route::patch('/carrinho/itens/{item}', [CarrinhoController::class, 'atualizar'])->name('carrinho.atualizar');
