@@ -83,7 +83,7 @@ class UsuarioTest extends TestCase
     public function test_lista_so_equipe_e_pesquisa_por_nome(): void
     {
         User::factory()->funcionario()->create(['name' => 'Rafael Martins']);
-        User::factory()->funcionario()->create(['name' => 'Juliana Lima']);
+        User::factory()->funcionario()->create(['name' => 'Juliana Lima', 'email' => 'juliana@teste.com']);
         User::factory()->create(['name' => 'Ana Cliente']);
 
         $this->actingAs($this->admin)->get('/painel/usuarios')

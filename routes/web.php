@@ -13,6 +13,7 @@ use App\Http\Controllers\Painel\MinhaContaController;
 use App\Http\Controllers\Painel\PagamentoController as PainelPagamentoController;
 use App\Http\Controllers\Painel\PedidoController as PainelPedidoController;
 use App\Http\Controllers\Painel\ProdutoController;
+use App\Http\Controllers\Painel\PromocaoController;
 use App\Http\Controllers\Painel\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,8 @@ Route::name('loja.')->middleware(['auth', 'perfil:cliente'])->group(function () 
     Route::post('/carrinho/itens', [CarrinhoController::class, 'adicionar'])->name('carrinho.adicionar');
     Route::patch('/carrinho/itens/{item}', [CarrinhoController::class, 'atualizar'])->name('carrinho.atualizar');
     Route::delete('/carrinho/itens/{item}', [CarrinhoController::class, 'remover'])->name('carrinho.remover');
+    Route::post('/carrinho/cupom', [CarrinhoController::class, 'aplicarCupom'])->name('carrinho.cupom');
+    Route::delete('/carrinho/cupom', [CarrinhoController::class, 'removerCupom'])->name('carrinho.cupom.remover');
 
     Route::get('/pedido/confirmar', [PedidoController::class, 'confirmar'])->name('pedidos.confirmar');
     Route::post('/pedidos', [PedidoController::class, 'store'])->name('pedidos.store');
@@ -81,6 +84,13 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,func
     Route::patch('pedidos/{pedido}/cancelar', [PainelPedidoController::class, 'cancelar'])->name('pedidos.cancelar');
     // Fase 6 — Boleto simulado: o Administrador confirma a compensação
     Route::post('pagamentos/{pagamento}/confirmar-boleto', [PainelPagamentoController::class, 'confirmarBoleto'])->name('pagamentos.confirmar-boleto');
+
+    // Fase 8 — Promoções (3.22–3.25). Funcionário só consulta; o resto é do Administrador.
+    Route::resource('promocoes', PromocaoController::class)
+        ->except(['show', 'destroy'])
+        ->parameters(['promocoes' => 'promocao']);
+    Route::patch('promocoes/{promocao}/inativar', [PromocaoController::class, 'inativar'])->name('promocoes.inativar');
+    Route::patch('promocoes/{promocao}/reativar', [PromocaoController::class, 'reativar'])->name('promocoes.reativar');
 
     // Fase 2 — Categorias (3.14–3.17) e Fornecedores (3.26–3.29).
     // Funcionário só consulta; cadastrar, editar e inativar são do Administrador (Policies).

@@ -69,12 +69,41 @@
 
         <div class="col-lg-4">
             <div class="mm-card p-4">
-                <label class="form-label" for="cupom">Cupom</label>
-                <div class="input-group mb-1">
-                    <input type="text" id="cupom" class="form-control" placeholder="Ex.: MARY20" disabled>
-                    <button class="btn btn-outline-secondary" type="button" disabled>Aplicar</button>
-                </div>
-                <div class="form-text mb-3">Cupons e promoções chegam na Fase 8.</div>
+                {{-- Cupom (3.30): o servidor confere se está Ativo e Vigente --}}
+                @if ($carrinho->cupom)
+                    <label class="form-label">Cupom</label>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge text-bg-light border fs-6 font-monospace">{{ $carrinho->cupom }}</span>
+                        @if ($carrinho->isAberto())
+                            <form method="POST" action="{{ route('loja.carrinho.cupom.remover') }}">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-link btn-sm text-decoration-none mm-link-rosa p-0">Remover</button>
+                            </form>
+                        @endif
+                    </div>
+                @elseif ($carrinho->isAberto())
+                    <form method="POST" action="{{ route('loja.carrinho.cupom') }}" class="mb-2">
+                        @csrf
+                        <label class="form-label" for="cupom">Cupom</label>
+                        <div class="input-group">
+                            <input type="text" id="cupom" name="cupom" value="{{ old('cupom') }}" maxlength="30"
+                                   class="form-control text-uppercase @error('cupom') is-invalid @enderror" placeholder="Ex.: MARY20">
+                            <button class="btn btn-outline-secondary" type="submit">Aplicar</button>
+                        </div>
+                        @error('cupom') <div class="small text-danger mt-1">{{ $message }}</div> @enderror
+                    </form>
+                @endif
+
+                @if ($totais['promocao'])
+                    <div class="alert alert-success small py-2 mb-3">
+                        <i class="bi bi-tag"></i>
+                        {{ $totais['promocao']->modo === 'cupom' ? 'Cupom aplicado' : 'Promoção aplicada' }}:
+                        <strong>{{ $totais['promocao']->nome }}</strong> ({{ $totais['promocao']->descontoLabel() }}).
+                        Só o maior desconto válido é aplicado.
+                    </div>
+                @else
+                    <div class="mb-3"></div>
+                @endif
 
                 <div class="d-flex justify-content-between mb-1"><span>Subtotal</span><span>R$ {{ number_format($totais['subtotal'], 2, ',', '.') }}</span></div>
                 <div class="d-flex justify-content-between mb-2 text-success"><span>Desconto</span><span>- R$ {{ number_format($totais['desconto'], 2, ',', '.') }}</span></div>

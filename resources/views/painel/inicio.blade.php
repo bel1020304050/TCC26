@@ -22,7 +22,7 @@
         ['Fase 5', 'Carrinho e Pedidos', true],
         ['Fase 6', 'Processo de Pagamento', true],
         ['Fase 7', 'Andamento do pedido', true],
-        ['Fase 8', 'Promoções', false],
+        ['Fase 8', 'Promoções', true],
         ['Fase 9', 'Conta do cliente', false],
         ['Fase 10', 'Relatórios', false],
     ];

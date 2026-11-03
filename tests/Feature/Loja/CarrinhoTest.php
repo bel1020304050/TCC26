@@ -51,7 +51,7 @@ class CarrinhoTest extends TestCase
 
         $carrinho = Carrinho::doCliente($this->cliente);
         $this->assertSame(1, $carrinho->itens()->where('produto_id', $vestido->id)->value('quantidade'));
-        $this->assertSame(['subtotal' => 219.8, 'desconto' => 0.0, 'total' => 219.8], $carrinho->totais());
+        $this->assertSame(['subtotal' => 219.8, 'desconto' => 0.0, 'total' => 219.8, 'promocao' => null], $carrinho->totais());
 
         $this->actingAs($this->cliente)->get('/carrinho')
             ->assertOk()

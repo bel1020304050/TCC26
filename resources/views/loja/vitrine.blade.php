@@ -77,11 +77,25 @@
         @foreach ($produtos as $produto)
             <div class="col">
                 <div class="mm-card h-100 p-2 mm-produto d-flex flex-column">
-                    <img src="{{ $produto->imagemUrl() }}" alt="{{ $produto->nome }}" class="w-100 rounded mb-2" loading="lazy">
+                    @php $promo = $promocoes[$produto->id] ?? null; @endphp
+                    <div class="position-relative">
+                        <img src="{{ $produto->imagemUrl() }}" alt="{{ $produto->nome }}" class="w-100 rounded mb-2" loading="lazy">
+                        @if ($promo)
+                            <span class="badge rounded-pill mm-selo position-absolute top-0 start-0 m-2" title="{{ $promo->nome }}">{{ $promo->seloLabel() }}</span>
+                        @endif
+                    </div>
                     <div class="px-1 pb-1 d-flex flex-column flex-grow-1">
                         <div class="fw-semibold">{{ $produto->nome }}</div>
                         <div class="text-muted small mb-1">{{ $produto->categoria->nome }} · {{ $produto->tamanho }} · {{ $produto->cor }}</div>
-                        <div class="mm-preco mb-2 mt-auto">{{ $produto->precoFormatado() }}</div>
+                        <div class="mb-2 mt-auto">
+                            @if ($promo && $promo->tipo === 'percentual')
+                                <span class="text-muted text-decoration-line-through small">{{ $produto->precoFormatado() }}</span>
+                                <span class="mm-preco">R$ {{ number_format($promo->precoCom($produto), 2, ',', '.') }}</span>
+                            @else
+                                <span class="mm-preco">{{ $produto->precoFormatado() }}</span>
+                                @if ($promo) <div class="small text-muted">{{ $promo->descontoLabel() }} de desconto no carrinho</div> @endif
+                            @endif
+                        </div>
                         {{-- Story 3.30: só cliente logado adiciona; visitante vai para o login --}}
                         @auth
                             @if (auth()->user()->isCliente())
@@ -106,6 +120,6 @@
 @endif
 
 <p class="text-muted small mt-3 mb-0">
-    <i class="bi bi-info-circle"></i> Preço promocional na Fase 8.
+    <i class="bi bi-info-circle"></i> O selo laranja indica promoção automática vigente. Cupons são informados no carrinho, e só o maior desconto válido é aplicado.
 </p>
 @endsection

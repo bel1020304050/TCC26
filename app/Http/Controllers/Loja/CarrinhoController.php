@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Carrinho;
 use App\Models\CarrinhoItem;
 use App\Models\Produto;
+use App\Models\Promocao;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,6 +20,14 @@ class CarrinhoController extends Controller
     public function index(Request $request): View
     {
         $carrinho = Carrinho::doCliente($request->user())->load('itens.produto.categoria', 'pedido');
+
+        // Revalida o cupom: se foi inativado ou expirou, sai do carrinho com aviso (regra da 3.25)
+        if ($carrinho->isAberto() && $carrinho->cupom && ! Promocao::cupomValido($carrinho->cupom)) {
+            $codigo = $carrinho->cupom;
+            $carrinho->cupom = null;
+            $carrinho->save();
+            session()->now('erro', "O cupom {$codigo} não está mais disponível e foi removido do seu carrinho.");
+        }
 
         return view('loja.carrinho', [
             'carrinho' => $carrinho,
@@ -87,6 +96,47 @@ class CarrinhoController extends Controller
         $item->delete();
 
         return back()->with('sucesso', "{$item->produto->nome} ({$item->produto->variacao()}) removido do carrinho.");
+    }
+
+    // Aplicar cupom (3.30): só vale se estiver Ativo e Vigente
+    public function aplicarCupom(Request $request): RedirectResponse
+    {
+        $dados = $request->validate(['cupom' => ['required', 'string', 'max:30']], [], ['cupom' => 'cupom']);
+
+        $carrinho = Carrinho::doCliente($request->user());
+        if ($bloqueio = $this->bloqueado($carrinho)) {
+            return $bloqueio;
+        }
+
+        $codigo = mb_strtoupper(trim($dados['cupom']));
+        $promocao = Promocao::cupomValido($codigo);
+        if (! $promocao) {
+            return back()->withInput()->with('erro', "O cupom {$codigo} não está disponível.");
+        }
+
+        $carrinho->cupom = $promocao->codigo;
+        $carrinho->save();
+
+        $totais = $carrinho->totais();
+
+        return back()->with('sucesso', match (true) {
+            $totais['promocao']?->is($promocao) => "Cupom aplicado: {$promocao->nome} ({$promocao->descontoLabel()}).",
+            $totais['promocao'] !== null => "Cupom {$promocao->codigo} válido, mas a promoção {$totais['promocao']->nome} dá um desconto maior. Só o maior desconto é aplicado.",
+            default => "Cupom {$promocao->codigo} válido, mas não se aplica aos itens do seu carrinho.",
+        });
+    }
+
+    public function removerCupom(Request $request): RedirectResponse
+    {
+        $carrinho = Carrinho::doCliente($request->user());
+        if ($bloqueio = $this->bloqueado($carrinho)) {
+            return $bloqueio;
+        }
+
+        $carrinho->cupom = null;
+        $carrinho->save();
+
+        return back()->with('sucesso', 'Cupom removido.');
     }
 
     // O item precisa ser do carrinho do próprio cliente (cada carrinho pertence a um único cliente)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Loja;
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
 use App\Models\Produto;
+use App\Models\Promocao;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -51,6 +52,15 @@ class VitrineController extends Controller
         $tamanhos = Produto::naVitrine()->distinct()->orderBy('tamanho')->pluck('tamanho');
         $cores = Produto::naVitrine()->distinct()->orderBy('cor')->pluck('cor');
 
-        return view('loja.vitrine', compact('produtos', 'filtros', 'categorias', 'tamanhos', 'cores'));
+        // Selo e preço promocional (3.23): só promoções AUTOMÁTICAS Ativas e Vigentes.
+        // Cupom não aparece na vitrine, porque depende do código digitado no carrinho.
+        $automaticas = Promocao::validas()->where('modo', Promocao::AUTOMATICA)->get();
+        $promocoes = $produtos->getCollection()->mapWithKeys(fn (Produto $produto) => [
+            $produto->id => $automaticas->filter(fn (Promocao $p) => $p->aplicaA($produto))
+                ->sortByDesc(fn (Promocao $p) => $p->descontoSobre((float) $produto->preco))
+                ->first(),
+        ]);
+
+        return view('loja.vitrine', compact('produtos', 'filtros', 'categorias', 'tamanhos', 'cores', 'promocoes'));
     }
 }

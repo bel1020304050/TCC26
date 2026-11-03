@@ -32,8 +32,8 @@ class PedidoPainelTest extends TestCase
 
     public function test_funcionario_e_admin_veem_todos_os_pedidos(): void
     {
-        $ana = User::factory()->create(['name' => 'Ana Souza']);
-        $bia = User::factory()->create(['name' => 'Bia Lima']);
+        $ana = User::factory()->create(['name' => 'Ana Souza', 'email' => 'ana@teste.com']);
+        $bia = User::factory()->create(['name' => 'Bia Lima', 'email' => 'bia@teste.com']);
         $this->pedido($ana, Pedido::AGUARDANDO_PAGAMENTO, '2026-10-19');
         $this->pedido($bia, Pedido::ENTREGUE, '2026-10-05');
 
@@ -45,8 +45,8 @@ class PedidoPainelTest extends TestCase
 
     public function test_pesquisa_por_numero_e_por_cliente(): void
     {
-        $ana = User::factory()->create(['name' => 'Ana Souza']);
-        $bia = User::factory()->create(['name' => 'Bia Lima']);
+        $ana = User::factory()->create(['name' => 'Ana Souza', 'email' => 'ana@teste.com']);
+        $bia = User::factory()->create(['name' => 'Bia Lima', 'email' => 'bia@teste.com']);
         $pedidoAna = $this->pedido($ana, Pedido::PAGO, '2026-10-17');
         $this->pedido($bia, Pedido::PAGO, '2026-10-17');
         $func = User::factory()->funcionario()->create();
@@ -57,8 +57,8 @@ class PedidoPainelTest extends TestCase
 
     public function test_filtra_por_status_e_periodo(): void
     {
-        $ana = User::factory()->create(['name' => 'Ana Souza']);
-        $bia = User::factory()->create(['name' => 'Bia Lima']);
+        $ana = User::factory()->create(['name' => 'Ana Souza', 'email' => 'ana@teste.com']);
+        $bia = User::factory()->create(['name' => 'Bia Lima', 'email' => 'bia@teste.com']);
         $this->pedido($ana, Pedido::ENTREGUE, '2026-09-28');
         $this->pedido($bia, Pedido::AGUARDANDO_PAGAMENTO, '2026-10-19');
         $func = User::factory()->funcionario()->create();
@@ -70,7 +70,7 @@ class PedidoPainelTest extends TestCase
 
     public function test_detalhes_mostram_historico_com_responsavel(): void
     {
-        $ana = User::factory()->create(['name' => 'Ana Souza']);
+        $ana = User::factory()->create(['name' => 'Ana Souza', 'email' => 'ana@teste.com']);
         $rafael = User::factory()->funcionario()->create(['name' => 'Rafael Martins']);
         $pedido = $this->pedido($ana, Pedido::AGUARDANDO_PAGAMENTO, '2026-10-17');
         $pedido->historico()->create(['status' => Pedido::AGUARDANDO_PAGAMENTO, 'user_id' => $ana->id]);
