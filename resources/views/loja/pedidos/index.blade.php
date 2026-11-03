@@ -26,7 +26,12 @@
                             <td>{{ $pedido->created_at->format('d/m/Y') }}</td>
                             <td class="text-end text-nowrap">{{ $pedido->valor('total') }}</td>
                             <td><x-status-pedido :status="$pedido->status" /></td>
-                            <td class="text-end"><a href="{{ route('loja.pedidos.show', $pedido) }}" class="btn btn-sm btn-outline-secondary">Detalhes</a></td>
+                            <td class="text-end text-nowrap">
+                                <a href="{{ route('loja.pedidos.show', $pedido) }}" class="btn btn-sm btn-outline-secondary">Detalhes</a>
+                                @if ($pedido->aguardandoPagamento())
+                                    <a href="{{ route('loja.pagamento.create', $pedido) }}" class="btn btn-sm btn-mm">Pagar</a>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>

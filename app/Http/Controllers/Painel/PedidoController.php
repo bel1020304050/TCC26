@@ -58,7 +58,7 @@ class PedidoController extends Controller
     {
         Gate::authorize('view', $pedido);
 
-        $pedido->load(['itens', 'historico.responsavel', 'cliente']);
+        $pedido->load(['itens', 'historico.responsavel', 'cliente', 'pagamentos.confirmadoPor']);
 
         return view('painel.pedidos.show', compact('pedido'));
     }

@@ -40,6 +40,12 @@
             <div class="small"><span class="text-muted">Pagamento:</span> {{ $pedido->formaPagamentoLabel() }}</div>
             <div class="small text-muted">Frete: não calculado nesta versão.</div>
         </div>
+        @if ($pedido->pagamentos->isNotEmpty())
+            <div class="mm-card p-4">
+                <h2 class="h6 fw-semibold mb-2">Pagamentos</h2>
+                @include('partials.pagamentos-lista', ['pagamentos' => $pedido->pagamentos, 'podeConfirmar' => $comResponsavel])
+            </div>
+        @endif
         <div class="mm-card p-4">
             <h2 class="h6 fw-semibold mb-3">Histórico de status</h2>
             <ul class="mm-linha-tempo list-unstyled mb-0">

@@ -53,7 +53,7 @@
 </div>
 
 <div class="d-flex justify-content-between align-items-center mt-2">
-    <span class="text-muted small">{{ $pedidos->total() }} registro(s) · atualizar status e cancelar chegam na Fase 7</span>
+    <span class="text-muted small">{{ $pedidos->total() }} registro(s) · boletos pendentes são confirmados nos detalhes do pedido · atualizar status e cancelar chegam na Fase 7</span>
     {{ $pedidos->links() }}
 </div>
 @endsection

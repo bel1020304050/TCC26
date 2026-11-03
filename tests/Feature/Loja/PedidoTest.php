@@ -57,7 +57,7 @@ class PedidoTest extends TestCase
         $resposta = $this->actingAs($this->cliente)->post('/pedidos');
 
         $pedido = Pedido::sole();
-        $resposta->assertRedirect(route('loja.pedidos.show', $pedido));
+        $resposta->assertRedirect(route('loja.pagamento.create', $pedido)); // segue direto para o pagamento (3.31)
 
         $this->assertSame(Pedido::AGUARDANDO_PAGAMENTO, $pedido->status);
         $this->assertSame('219.80', $pedido->subtotal);

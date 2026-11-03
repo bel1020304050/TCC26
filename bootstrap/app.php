@@ -29,5 +29,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(fn (Request $request) => route($request->user()->homeRoute()));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Se a validação falhar, estes campos NÃO voltam preenchidos na tela (nem ficam na sessão)
+        $exceptions->dontFlash(['password', 'password_confirmation', 'senha_atual', 'cartao_numero', 'cartao_cvv', 'cartao_validade']);
     })->create();

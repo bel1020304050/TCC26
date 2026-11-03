@@ -70,6 +70,22 @@ class Pedido extends Model
         return $this->hasMany(PedidoItem::class);
     }
 
+    public function pagamentos(): HasMany
+    {
+        return $this->hasMany(Pagamento::class)->latest('id');
+    }
+
+    // PIX ou boleto esperando confirmação (só pode haver um por vez)
+    public function pagamentoPendente(): ?Pagamento
+    {
+        return $this->pagamentos()->where('status', Pagamento::PENDENTE)->first();
+    }
+
+    public function aguardandoPagamento(): bool
+    {
+        return $this->status === self::AGUARDANDO_PAGAMENTO;
+    }
+
     public function historico(): HasMany
     {
         return $this->hasMany(PedidoHistorico::class)->orderBy('created_at')->orderBy('id');

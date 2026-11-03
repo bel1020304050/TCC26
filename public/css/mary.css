@@ -63,3 +63,7 @@ body { background: var(--mm-fundo); color: #2b2b2b; font-family: 'Inter', system
 .mm-etapas li.feita + li.feita .mm-etapa-linha, .mm-etapas li.feita .mm-etapa-linha { background: #ddd; }
 .mm-linha-tempo li { position: relative; padding-left: 1.25rem; margin-bottom: .5rem; }
 .mm-linha-tempo li::before { content: ''; position: absolute; left: 0; top: .45rem; width: 10px; height: 10px; border-radius: 50%; background: var(--mm-laranja); }
+
+/* Pagamento: abas na cor da loja */
+.nav-pills .nav-link { color: var(--mm-rosa); }
+.nav-pills .nav-link.active { background: var(--mm-rosa); color: #fff; }
