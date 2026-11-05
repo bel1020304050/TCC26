@@ -1,4 +1,4 @@
-# Mary Modas — Sistema E-commerce (TCC UniALFA)   
+# Mary Modas — Sistema E-commerce (TCC UniALFA)    
 
 Sistema web de vendas e gestão da loja **Mary Modas**, feito em **PHP 8.2 + Laravel 12 + MySQL/MariaDB** para rodar no **XAMPP**.
 
