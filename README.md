@@ -1,4 +1,4 @@
-# Mary Modas — Sistema E-commerce (TCC UniALFA)
+# Mary Modas — Sistema E-commerce (TCC UniALFA)   
 
 Sistema web de vendas e gestão da loja **Mary Modas**, feito em **PHP 8.2 + Laravel 12 + MySQL/MariaDB** para rodar no **XAMPP**.
 
@@ -309,4 +309,4 @@ tests/Feature/                  Testes automatizados
 - Uma branch por fase/módulo, sempre com **Pull Request** para a `main`.
 - O `.env` **nunca** vai para o GitHub (já está no `.gitignore`).
 
-> O MVP antigo em PHP puro continua no histórico do Git (commit `f3e3bfa`) caso alguém precise consultar.
+> O MVP antigo em PHP puro continua no histórico do Git (commit `f3e3bfa`) caso alguém precise consultar. 
