@@ -22,9 +22,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Segurança: Vendas e Clientes só o Administrador; Estoque também o Funcionário
-        Gate::define('relatorio-vendas', fn (User $user) => $user->isAdmin());
-        Gate::define('relatorio-clientes', fn (User $user) => $user->isAdmin());
+        // Segurança: os relatórios de Vendas, Clientes e Estoque são para toda a equipe
+        Gate::define('relatorio-vendas', fn (User $user) => $user->isEquipe());
+        Gate::define('relatorio-clientes', fn (User $user) => $user->isEquipe());
         Gate::define('relatorio-estoque', fn (User $user) => $user->isEquipe());
 
         // Evita erro de tamanho de índice em versões antigas de MySQL/MariaDB (XAMPP)

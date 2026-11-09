@@ -37,7 +37,7 @@ class CarrinhoTest extends TestCase
     public function test_visitante_vai_para_o_login_e_equipe_nao_tem_carrinho(): void
     {
         $this->get('/carrinho')->assertRedirect('/entrar');
-        $this->actingAs(User::factory()->funcionario()->create())->get('/carrinho')->assertForbidden();
+        $this->actingAs(User::factory()->atendente()->create())->get('/carrinho')->assertForbidden();
     }
 
     // CT-3-30-01 (parte do carrinho; o cupom é testado em PromocaoLojaTest)

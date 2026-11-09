@@ -18,13 +18,13 @@ class CategoriaTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
-    private User $funcionario;
+    private User $atendente;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->admin = User::factory()->admin()->create();
-        $this->funcionario = User::factory()->funcionario()->create();
+        $this->atendente = User::factory()->atendente()->create();
     }
 
     // CT-3-14-01
@@ -60,13 +60,13 @@ class CategoriaTest extends TestCase
     }
 
     // CT-3-15-01: funcionário consulta, mas sem botões de alteração
-    public function test_funcionario_consulta_sem_botoes_de_alteracao(): void
+    public function test_atendente_consulta_sem_botoes_de_alteracao(): void
     {
         $categoria = Categoria::factory()->create(['nome' => 'Vestidos']);
         Produto::factory()->count(2)->create(['categoria_id' => $categoria->id]);
         Produto::factory()->inativo()->create(['categoria_id' => $categoria->id]);
 
-        $this->actingAs($this->funcionario)->get('/painel/categorias')
+        $this->actingAs($this->atendente)->get('/painel/categorias')
             ->assertOk()
             ->assertSee('Vestidos')
             ->assertSeeInOrder(['Vestidos', '2', '3']) // 2 ativos, 3 vinculados
@@ -74,14 +74,14 @@ class CategoriaTest extends TestCase
             ->assertDontSee(route('painel.categorias.edit', $categoria));
     }
 
-    public function test_funcionario_nao_cadastra_nem_edita_nem_inativa(): void
+    public function test_atendente_nao_cadastra_nem_edita_nem_inativa(): void
     {
         $categoria = Categoria::factory()->create();
 
-        $this->actingAs($this->funcionario)->get('/painel/categorias/novo')->assertForbidden();
-        $this->actingAs($this->funcionario)->post('/painel/categorias', ['nome' => 'X', 'status' => 'ativo'])->assertForbidden();
-        $this->actingAs($this->funcionario)->put("/painel/categorias/{$categoria->id}", ['nome' => 'Y'])->assertForbidden();
-        $this->actingAs($this->funcionario)->patch("/painel/categorias/{$categoria->id}/inativar")->assertForbidden();
+        $this->actingAs($this->atendente)->get('/painel/categorias/novo')->assertForbidden();
+        $this->actingAs($this->atendente)->post('/painel/categorias', ['nome' => 'X', 'status' => 'ativo'])->assertForbidden();
+        $this->actingAs($this->atendente)->put("/painel/categorias/{$categoria->id}", ['nome' => 'Y'])->assertForbidden();
+        $this->actingAs($this->atendente)->patch("/painel/categorias/{$categoria->id}/inativar")->assertForbidden();
 
         $this->assertTrue($categoria->fresh()->isAtivo());
     }

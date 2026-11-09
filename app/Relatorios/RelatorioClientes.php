@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 /**
- * Relatório de Clientes (só Administrador).
+ * Relatório de Clientes (toda a equipe).
  * Minimização de dados (LGPD): sem senha, telefone ou endereço.
  * Conta encerrada aparece como "Cliente removido", sem e-mail, e suas compras continuam somando.
  */

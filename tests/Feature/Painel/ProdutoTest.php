@@ -20,7 +20,7 @@ class ProdutoTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
-    private User $funcionario;
+    private User $atendente;
     private Categoria $vestidos;
 
     protected function setUp(): void
@@ -28,7 +28,7 @@ class ProdutoTest extends TestCase
         parent::setUp();
         Storage::fake('public');
         $this->admin = User::factory()->admin()->create();
-        $this->funcionario = User::factory()->funcionario()->create();
+        $this->atendente = User::factory()->atendente()->create();
         $this->vestidos = Categoria::factory()->create(['nome' => 'Vestidos']);
     }
 
@@ -48,11 +48,11 @@ class ProdutoTest extends TestCase
     }
 
     // CT-3-1-01 (com imagem JPG)
-    public function test_funcionario_cadastra_produto_com_imagem(): void
+    public function test_atendente_cadastra_produto_com_imagem(): void
     {
         $imagem = UploadedFile::fake()->image('vestido.jpg', 600, 600)->size(300);
 
-        $this->actingAs($this->funcionario)
+        $this->actingAs($this->atendente)
             ->post('/painel/produtos', $this->dados(['imagem' => $imagem]))
             ->assertRedirect(route('painel.produtos.index'))
             ->assertSessionHas('sucesso');
@@ -62,7 +62,7 @@ class ProdutoTest extends TestCase
         $this->assertSame(15, $produto->estoque);
         $this->assertTrue($produto->isAtivo());
         Storage::disk('public')->assertExists($produto->imagem);
-        $this->assertDatabaseHas('auditorias', ['acao' => 'criou', 'entidade' => 'produtos', 'user_id' => $this->funcionario->id]);
+        $this->assertDatabaseHas('auditorias', ['acao' => 'criou', 'entidade' => 'produtos', 'user_id' => $this->atendente->id]);
     }
 
     // CT-3-1-02
@@ -133,11 +133,11 @@ class ProdutoTest extends TestCase
     }
 
     // CT-3-3-01: repor estoque
-    public function test_funcionario_repoe_estoque(): void
+    public function test_atendente_repoe_estoque(): void
     {
         $produto = Produto::factory()->create(['categoria_id' => $this->vestidos->id, 'estoque' => 8]);
 
-        $this->actingAs($this->funcionario)
+        $this->actingAs($this->atendente)
             ->put("/painel/produtos/{$produto->id}", $this->dados([
                 'nome' => $produto->nome, 'tamanho' => $produto->tamanho, 'cor' => $produto->cor,
                 'preco' => (string) $produto->preco, 'estoque' => 20,
@@ -215,14 +215,14 @@ class ProdutoTest extends TestCase
     }
 
     // CT-3-4-02: funcionário não inativa, nem pela URL, e não vê o botão
-    public function test_funcionario_nao_inativa_produto(): void
+    public function test_atendente_nao_inativa_produto(): void
     {
         $produto = Produto::factory()->create(['categoria_id' => $this->vestidos->id]);
 
-        $this->actingAs($this->funcionario)->patch("/painel/produtos/{$produto->id}/inativar")->assertForbidden();
+        $this->actingAs($this->atendente)->patch("/painel/produtos/{$produto->id}/inativar")->assertForbidden();
         $this->assertTrue($produto->fresh()->isAtivo());
 
-        $this->actingAs($this->funcionario)->get('/painel/produtos')
+        $this->actingAs($this->atendente)->get('/painel/produtos')
             ->assertOk()
             ->assertSee('Novo produto')
             ->assertDontSee(route('painel.produtos.inativar', $produto));

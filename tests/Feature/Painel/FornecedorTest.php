@@ -17,13 +17,13 @@ class FornecedorTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
-    private User $funcionario;
+    private User $atendente;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->admin = User::factory()->admin()->create();
-        $this->funcionario = User::factory()->funcionario()->create();
+        $this->atendente = User::factory()->atendente()->create();
     }
 
     private function dados(array $troca = []): array
@@ -99,12 +99,12 @@ class FornecedorTest extends TestCase
     }
 
     // CT-3-27-01: funcionário pesquisa, sem botões de alteração
-    public function test_funcionario_pesquisa_por_nome_sem_botoes(): void
+    public function test_atendente_pesquisa_por_nome_sem_botoes(): void
     {
         $aurora = Fornecedor::factory()->create(['nome' => 'Confecções Aurora Ltda']);
         Fornecedor::factory()->create(['nome' => 'Malharia Boa Vista Ltda']);
 
-        $this->actingAs($this->funcionario)->get('/painel/fornecedores?busca=aurora')
+        $this->actingAs($this->atendente)->get('/painel/fornecedores?busca=aurora')
             ->assertOk()
             ->assertSee('Confecções Aurora Ltda')
             ->assertDontSee('Malharia Boa Vista')
@@ -129,13 +129,13 @@ class FornecedorTest extends TestCase
             ->assertSee('Nenhum fornecedor encontrado');
     }
 
-    public function test_funcionario_e_cliente_nao_alteram(): void
+    public function test_atendente_e_cliente_nao_alteram(): void
     {
         $fornecedor = Fornecedor::factory()->create();
 
-        $this->actingAs($this->funcionario)->get('/painel/fornecedores/novo')->assertForbidden();
-        $this->actingAs($this->funcionario)->get("/painel/fornecedores/{$fornecedor->id}/editar")->assertForbidden();
-        $this->actingAs($this->funcionario)->patch("/painel/fornecedores/{$fornecedor->id}/inativar")->assertForbidden();
+        $this->actingAs($this->atendente)->get('/painel/fornecedores/novo')->assertForbidden();
+        $this->actingAs($this->atendente)->get("/painel/fornecedores/{$fornecedor->id}/editar")->assertForbidden();
+        $this->actingAs($this->atendente)->patch("/painel/fornecedores/{$fornecedor->id}/inativar")->assertForbidden();
         $this->actingAs(User::factory()->create())->get('/painel/fornecedores')->assertForbidden();
     }
 

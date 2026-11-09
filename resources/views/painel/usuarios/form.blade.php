@@ -21,8 +21,6 @@
             <x-campo class="col-md-6" name="email" label="E-mail" type="email" obrigatorio maxlength="150" :valor="$usuario->email"
                      dica="Deve ser único no sistema" />
             <x-campo class="col-md-6" name="telefone" label="Telefone" opcional maxlength="20" :valor="$usuario->telefone" placeholder="(44) 99999-0000" />
-            <x-campo class="col-md-6" name="cargo" label="Cargo" opcional maxlength="60" :valor="$usuario->cargo"
-                     dica="Apenas informativo (ex.: Subgerente, Vendedora)" />
 
             <div class="col-md-6 mb-3">
                 <label for="perfil" class="form-label">Perfil <span class="obrigatorio">*</span></label>
@@ -35,13 +33,18 @@
                     <div class="form-text">Não é possível alterar o próprio perfil.</div>
                 @else
                     <select id="perfil" name="perfil" class="form-select @error('perfil') is-invalid @enderror" required>
-                        <option value="funcionario" @selected(old('perfil', $usuario->perfil) === 'funcionario')>Funcionário</option>
+                        <option value="atendente" @selected(old('perfil', $usuario->perfil) === 'atendente')>Atendente/Vendedor</option>
+                        <option value="gerente" @selected(old('perfil', $usuario->perfil) === 'gerente')>Gerente</option>
                         <option value="admin" @selected(old('perfil', $usuario->perfil) === 'admin')>Administrador</option>
                     </select>
                     @error('perfil')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @else
-                        <div class="form-text">Funcionário: operação do dia a dia. Administrador: acesso total.</div>
+                        <div class="form-text">
+                            Atendente/Vendedor: produtos e pedidos do dia a dia ·
+                            Gerente: gerencia a loja, menos a equipe ·
+                            Administrador: acesso total.
+                        </div>
                     @enderror
                 @endif
             </div>

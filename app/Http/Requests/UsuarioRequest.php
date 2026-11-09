@@ -38,10 +38,9 @@ class UsuarioRequest extends FormRequest
             // Único em todo o sistema, incluindo contas de clientes
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($usuario?->id)],
             'telefone' => ['nullable', 'string', 'max:20'],
-            'cargo' => ['nullable', 'string', 'max:60'], // só informativo
             'perfil' => [
                 'required',
-                Rule::in([User::PERFIL_FUNCIONARIO, User::PERFIL_ADMIN]),
+                Rule::in(User::PERFIS_EQUIPE), // cliente nunca é criado por aqui
                 $this->regraProprioPerfil($usuario),
             ],
         ];

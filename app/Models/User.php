@@ -17,8 +17,12 @@ class User extends Authenticatable
 
     // Perfis de acesso: definem o que cada pessoa pode fazer no sistema
     public const PERFIL_CLIENTE = 'cliente';
-    public const PERFIL_FUNCIONARIO = 'funcionario';
-    public const PERFIL_ADMIN = 'admin';
+    public const PERFIL_ATENDENTE = 'atendente'; // Atendente/Vendedor: operação do dia a dia
+    public const PERFIL_GERENTE = 'gerente';     // gerencia a loja, menos a equipe e a auditoria
+    public const PERFIL_ADMIN = 'admin';         // dono da loja: acesso total
+
+    // Perfis da equipe (quem usa o painel), do menor para o maior acesso
+    public const PERFIS_EQUIPE = [self::PERFIL_ATENDENTE, self::PERFIL_GERENTE, self::PERFIL_ADMIN];
 
     // Status (exclusão lógica: a conta nunca é apagada, só muda de status)
     public const STATUS_ATIVO = 'ativo';
@@ -36,7 +40,7 @@ class User extends Authenticatable
      * Segurança: se alguém enviar um campo "perfil=admin" pelo navegador, ele é ignorado.
      */
     protected $fillable = [
-        'name', 'email', 'password', 'telefone', 'cargo',
+        'name', 'email', 'password', 'telefone',
         'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf',
     ];
 
@@ -77,9 +81,20 @@ class User extends Authenticatable
         return $this->perfil === self::PERFIL_ADMIN;
     }
 
-    public function isFuncionario(): bool
+    public function isGerente(): bool
     {
-        return $this->perfil === self::PERFIL_FUNCIONARIO;
+        return $this->perfil === self::PERFIL_GERENTE;
+    }
+
+    public function isAtendente(): bool
+    {
+        return $this->perfil === self::PERFIL_ATENDENTE;
+    }
+
+    // Gestão = Administrador ou Gerente (inativar cadastros, promoções, cancelar pedido pago...)
+    public function isGestao(): bool
+    {
+        return $this->isAdmin() || $this->isGerente();
     }
 
     public function isCliente(): bool
@@ -90,7 +105,7 @@ class User extends Authenticatable
     // Equipe interna = quem usa o painel administrativo
     public function isEquipe(): bool
     {
-        return $this->isAdmin() || $this->isFuncionario();
+        return in_array($this->perfil, self::PERFIS_EQUIPE, true);
     }
 
     public function isAtivo(): bool
@@ -122,7 +137,8 @@ class User extends Authenticatable
     {
         return match ($this->perfil) {
             self::PERFIL_ADMIN => 'Administrador',
-            self::PERFIL_FUNCIONARIO => 'Funcionário',
+            self::PERFIL_GERENTE => 'Gerente',
+            self::PERFIL_ATENDENTE => 'Atendente/Vendedor',
             default => 'Cliente',
         };
     }
@@ -142,7 +158,7 @@ class User extends Authenticatable
 
     public function scopeEquipe(Builder $query): Builder
     {
-        return $query->whereIn('perfil', [self::PERFIL_ADMIN, self::PERFIL_FUNCIONARIO]);
+        return $query->whereIn('perfil', self::PERFIS_EQUIPE);
     }
 
     public function scopeClientes(Builder $query): Builder

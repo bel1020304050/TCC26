@@ -30,9 +30,9 @@ class PerfisAcessoTest extends TestCase
         $this->actingAs($cliente)->get('/painel')->assertForbidden();
     }
 
-    public function test_funcionario_ve_menu_sem_usuarios(): void
+    public function test_atendente_ve_menu_sem_usuarios(): void
     {
-        $func = User::factory()->funcionario()->create();
+        $func = User::factory()->atendente()->create();
 
         $this->actingAs($func)->get('/painel')
             ->assertOk()
@@ -40,10 +40,10 @@ class PerfisAcessoTest extends TestCase
             ->assertDontSee(route('painel.usuarios.index')); // sem o link de Usuários no menu
     }
 
-    // Mesmo pela URL o Funcionário é barrado (CT-3-6-02)
-    public function test_funcionario_nao_acessa_usuarios_pela_url(): void
+    // Mesmo pela URL o Atendente é barrado (CT-3-6-02)
+    public function test_atendente_nao_acessa_usuarios_pela_url(): void
     {
-        $func = User::factory()->funcionario()->create();
+        $func = User::factory()->atendente()->create();
 
         $this->actingAs($func)->get('/painel/usuarios')->assertForbidden();
     }
@@ -59,7 +59,7 @@ class PerfisAcessoTest extends TestCase
     // Quem é inativado perde a sessão na próxima página que abrir
     public function test_usuario_inativado_durante_a_sessao_e_desconectado(): void
     {
-        $func = User::factory()->funcionario()->create();
+        $func = User::factory()->atendente()->create();
         $this->actingAs($func)->get('/painel')->assertOk();
 
         $func->forceFill(['status' => User::STATUS_INATIVO])->save();

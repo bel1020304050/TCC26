@@ -8,7 +8,7 @@
 @php
     $usuario = auth()->user();
     $podeCadastrar = $usuario->can('create', \App\Models\Produto::class);
-    $podeAlterarStatus = $usuario->isAdmin();
+    $podeAlterarStatus = $usuario->isGestao();
 @endphp
 
 <form method="GET" action="{{ route('painel.produtos.index') }}" class="d-flex flex-wrap gap-2 mb-3" role="search">

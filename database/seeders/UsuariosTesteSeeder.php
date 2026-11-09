@@ -15,16 +15,16 @@ class UsuariosTesteSeeder extends Seeder
     {
         $usuarios = [
             [
-                'dados' => ['name' => 'Bruno Costa', 'email' => 'bruno@marymodas.com.br', 'cargo' => 'Gerente', 'telefone' => '(44) 99777-3030'],
-                'perfil' => User::PERFIL_ADMIN, 'status' => User::STATUS_ATIVO, 'senha' => 'admin12345',
+                'dados' => ['name' => 'Bruno Costa', 'email' => 'bruno@marymodas.com.br', 'telefone' => '(44) 99777-3030'],
+                'perfil' => User::PERFIL_GERENTE, 'status' => User::STATUS_ATIVO, 'senha' => 'gerente123',
             ],
             [
-                'dados' => ['name' => 'Rafael Martins', 'email' => 'rafael@marymodas.com.br', 'cargo' => 'Subgerente', 'telefone' => '(44) 99876-1020'],
-                'perfil' => User::PERFIL_FUNCIONARIO, 'status' => User::STATUS_ATIVO, 'senha' => 'func12345',
+                'dados' => ['name' => 'Rafael Martins', 'email' => 'rafael@marymodas.com.br', 'telefone' => '(44) 99876-1020'],
+                'perfil' => User::PERFIL_ATENDENTE, 'status' => User::STATUS_ATIVO, 'senha' => 'func12345',
             ],
             [
-                'dados' => ['name' => 'Juliana Lima', 'email' => 'juliana@marymodas.com.br', 'cargo' => 'Vendedora'],
-                'perfil' => User::PERFIL_FUNCIONARIO, 'status' => User::STATUS_INATIVO, 'senha' => 'func12345',
+                'dados' => ['name' => 'Juliana Lima', 'email' => 'juliana@marymodas.com.br'],
+                'perfil' => User::PERFIL_ATENDENTE, 'status' => User::STATUS_INATIVO, 'senha' => 'func12345',
             ],
             [
                 'dados' => [

@@ -21,10 +21,10 @@
                     </div>
                     <div class="col-12 mb-3">
                         <label class="form-label">Perfil</label>
-                        <input type="text" class="form-control" value="{{ $usuario->perfilLabel() }}{{ $usuario->cargo ? ' · '.$usuario->cargo : '' }}" disabled>
+                        <input type="text" class="form-control" value="{{ $usuario->perfilLabel() }}" disabled>
                     </div>
                 </div>
-                <p class="text-muted small">E-mail, perfil e cargo são alterados pelo Administrador em Usuários.</p>
+                <p class="text-muted small">E-mail e perfil são alterados pelo Administrador em Usuários.</p>
                 <div class="text-end">
                     <button type="submit" class="btn btn-mm px-4">Salvar dados</button>
                 </div>

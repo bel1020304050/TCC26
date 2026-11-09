@@ -8,8 +8,8 @@ use App\Models\User;
 /**
  * Permissões de Pedido:
  * - Cliente: só os próprios pedidos; cancela o próprio pedido enquanto Aguardando Pagamento.
- * - Funcionário: consulta todos, atualiza status e cancela pedidos Aguardando Pagamento.
- * - Administrador: tudo do Funcionário + cancelar pedido Pago ou Em Separação (com estorno).
+ * - Atendente/Vendedor: consulta todos, atualiza status e cancela pedidos Aguardando Pagamento.
+ * - Administrador e Gerente: tudo do Atendente + cancelar pedido Pago ou Em Separação (com estorno).
  */
 class PedidoPolicy
 {
@@ -29,7 +29,7 @@ class PedidoPolicy
         return $user->isCliente();
     }
 
-    // Atualizar status: Administrador e Funcionário
+    // Atualizar status: toda a equipe
     public function atualizarStatus(User $user, Pedido $pedido): bool
     {
         return $user->isEquipe();
@@ -40,7 +40,7 @@ class PedidoPolicy
     {
         return match ($pedido->status) {
             Pedido::AGUARDANDO_PAGAMENTO => $user->isEquipe() || $pedido->user_id === $user->id,
-            Pedido::PAGO, Pedido::EM_SEPARACAO => $user->isAdmin(),
+            Pedido::PAGO, Pedido::EM_SEPARACAO => $user->isGestao(),
             default => false, // Enviado, Entregue e Cancelado
         };
     }
@@ -51,7 +51,7 @@ class PedidoPolicy
         return match (true) {
             in_array($pedido->status, [Pedido::ENVIADO, Pedido::ENTREGUE], true) => 'Pedidos Enviados ou Entregues não podem ser cancelados (troca e devolução estão fora do escopo do MVP).',
             $pedido->status === Pedido::CANCELADO => 'Este pedido já está cancelado.',
-            in_array($pedido->status, [Pedido::PAGO, Pedido::EM_SEPARACAO], true) && ! $user->isAdmin() => 'Pedidos pagos só podem ser cancelados pelo Administrador, com estorno.',
+            in_array($pedido->status, [Pedido::PAGO, Pedido::EM_SEPARACAO], true) && ! $user->isGestao() => 'Pedidos pagos só podem ser cancelados pelo Administrador ou pelo Gerente, com estorno.',
             default => null,
         };
     }
