@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 /**
- * Validação de Cadastrar (3.5) e Editar (3.7) Usuário interno.
+ * Validação do formulário de usuário da equipe (cadastrar e editar).
  */
 class UsuarioRequest extends FormRequest
 {
@@ -62,7 +62,7 @@ class UsuarioRequest extends FormRequest
         return ['password' => 'senha', 'status' => 'status inicial'];
     }
 
-    // Regra da 3.7: o Administrador não pode alterar o próprio perfil
+    // Regra: o Administrador não pode alterar o próprio perfil (evita perder o acesso por engano)
     private function regraProprioPerfil(?User $usuario): Closure
     {
         return function (string $attribute, mixed $value, Closure $fail) use ($usuario) {

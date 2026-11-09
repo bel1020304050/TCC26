@@ -9,7 +9,7 @@
 @section('trilha', 'Painel › Promoções › '.($editando ? $promocao->nome.' › Editar' : 'Nova promoção'))
 
 @section('conteudo')
-{{-- Story 3.22 – Cadastrar (Figura 23) e 3.24 – Editar Promoção (Figura 25) --}}
+{{-- Formulário de promoção (o mesmo para cadastrar e editar) --}}
 @php
     $modo = old('modo', $promocao->modo ?? 'automatica');
     $aplicacao = old('aplicacao', $promocao->aplicacao ?? 'geral');

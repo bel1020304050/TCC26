@@ -10,8 +10,8 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 /**
- * "Minha conta" da equipe (seção 2.2): Administrador e Funcionário alteram
- * apenas nome, telefone e senha. Perfil e status não aparecem aqui.
+ * "Minha conta" da equipe: cada pessoa altera o próprio nome, telefone e senha.
+ * Segurança: perfil e status não aparecem aqui, para ninguém aumentar o próprio acesso.
  */
 class MinhaContaController extends Controller
 {

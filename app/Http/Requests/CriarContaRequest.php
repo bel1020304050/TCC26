@@ -8,7 +8,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 /**
- * Validação da story 3.9 – Criar Conta.
+ * Validação do cadastro de cliente ("Criar conta").
  */
 class CriarContaRequest extends FormRequest
 {

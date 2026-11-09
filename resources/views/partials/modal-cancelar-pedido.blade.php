@@ -1,4 +1,4 @@
-{{-- 3.21 – Botão + janela de confirmação para cancelar um pedido.
+{{-- Botão + janela de confirmação para cancelar um pedido.
      $acao = rota do formulário; $motivoObrigatorio = true para a equipe (opcional para o cliente). --}}
 @php
     $modalId = 'modal-cancelar-'.$pedido->id;

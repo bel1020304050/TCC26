@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Formulário de pagamento (3.31). Os dados do cartão são validados aqui,
+ * Validação do formulário de pagamento. Os dados do cartão são validados aqui,
  * passam pelo provedor e são descartados — nunca vão para o banco.
  */
 class PagamentoRequest extends FormRequest

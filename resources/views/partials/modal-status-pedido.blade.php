@@ -1,4 +1,4 @@
-{{-- 3.20 – Atualizar status (Figura 21): só o próximo status do fluxo é oferecido --}}
+{{-- Botão + janela "Atualizar status". Regra: só o próximo status do fluxo é oferecido --}}
 @php
     $modalId = 'modal-status-pedido-'.$pedido->id;
     $proximo = $pedido->proximoStatusManual();

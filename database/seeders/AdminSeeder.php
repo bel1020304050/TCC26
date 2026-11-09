@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 
 /**
- * Primeiro Administrador do sistema (seção 2.2 da documentação).
+ * Primeiro Administrador do sistema (a dona da loja). Sem ele, ninguém conseguiria entrar no painel.
  * O cadastro público só cria clientes, então o dono da loja nasce por aqui.
  */
 class AdminSeeder extends Seeder

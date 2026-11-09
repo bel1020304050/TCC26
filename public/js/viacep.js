@@ -1,7 +1,7 @@
 /**
  * Preenche Rua, Bairro, Cidade e UF a partir do CEP usando a API pública ViaCEP.
  * Se a API falhar ou demorar mais que o tempo limite, os campos continuam livres
- * para preenchimento manual (regra da story 3.9).
+ * para preenchimento manual.
  */
 (function () {
     const campoCep = document.querySelector('[data-viacep]');

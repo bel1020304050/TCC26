@@ -6,7 +6,7 @@ use App\Models\Pedido;
 use App\Models\User;
 
 /**
- * Permissões de Pedido (seção 2.2, stories 3.19 a 3.21):
+ * Permissões de Pedido:
  * - Cliente: só os próprios pedidos; cancela o próprio pedido enquanto Aguardando Pagamento.
  * - Funcionário: consulta todos, atualiza status e cancela pedidos Aguardando Pagamento.
  * - Administrador: tudo do Funcionário + cancelar pedido Pago ou Em Separação (com estorno).
@@ -23,19 +23,19 @@ class PedidoPolicy
         return $user->isEquipe() || $pedido->user_id === $user->id;
     }
 
-    // 3.18: só o cliente cria pedido, a partir do próprio carrinho
+    // Só o cliente cria pedido, a partir do próprio carrinho
     public function create(User $user): bool
     {
         return $user->isCliente();
     }
 
-    // 3.20: Administrador e Funcionário
+    // Atualizar status: Administrador e Funcionário
     public function atualizarStatus(User $user, Pedido $pedido): bool
     {
         return $user->isEquipe();
     }
 
-    // 3.21: depende do status e do perfil
+    // Cancelar: depende do status do pedido e do perfil de quem pede
     public function cancelar(User $user, Pedido $pedido): bool
     {
         return match ($pedido->status) {
@@ -45,7 +45,7 @@ class PedidoPolicy
         };
     }
 
-    // Mensagem para quando o cancelamento não é permitido (CT-3-21-02)
+    // Mensagem que explica por que o cancelamento não é permitido (null = permitido)
     public static function motivoBloqueioCancelamento(User $user, Pedido $pedido): ?string
     {
         return match (true) {

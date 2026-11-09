@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Pedido — CRUD de Pedidos (3.18 criar, 3.19 consultar, 3.20 status, 3.21 cancelar).
- * Fluxo (seção 2.3): Aguardando Pagamento → Pago → Em Separação → Enviado → Entregue; Cancelado é final.
+ * Pedido do cliente, com itens, valores e endereço copiados no momento da compra.
+ * Fluxo: Aguardando Pagamento → Pago → Em Separação → Enviado → Entregue. Cancelado é final.
  */
 class Pedido extends Model
 {
@@ -39,7 +39,7 @@ class Pedido extends Model
         self::CANCELADO => 'text-bg-danger',
     ];
 
-    // Contam como venda paga / faturamento (regra das stories 3.32 e 3.34)
+    // Regra: status que contam como venda paga (entram no faturamento dos relatórios)
     public const VENDA_PAGA = [self::PAGO, self::EM_SEPARACAO, self::ENVIADO, self::ENTREGUE];
 
     public const FORMAS_PAGAMENTO = ['pix' => 'PIX', 'cartao' => 'Cartão de Crédito', 'boleto' => 'Boleto Bancário'];
@@ -116,7 +116,7 @@ class Pedido extends Model
         ]);
     }
 
-    // Fluxo operacional (3.20): cada status só pode ir para o próximo. "Pago" vem só do pagamento (3.31).
+    // Regra: cada status só pode ir para o próximo da lista. "Pago" vem só da aprovação do pagamento.
     public const FLUXO = [
         self::AGUARDANDO_PAGAMENTO => self::PAGO,
         self::PAGO => self::EM_SEPARACAO,

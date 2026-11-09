@@ -13,9 +13,9 @@ use App\Pagamentos\ProvedorPagamento;
 use Illuminate\Support\Facades\DB;
 
 /**
- * PROCESSO 3.31 — Finalizar Compra / Pagamento.
+ * Processo de Finalizar Compra / Pagamento.
  *
- * Etapas da documentação:
+ * Etapas:
  *  1. Validar que o pedido é do cliente e está Aguardando Pagamento
  *  2. Revalidar o estoque dos itens
  *  3. Registrar a tentativa como Pendente e enviar ao provedor
@@ -60,7 +60,7 @@ class FinalizarCompra
             $pagamento = new Pagamento;
             $pagamento->pedido_id = $pedido->id;
             $pagamento->forma = $forma;
-            $pagamento->valor = $pedido->total; // valor congelado no pedido (3.18)
+            $pagamento->valor = $pedido->total; // cobra o valor guardado no pedido, não o preço atual
             $pagamento->save();
 
             return $pagamento;
@@ -95,7 +95,8 @@ class FinalizarCompra
 
     /**
      * Etapa 5 — retorno de APROVAÇÃO do provedor (no Mercado Pago, viria por webhook).
-     * Pode ser chamado mais de uma vez para o mesmo pagamento: só a primeira tem efeito (RNF.02).
+     * Pode ser chamado mais de uma vez para o mesmo pagamento: só a primeira tem efeito
+     * (idempotência — o estoque nunca é baixado duas vezes).
      *
      * @param  User|null  $responsavel  quem confirmou manualmente (ex.: Administrador no boleto); null = sistema
      */
@@ -131,7 +132,7 @@ class FinalizarCompra
             $faltando = $pedido->itens->filter(fn ($item) => $produtos[$item->produto_id]->estoque < $item->quantidade);
 
             if ($faltando->isNotEmpty()) {
-                // Regra da 3.31: sem estoque na aprovação → pedido Cancelado e pagamento Estornado
+                // Regra: se faltar estoque na hora da aprovação, o pedido é Cancelado e o pagamento Estornado
                 $pagamento->status = Pagamento::ESTORNADO;
                 $pagamento->mensagem = 'Estoque insuficiente no momento da aprovação. Valor estornado.';
                 $pagamento->save();
@@ -177,7 +178,7 @@ class FinalizarCompra
             ->values()->all();
     }
 
-    // Pedido cancelado antes do pagamento: o carrinho volta a ficar editável (regra da 3.30)
+    // Regra: pedido cancelado antes do pagamento devolve o carrinho para "Aberto" (editável)
     private function reabrirCarrinho(Pedido $pedido): void
     {
         if ($pedido->carrinho && $pedido->carrinho->status === Carrinho::EM_PAGAMENTO) {

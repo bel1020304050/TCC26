@@ -24,12 +24,12 @@ use Illuminate\Support\Facades\Route;
 | Loja (área pública e do cliente)
 |--------------------------------------------------------------------------
 */
-// Vitrine — story 3.2 (aberta para visitantes)
+// Vitrine (aberta para visitantes)
 Route::get('/', VitrineController::class)->name('loja.inicio');
 
-// Área do cliente: carrinho (3.30) e pedidos (3.18, 3.19). Só clientes logados.
+// Área do cliente: minha conta, carrinho, pedidos e pagamento. Só clientes logados.
 Route::name('loja.')->middleware(['auth', 'perfil:cliente'])->group(function () {
-    // Minha conta do cliente: consultar (3.10), editar (3.11) e encerrar (3.12). Sem id na URL: sempre a conta da sessão.
+    // Minha conta do cliente. Segurança: nenhuma rota tem id; sempre a conta de quem está logado.
     Route::get('/minha-conta', [ContaController::class, 'show'])->name('conta');
     Route::get('/minha-conta/editar', [ContaController::class, 'edit'])->name('conta.edit');
     Route::put('/minha-conta', [ContaController::class, 'update'])->name('conta.update');
@@ -49,7 +49,7 @@ Route::name('loja.')->middleware(['auth', 'perfil:cliente'])->group(function () 
     Route::get('/meus-pedidos/{pedido}', [PedidoController::class, 'show'])->name('pedidos.show');
     Route::patch('/meus-pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
 
-    // Processo 3.31 — Finalizar Compra / Pagamento (provedor simulado no MVP)
+    // Pagamento do pedido
     Route::get('/meus-pedidos/{pedido}/pagamento', [PagamentoController::class, 'create'])->name('pagamento.create');
     Route::post('/meus-pedidos/{pedido}/pagamento', [PagamentoController::class, 'store'])->name('pagamento.store');
     Route::post('/meus-pedidos/{pedido}/pagamento/{pagamento}/simular-pix', [PagamentoController::class, 'simularPix'])->name('pagamento.simular-pix');
@@ -58,7 +58,7 @@ Route::name('loja.')->middleware(['auth', 'perfil:cliente'])->group(function () 
 
 /*
 |--------------------------------------------------------------------------
-| Autenticação — story 3.13 (login/logout) e 3.9 (criar conta)
+| Autenticação: login, logout e criar conta
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
@@ -72,42 +72,42 @@ Route::post('/sair', [LoginController::class, 'destroy'])->middleware('auth')->n
 
 /*
 |--------------------------------------------------------------------------
-| Painel administrativo — só equipe interna (seção 2.2)
+| Painel administrativo: só a equipe (Administrador e Funcionário)
 |--------------------------------------------------------------------------
 */
 Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,funcionario'])->group(function () {
     Route::get('/', InicioController::class)->name('inicio');
 
-    // Fase 3 — Produtos (3.1, 3.3, 3.4). Funcionário cadastra e edita; só o Administrador inativa.
+    // Produtos: o Funcionário cadastra e edita; só o Administrador inativa.
     Route::resource('produtos', ProdutoController::class)
         ->except(['show', 'destroy'])
         ->parameters(['produtos' => 'produto']);
     Route::patch('produtos/{produto}/inativar', [ProdutoController::class, 'inativar'])->name('produtos.inativar');
     Route::patch('produtos/{produto}/reativar', [ProdutoController::class, 'reativar'])->name('produtos.reativar');
 
-    // Fase 5 — Pedidos: consulta com filtros (3.19).
+    // Pedidos: lista e detalhes
     Route::get('pedidos', [PainelPedidoController::class, 'index'])->name('pedidos.index');
     Route::get('pedidos/{pedido}', [PainelPedidoController::class, 'show'])->name('pedidos.show');
-    // Fase 7 — Atualizar status (3.20) e cancelar (3.21)
+    // Pedidos: atualizar status e cancelar
     Route::patch('pedidos/{pedido}/status', [PainelPedidoController::class, 'atualizarStatus'])->name('pedidos.status');
     Route::patch('pedidos/{pedido}/cancelar', [PainelPedidoController::class, 'cancelar'])->name('pedidos.cancelar');
-    // Fase 6 — Boleto simulado: o Administrador confirma a compensação
+    // Boleto: o Administrador confirma que foi pago
     Route::post('pagamentos/{pagamento}/confirmar-boleto', [PainelPagamentoController::class, 'confirmarBoleto'])->name('pagamentos.confirmar-boleto');
 
-    // Fase 8 — Promoções (3.22–3.25). Funcionário só consulta; o resto é do Administrador.
+    // Promoções: o Funcionário só consulta; o resto é do Administrador.
     Route::resource('promocoes', PromocaoController::class)
         ->except(['show', 'destroy'])
         ->parameters(['promocoes' => 'promocao']);
     Route::patch('promocoes/{promocao}/inativar', [PromocaoController::class, 'inativar'])->name('promocoes.inativar');
     Route::patch('promocoes/{promocao}/reativar', [PromocaoController::class, 'reativar'])->name('promocoes.reativar');
 
-    // Fase 10 — Relatórios (3.32–3.34). ?exportar=csv ou ?exportar=pdf
+    // Relatórios. Exportação pela mesma rota: ?exportar=csv ou ?exportar=pdf
     Route::get('relatorios', [RelatorioController::class, 'index'])->name('relatorios.index');
     Route::get('relatorios/vendas', [RelatorioController::class, 'vendas'])->name('relatorios.vendas');
     Route::get('relatorios/estoque', [RelatorioController::class, 'estoque'])->name('relatorios.estoque');
     Route::get('relatorios/clientes', [RelatorioController::class, 'clientes'])->name('relatorios.clientes');
 
-    // Fase 2 — Categorias (3.14–3.17) e Fornecedores (3.26–3.29).
+    // Categorias e Fornecedores
     // Funcionário só consulta; cadastrar, editar e inativar são do Administrador (Policies).
     Route::resource('categorias', CategoriaController::class)
         ->except(['show', 'destroy'])
@@ -126,7 +126,7 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,func
     Route::put('minha-conta', [MinhaContaController::class, 'update'])->name('minha-conta.update');
     Route::put('minha-conta/senha', [MinhaContaController::class, 'senha'])->name('minha-conta.senha');
 
-    // Fase 4 — Usuários internos (3.5–3.8). Só o Administrador (UserPolicy).
+    // Usuários da equipe: só o Administrador (UserPolicy)
     Route::resource('usuarios', UsuarioController::class)
         ->except(['show', 'destroy'])
         ->parameters(['usuarios' => 'usuario']);

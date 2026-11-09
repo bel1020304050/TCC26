@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Tabela única de usuários para os 3 perfis (cliente, funcionário e administrador).
-     * Documentação: seções 2.2 (perfis), 3.5–3.8 (usuários internos) e 3.9–3.12 (conta do cliente).
+     * Uma tabela só para clientes e equipe; o campo "perfil" diferencia quem é quem.
      */
     public function up(): void
     {
@@ -26,7 +26,7 @@ return new class extends Migration
 
             // Exclusão lógica: ninguém é apagado do banco
             $table->string('status', 20)->default('ativo')->index();     // ativo | inativo | encerrado
-            $table->timestamp('encerrada_em')->nullable();                // conta de cliente encerrada (3.12)
+            $table->timestamp('encerrada_em')->nullable();                // quando o cliente encerrou a conta
 
             // Endereço de entrega (obrigatório só para clientes, validado no formulário)
             $table->string('cep', 9)->nullable();

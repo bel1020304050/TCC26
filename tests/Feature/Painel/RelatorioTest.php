@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /**
- * Relatórios — stories 3.32 (vendas), 3.33 (estoque) e 3.34 (clientes).
+ * Relatórios de Vendas, Estoque e Clientes.
  */
 class RelatorioTest extends TestCase
 {
@@ -91,7 +91,7 @@ class RelatorioTest extends TestCase
             ->assertSeeInOrder(['Vendas pagas no período', '0', 'Faturamento', 'R$ 0,00', 'Ticket médio', 'R$ 0,00']);
     }
 
-    // RNF.02 da 3.32 e 3.34
+    // Segurança: Vendas e Clientes recusam quem não é Administrador, inclusive na exportação
     public function test_vendas_e_clientes_so_para_admin_inclusive_exportacao(): void
     {
         $cliente = User::factory()->create();
@@ -210,7 +210,7 @@ class RelatorioTest extends TestCase
         $this->actingAs($this->admin)->get($url)->assertSeeInOrder(['Ana Souza', 'Joana Alves', 'Marcos Pereira']);
     }
 
-    // Regra da 3.34: conta encerrada aparece como "Cliente removido", sem e-mail, e continua somando
+    // Regra: conta encerrada aparece como "Cliente removido", sem e-mail, e continua somando
     public function test_conta_encerrada_aparece_anonima_e_soma_nos_indicadores(): void
     {
         $paula = User::factory()->create(['name' => 'Paula Ramos', 'email' => 'paula@email.com', 'password' => 'senha1234', 'created_at' => today()->subDays(3)]);

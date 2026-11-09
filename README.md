@@ -248,8 +248,48 @@ e depois **Acessórios** (sem produtos → inativa).
 | 8 | Promoções | 3.22–3.25 | ✅ Pronta |
 | 9 | Conta do cliente (consultar, editar, encerrar) | 3.10–3.12 | ✅ Pronta |
 | 10 | Relatórios | 3.32–3.34 | ✅ Pronta |
+| 11 | Revisão de comentários e tela inicial do painel | — | ✅ Pronta |
+| 12 | Perfis (Administrador, Gerente, Atendente/Vendedor) | 2.2, 3.5–3.8 | A fazer |
+| 13 | Documentos e endereços (fornecedor PF/PJ, CPF do cliente, CEP) | 3.9–3.12, 3.26–3.29 | A fazer |
+| 14 | PDF com dompdf | 3.32–3.34 | A fazer |
+| 15 | Auditoria (motivo obrigatório e relatório) | 3.35 | A fazer |
+| 16 | Melhorias na loja (página do produto, cupons visíveis, rastreio) | 3.2, 3.20, 3.30 | A fazer |
+| 17 | Pagamento no sandbox do Asaas | 3.31 | A fazer |
+| 18 | Fechamento (documentação e apresentação) | — | A fazer |
+
+### Fase 11 — Revisão de comentários
+- Os comentários do código explicam **o que o trecho faz e por quê**, com rótulos: `Validação:`, `Regra:`, `Segurança:`, `Banco:` e `LGPD:`.
+  Não há mais referências a story, RNF ou seção no código; a ligação com a documentação fica na tabela da seção 7.
+- Nos testes, cada caso de teste do documento continua marcado com o código dele (ex.: `// CT-3-18-01`).
+- A **página inicial do painel** mostra o resumo da loja: pedidos aguardando pagamento, pedidos para separar,
+  produtos com estoque baixo, vendas do mês e os últimos pedidos. Cada card é um atalho para a tela certa.
 
 ## 7. Onde fica cada coisa
+
+### Story → arquivos (rastreabilidade)
+
+| Story | Funcionalidade | Onde está no código |
+|---|---|---|
+| 3.1, 3.3, 3.4 | Cadastrar, editar e inativar produto | `Painel/ProdutoController`, `Requests/ProdutoRequest`, `Policies/ProdutoPolicy`, `views/painel/produtos` |
+| 3.2 | Vitrine (pesquisar e filtrar produtos) | `Loja/VitrineController`, `Models/Produto` (`scopeNaVitrine`), `views/loja/vitrine` |
+| 3.5–3.8 | Usuários da equipe | `Painel/UsuarioController`, `Requests/UsuarioRequest`, `Policies/UserPolicy`, `Middleware/EncerraSessaoInativa` |
+| 3.9 | Criar conta (cliente) | `Auth/RegisterController`, `Requests/CriarContaRequest`, `public/js/viacep.js` |
+| 3.10, 3.11 | Consultar e editar meus dados | `Loja/ContaController`, `Requests/EditarContaRequest`, `views/loja/conta` |
+| 3.12 | Encerrar minha conta (LGPD) | `Services/EncerrarConta`, `Loja/ContaController@destroy` |
+| 3.13 | Login e logout | `Auth/LoginController`, `Middleware/VerificaPerfil` |
+| 3.14–3.17 | Categorias | `Painel/CategoriaController`, `Requests/CategoriaRequest`, `Policies/CategoriaPolicy` |
+| 3.18 | Criar pedido | `Loja/PedidoController@confirmar` e `@store`, `Models/Pedido`, `Models/PedidoItem` |
+| 3.19 | Consultar pedidos | `Loja/PedidoController@index`/`@show`, `Painel/PedidoController`, `Policies/PedidoPolicy` |
+| 3.20, 3.21 | Atualizar status e cancelar pedido | `Services/AndamentoPedido`, `Painel/PedidoController`, `Loja/PedidoController@cancelar` |
+| 3.22–3.25 | Promoções e cupons | `Painel/PromocaoController`, `Requests/PromocaoRequest`, `Models/Promocao` |
+| 3.26–3.29 | Fornecedores | `Painel/FornecedorController`, `Requests/FornecedorRequest`, `Rules/CpfCnpj` |
+| 3.30 | Carrinho e cupom | `Loja/CarrinhoController`, `Models/Carrinho` (`totais()`) |
+| 3.31 ⭐ | Processo de pagamento | `Services/FinalizarCompra`, `Loja/PagamentoController`, `Pagamentos/` |
+| 3.32–3.34 | Relatórios | `Painel/RelatorioController`, `Relatorios/RelatorioVendas`, `RelatorioEstoque`, `RelatorioClientes` |
+
+Os testes de cada story ficam em `tests/Feature`, e cada caso de teste do documento é marcado com o código dele (ex.: `CT-3-18-01`).
+
+### Pastas
 
 ```
 app/Http/Controllers/Auth/      Login, logout e criar conta
@@ -262,9 +302,9 @@ app/Models/Concerns/TemStatus   Comportamento comum de Ativo/Inativo (exclusão 
 app/Pagamentos/                 Provedor de pagamento (interface + simulado)
 app/Policies/                   Quem pode fazer o quê em cada cadastro (Admin x Funcionário)
 app/Relatorios/                 Os 3 relatórios (consulta, colunas, indicadores)
-app/Services/FinalizarCompra    O processo 3.31 (pagar, aprovar, baixar estoque, finalizar carrinho)
-app/Services/AndamentoPedido    Atualizar status (3.20) e cancelar pedido (3.21)
-app/Services/EncerrarConta      Encerrar a conta do cliente com anonimização (3.12)
+app/Services/FinalizarCompra    Processo de pagamento (pagar, aprovar, baixar estoque, finalizar carrinho)
+app/Services/AndamentoPedido    Atualizar status e cancelar pedido
+app/Services/EncerrarConta      Encerrar a conta do cliente com anonimização
 app/Rules/CpfCnpj.php           Regra de validação de CPF/CNPJ
 app/Support/                    Status, Documento (CPF/CNPJ) e Auditoria
 config/mary.php                 Configurações próprias do sistema
@@ -286,7 +326,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (212 testes até a Fase 10) |
+| `php artisan test` | Roda os testes automatizados (214 testes até a Fase 11) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

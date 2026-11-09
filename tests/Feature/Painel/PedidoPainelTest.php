@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /**
- * Consulta de pedidos na área administrativa — story 3.19 (Figura 21).
+ * Lista e detalhes de pedidos no painel.
  */
 class PedidoPainelTest extends TestCase
 {

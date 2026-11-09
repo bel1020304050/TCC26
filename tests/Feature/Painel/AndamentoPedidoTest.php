@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Andamento do pedido — stories 3.20 (atualizar status) e 3.21 (cancelar).
+ * Andamento do pedido: atualizar status e cancelar.
  * Os pedidos são criados e pagos pelo fluxo real (carrinho → pedido → cartão aprovado).
  */
 class AndamentoPedidoTest extends TestCase

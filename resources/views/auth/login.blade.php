@@ -3,7 +3,7 @@
 @section('titulo', 'Entrar')
 
 @section('conteudo')
-{{-- Story 3.13 – Login (Figura 14) --}}
+{{-- Tela de login, a mesma para clientes e para a equipe --}}
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-5">
         <div class="mm-card p-4 mt-3">

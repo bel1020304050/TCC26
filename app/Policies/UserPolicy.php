@@ -5,9 +5,9 @@ namespace App\Policies;
 use App\Models\User;
 
 /**
- * Permissões do CRUD de Usuários internos — stories 3.5 a 3.8.
+ * Permissões do cadastro da equipe.
  * Só o Administrador gerencia a equipe. Clientes não são gerenciados aqui
- * (eles cuidam da própria conta — stories 3.9 a 3.12).
+ * (cada cliente cuida da própria conta em "Minha conta").
  */
 class UserPolicy
 {
@@ -26,7 +26,7 @@ class UserPolicy
         return $user->isAdmin() && $alvo->isEquipe();
     }
 
-    // Inativar/reativar: Administrador, só equipe interna e nunca a própria conta (3.8)
+    // Inativar/reativar: só o Administrador, só contas da equipe e nunca a própria conta
     public function alterarStatus(User $user, User $alvo): bool
     {
         return $user->isAdmin() && $alvo->isEquipe() && $user->isNot($alvo);

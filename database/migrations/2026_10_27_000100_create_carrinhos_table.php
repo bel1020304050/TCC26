@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Carrinho do cliente — story 3.30 (apoio).
- * Estados (seção 2.3): aberto → em_pagamento → finalizado.
+ * Carrinho do cliente e seus itens.
+ * Estados: aberto → em_pagamento → finalizado.
  * Um cliente tem no máximo um carrinho não finalizado por vez.
  */
 return new class extends Migration

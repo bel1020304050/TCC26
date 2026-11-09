@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Promoção ou cupom — stories 3.22 a 3.25.
+ * Promoção automática ou cupom de desconto.
  * Pense numa etiqueta de desconto: o "status" diz se a loja deixou a etiqueta ligada (Ativa/Inativa)
  * e as datas dizem se ela já começou ou acabou (Agendada, Vigente, Expirada).
  * Só dá desconto quando está Ativa E Vigente (e, no modo Cupom, quando o cliente digita o código).
@@ -31,7 +31,7 @@ class Promocao extends Model
     public const PRODUTO = 'produto';
     public const CATEGORIA = 'categoria';
 
-    // Situação mostrada nas telas (calculada pela data do servidor — RNF.01 da 3.23)
+    // Situação mostrada nas telas, calculada pela data do servidor (não pelo relógio do computador do usuário)
     public const SITUACOES = [
         'vigente' => 'Vigente',
         'agendada' => 'Agendada',
@@ -153,7 +153,7 @@ class Promocao extends Model
 
     /**
      * Desconto sobre o valor dos itens elegíveis.
-     * Valor fixo nunca passa do valor elegível, para o total não ficar negativo (regra da 3.30).
+     * Regra: valor fixo nunca passa do valor dos itens, para o total não ficar negativo.
      */
     public function descontoSobre(float $valorElegivel): float
     {

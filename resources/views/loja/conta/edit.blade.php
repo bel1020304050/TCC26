@@ -3,7 +3,7 @@
 @section('titulo', 'Editar meus dados')
 
 @section('conteudo')
-{{-- Story 3.11 – Editar Meus Dados (Figura 12) --}}
+{{-- "Editar meus dados": dados pessoais, endereço e troca de senha --}}
 <h1 class="h3 mb-3">Minha conta</h1>
 
 <div class="row g-3">

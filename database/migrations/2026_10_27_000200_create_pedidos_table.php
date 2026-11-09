@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Pedidos — stories 3.18 a 3.21.
+ * Pedidos, itens do pedido e histórico de status.
  * Valores, itens e endereço são COPIADOS no momento da criação ("congelados"):
  * se o produto ou o cadastro do cliente mudar depois, o pedido continua igual.
  */
@@ -22,8 +22,8 @@ return new class extends Migration
             $table->decimal('subtotal', 10, 2);
             $table->decimal('desconto', 10, 2)->default(0);
             $table->decimal('total', 10, 2);
-            $table->string('cupom', 40)->nullable();          // promoção/cupom usado (Fase 8)
-            $table->string('forma_pagamento', 20)->nullable(); // pix, cartao, boleto (Fase 6)
+            $table->string('cupom', 40)->nullable();          // código do cupom usado (se houver)
+            $table->string('forma_pagamento', 20)->nullable(); // pix, cartao, boleto (preenchido quando o pagamento é aprovado)
 
             // Endereço de entrega copiado do cadastro
             $table->string('cep', 9);
@@ -49,7 +49,7 @@ return new class extends Migration
             $table->decimal('subtotal', 10, 2);
         });
 
-        // Histórico de status: data, hora e responsável (3.19 e 3.20)
+        // Histórico de status: cada mudança com data, hora e responsável
         Schema::create('pedido_historicos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pedido_id')->constrained('pedidos')->cascadeOnDelete();

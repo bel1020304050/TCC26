@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * Carrinho — story 3.30 (apoio). Pense numa cesta de supermercado:
+ * Carrinho do cliente. Pense numa cesta de supermercado:
  * enquanto está "Aberto" o cliente coloca e tira itens; ao criar o pedido ele vai para o caixa
  * ("Em Pagamento", bloqueado) e, depois do pagamento aprovado, é "Finalizado".
  */
@@ -67,8 +67,9 @@ class Carrinho extends Model
     }
 
     /**
-     * Totais calculados SEMPRE no servidor, com preços e promoções atuais (seção 2.3).
-     * Descontos NÃO se somam: entre as automáticas vigentes e o cupom informado, vale só o maior (3.30).
+     * Segurança: os totais são calculados SEMPRE no servidor, com os preços e promoções atuais
+     * (nunca com valores vindos do navegador, que poderiam ser alterados).
+     * Regra: descontos NÃO se somam; entre as promoções automáticas e o cupom, vale só o maior.
      *
      * @return array{subtotal: float, desconto: float, total: float, promocao: ?Promocao}
      */

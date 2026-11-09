@@ -14,8 +14,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * Pedidos na área administrativa — story 3.19 (consulta com pesquisa e filtros).
- * Atualizar status (3.20) e cancelar (3.21): Fase 7.
+ * Pedidos no painel: lista com pesquisa e filtros, detalhes, atualizar status e cancelar.
  */
 class PedidoController extends Controller
 {
@@ -67,7 +66,7 @@ class PedidoController extends Controller
         return view('painel.pedidos.show', compact('pedido'));
     }
 
-    // 3.20 – Atualizar status (só o próximo passo do fluxo)
+    // Atualiza o status. Regra: só aceita o próximo passo do fluxo (sem pular nem voltar)
     public function atualizarStatus(Request $request, Pedido $pedido, AndamentoPedido $andamento): RedirectResponse
     {
         Gate::authorize('atualizarStatus', $pedido);
@@ -82,7 +81,7 @@ class PedidoController extends Controller
         return back()->with('sucesso', "Pedido {$pedido->numero()} atualizado para ".Pedido::STATUS[$dados['status']].'.');
     }
 
-    // 3.21 – Cancelar (motivo obrigatório para a equipe)
+    // Cancela o pedido. Validação: para a equipe, o motivo é obrigatório
     public function cancelar(Request $request, Pedido $pedido, AndamentoPedido $andamento): RedirectResponse
     {
         if ($bloqueio = PedidoPolicy::motivoBloqueioCancelamento($request->user(), $pedido)) {

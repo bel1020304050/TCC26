@@ -3,7 +3,7 @@
 @section('titulo', 'Meu carrinho')
 
 @section('conteudo')
-{{-- Story 3.30 – Carrinho (Figura 31) --}}
+{{-- Carrinho: itens, quantidades, cupom e totais --}}
 <x-etapas-compra :atual="1" />
 <h1 class="h3 mb-3">Meu carrinho</h1>
 
@@ -69,7 +69,7 @@
 
         <div class="col-lg-4">
             <div class="mm-card p-4">
-                {{-- Cupom (3.30): o servidor confere se está Ativo e Vigente --}}
+                {{-- Cupom: o servidor confere se está Ativo e Vigente antes de aplicar --}}
                 @if ($carrinho->cupom)
                     <label class="form-label">Cupom</label>
                     <div class="d-flex align-items-center gap-2 mb-2">

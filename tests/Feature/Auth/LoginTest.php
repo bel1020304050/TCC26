@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Testes da story 3.13 – Login e Logout.
+ * Login e logout.
  */
 class LoginTest extends TestCase
 {
@@ -87,7 +87,7 @@ class LoginTest extends TestCase
         $this->assertGuest();
     }
 
-    // RNF.01 da 3.13: bloqueio após 5 tentativas
+    // Segurança: bloqueio depois de 5 senhas erradas
     public function test_bloqueia_apos_cinco_tentativas_erradas(): void
     {
         $cliente = User::factory()->create();

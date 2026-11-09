@@ -10,8 +10,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * Categorias, fornecedores e produtos fictícios — os mesmos dos wireframes da documentação.
- * Só roda com APP_ENV=local. Os produtos servem para testar a regra "não inativar com produtos ativos";
- * as telas de Produtos chegam na Fase 3.
+ * Só roda com APP_ENV=local.
  */
 class CatalogoTesteSeeder extends Seeder
 {

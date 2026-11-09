@@ -11,7 +11,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Validação de Cadastrar (3.1) e Editar (3.3) Produto.
+ * Validação do formulário de Produto (cadastrar e editar).
  */
 class ProdutoRequest extends FormRequest
 {
@@ -55,7 +55,7 @@ class ProdutoRequest extends FormRequest
             // Só categorias e fornecedores Ativos. Na edição, o vínculo atual é aceito mesmo se ficou inativo.
             'categoria_id' => ['required', $this->existeAtivo('categorias', $produto?->categoria_id)],
             'fornecedor_id' => ['nullable', $this->existeAtivo('fornecedores', $produto?->fornecedor_id)],
-            // RNF.02 da 3.1: JPG ou PNG de até 2 MB
+            // Validação: imagem só JPG ou PNG, de até 2 MB
             'imagem' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'remover_imagem' => ['nullable', 'boolean'],
         ];
@@ -96,7 +96,7 @@ class ProdutoRequest extends FormRequest
         });
     }
 
-    // Regra da 3.1: não pode existir outro produto com Nome + Categoria + Tamanho + Cor iguais
+    // Regra: não pode existir outro produto com Nome + Categoria + Tamanho + Cor iguais
     private function regraVariacaoUnica(?Produto $produto): Closure
     {
         return function (string $attribute, mixed $value, Closure $fail) use ($produto) {

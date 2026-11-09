@@ -7,8 +7,8 @@
     @php
         $usuario = auth()->user();
 
-        // Menu lateral (Figura 1 da documentação). "fase" = módulo ainda não desenvolvido.
-        // "perfis" = quem vê o item. O Funcionário não vê Usuários (seção 2.2).
+        // Menu lateral. "perfis" = quem vê o item; "ativo" = rotas que deixam o item destacado.
+        // Segurança: esconder o item é só visual; cada rota também confere a permissão no servidor.
         $menu = [
             ['titulo' => 'Início', 'icone' => 'house', 'rota' => 'painel.inicio', 'perfis' => ['admin', 'funcionario']],
             ['titulo' => 'Produtos', 'icone' => 'tag', 'rota' => 'painel.produtos.index', 'ativo' => 'painel.produtos.*', 'perfis' => ['admin', 'funcionario']],
@@ -38,21 +38,9 @@
             <nav class="nav flex-column">
                 @foreach ($menu as $item)
                     @continue(! in_array($usuario->perfil, $item['perfis'], true))
-                    @php
-                        $ativo = isset($item['rota']) && request()->routeIs($item['ativo'] ?? $item['rota']);
-                        $link = isset($item['rota']) ? route($item['rota']) : null;
-                    @endphp
-                    @if ($link)
-                        <a class="nav-link {{ $ativo ? 'active' : '' }}" href="{{ $link }}">
-                            <span><i class="bi bi-{{ $item['icone'] }} me-2"></i>{{ $item['titulo'] }}</span>
-                            @isset($item['fase']) <span class="badge badge-fase">Fase {{ $item['fase'] }}</span> @endisset
-                        </a>
-                    @else
-                        <span class="nav-link disabled" title="Disponível na Fase {{ $item['fase'] }}">
-                            <span><i class="bi bi-{{ $item['icone'] }} me-2"></i>{{ $item['titulo'] }}</span>
-                            <span class="badge badge-fase">Fase {{ $item['fase'] }}</span>
-                        </span>
-                    @endif
+                    <a class="nav-link {{ request()->routeIs($item['ativo'] ?? $item['rota']) ? 'active' : '' }}" href="{{ route($item['rota']) }}">
+                        <span><i class="bi bi-{{ $item['icone'] }} me-2"></i>{{ $item['titulo'] }}</span>
+                    </a>
                 @endforeach
                 <hr class="mx-3">
                 <a class="nav-link {{ request()->routeIs('painel.minha-conta*') ? 'active' : '' }}" href="{{ route('painel.minha-conta') }}">

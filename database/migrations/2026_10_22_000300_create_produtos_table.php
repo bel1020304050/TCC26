@@ -7,9 +7,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Produtos — a tabela já nasce na Fase 2 porque as regras de Categorias e Fornecedores
-     * dependem dela ("não inativar com produtos ativos"). As telas do CRUD entram na Fase 3.
-     * No MVP, cada combinação de tamanho e cor é um produto (story 3.1).
+     * Produtos. Cada combinação de tamanho e cor é um registro próprio, com estoque próprio.
+     * A regra "não inativar categoria/fornecedor com produtos ativos" consulta esta tabela.
      */
     public function up(): void
     {

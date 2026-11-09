@@ -14,15 +14,15 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 /**
- * CRUD de Clientes (lado do cliente): 3.10 consultar, 3.11 editar e 3.12 encerrar.
- * (O "criar" é a 3.9, em Auth\RegisterController.)
- * Nenhuma rota recebe id: tudo usa o usuário da sessão (RNF.01 das 3.10 e 3.11).
+ * "Minha conta" do cliente: ver, editar os dados, trocar a senha e encerrar a conta.
+ * (O cadastro fica em Auth\RegisterController.)
+ * Segurança: nenhuma rota recebe id; tudo usa o usuário logado, então ninguém acessa a conta de outro.
  */
 class ContaController extends Controller
 {
     private const CAMPOS = ['name', 'email', 'telefone', 'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf'];
 
-    // 3.10 – Consultar meus dados
+    // Tela "Meus dados"
     public function show(Request $request): View
     {
         return view('loja.conta.show', [
@@ -32,7 +32,7 @@ class ContaController extends Controller
         ]);
     }
 
-    // 3.11 – Editar meus dados (dados pessoais + endereço + senha)
+    // Formulário de edição (dados pessoais, endereço e senha)
     public function edit(Request $request): View
     {
         return view('loja.conta.edit', ['cliente' => $request->user()]);
@@ -68,7 +68,7 @@ class ContaController extends Controller
         return redirect()->route('loja.conta')->with('sucesso', 'Senha alterada com sucesso.');
     }
 
-    // 3.12 – Encerrar minha conta (exige a senha atual)
+    // Encerrar a conta. Segurança: exige a senha atual, para ninguém encerrar a conta de outra pessoa num computador aberto
     public function destroy(Request $request, EncerrarConta $encerrar): RedirectResponse
     {
         $request->validateWithBag('encerrar', [

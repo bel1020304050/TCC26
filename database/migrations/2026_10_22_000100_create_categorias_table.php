@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Categorias de produtos — stories 3.14 a 3.17.
+     * Categorias de produtos (Vestidos, Blusas, Saias...).
      */
     public function up(): void
     {

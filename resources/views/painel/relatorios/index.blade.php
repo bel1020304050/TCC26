@@ -4,7 +4,7 @@
 @section('trilha', 'Painel › Relatórios')
 
 @section('conteudo')
-{{-- Stories 3.32 a 3.34: Vendas e Clientes só para o Administrador; Estoque também para o Funcionário --}}
+{{-- Página inicial dos relatórios: cada card só aparece para quem tem permissão --}}
 @php
     $cards = [
         ['relatorio-vendas', 'painel.relatorios.vendas', 'graph-up', 'Vendas', 'Faturamento, vendas pagas e ticket médio por período, status e forma de pagamento.'],

@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Relatórios — stories 3.32 (vendas), 3.33 (estoque) e 3.34 (clientes).
+ * Relatórios de Vendas, Estoque e Clientes.
  * Cada um abre na tela e pode ser exportado em CSV (planilha) ou PDF (página de impressão).
  */
 class RelatorioController extends Controller
@@ -55,7 +55,7 @@ class RelatorioController extends Controller
 
     private function gerar(Request $request, Relatorio $relatorio, string $filtros, array $opcoes = []): Response|View
     {
-        // RNF de segurança: a rota (tela e exportação) recusa quem não tem o perfil certo
+        // Segurança: tanto a tela quanto a exportação recusam quem não tem o perfil certo
         Gate::authorize($relatorio->permissao());
 
         return match ($request->query('exportar')) {

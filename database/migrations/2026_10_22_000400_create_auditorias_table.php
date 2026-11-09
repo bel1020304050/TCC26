@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Registro de auditoria (seção 2.3): quem fez o quê e quando.
+     * Auditoria: quem fez o quê, em qual registro e quando.
      * Ex.: "Mary Oliveira inativou a categoria Acessórios em 22/10/2026 14:50".
      */
     public function up(): void

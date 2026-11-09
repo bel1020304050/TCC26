@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
- * Processo 3.31 — Finalizar Compra / Pagamento (provedor simulado).
+ * Processo de Finalizar Compra / Pagamento (provedor simulado).
  */
 class PagamentoTest extends TestCase
 {
@@ -34,7 +34,7 @@ class PagamentoTest extends TestCase
         $this->vestido = Produto::factory()->create(['nome' => 'Vestido Floral', 'tamanho' => 'M', 'cor' => 'Preto', 'preco' => 129.90, 'estoque' => 8]);
         $this->blusa = Produto::factory()->create(['nome' => 'Blusa Social', 'tamanho' => 'P', 'cor' => 'Branco', 'preco' => 89.90, 'estoque' => 12]);
 
-        // Pedido criado pelo fluxo real da 3.18 (carrinho → confirmar)
+        // Pedido criado pelo fluxo real (carrinho → confirmar pedido)
         $carrinho = Carrinho::doCliente($this->cliente);
         $carrinho->itens()->create(['produto_id' => $this->vestido->id, 'quantidade' => 2]);
         $carrinho->itens()->create(['produto_id' => $this->blusa->id, 'quantidade' => 1]);
@@ -134,7 +134,7 @@ class PagamentoTest extends TestCase
         $this->assertPedidoPagoComEstoqueBaixado();
     }
 
-    // RNF.03: falha temporária do provedor
+    // Provedor fora do ar: mensagem clara e o pedido continua aguardando
     public function test_provedor_fora_do_ar_mostra_mensagem_e_mantem_o_pedido(): void
     {
         $this->pagar('cartao', $this->cartao('4111 1111 1111 9999'))
@@ -176,7 +176,7 @@ class PagamentoTest extends TestCase
         $this->assertDatabaseHas('auditorias', ['acao' => 'confirmou_boleto', 'entidade_id' => $boleto->id]);
     }
 
-    // RNF.02: o mesmo retorno de aprovação duas vezes baixa o estoque uma vez só
+    // Idempotência: a mesma aprovação recebida duas vezes baixa o estoque uma vez só
     public function test_aprovacao_repetida_baixa_estoque_uma_unica_vez(): void
     {
         $this->pagar('pix');
@@ -190,7 +190,7 @@ class PagamentoTest extends TestCase
         $this->assertSame(1, $this->pedido->historico()->where('status', 'pago')->count());
     }
 
-    // Regra da 3.31: sem estoque na aprovação → pedido Cancelado e pagamento Estornado
+    // Regra: sem estoque na aprovação → pedido Cancelado e pagamento Estornado
     public function test_sem_estoque_na_aprovacao_cancela_pedido_e_estorna(): void
     {
         $this->pagar('pix');

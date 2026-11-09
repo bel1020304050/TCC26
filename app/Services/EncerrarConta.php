@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * Story 3.12 – Encerrar Minha Conta (exclusão lógica do CRUD de Clientes + anonimização pela LGPD).
+ * Encerra a conta do cliente: exclusão lógica + anonimização dos dados pessoais (LGPD).
  * Como "apagar o nome da ficha" sem rasgar as notas fiscais: os pedidos ficam, os dados pessoais saem.
  */
 class EncerrarConta
@@ -32,7 +32,7 @@ class EncerrarConta
             throw new PagamentoException("Você tem pedido(s) em andamento: {$lista}. Aguarde a entrega ou cancele o pedido antes de encerrar a conta.");
         }
 
-        // RNF.01: anonimização, status e sessões na MESMA transação
+        // Banco: anonimização, status e sessões na MESMA transação (ou tudo acontece, ou nada)
         DB::transaction(function () use ($cliente) {
             $cliente->forceFill([
                 'name' => 'Cliente removido',

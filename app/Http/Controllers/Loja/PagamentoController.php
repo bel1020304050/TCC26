@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * Tela do processo 3.31 (Finalizar Compra / Pagamento) para o cliente.
+ * Telas de pagamento do cliente (PIX, cartão e boleto).
  * As regras ficam no serviço FinalizarCompra; aqui só entram e saem as telas.
  */
 class PagamentoController extends Controller

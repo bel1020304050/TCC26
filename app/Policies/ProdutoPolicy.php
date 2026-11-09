@@ -6,7 +6,7 @@ use App\Models\Produto;
 use App\Models\User;
 
 /**
- * Permissões de Produto (tabela da seção 2.2):
+ * Permissões de Produto:
  * - Administrador: tudo, inclusive inativar e reativar.
  * - Funcionário: cadastrar, consultar e editar (inclui repor estoque).
  * - Cliente: só a vitrine (não usa estas permissões).
@@ -28,7 +28,7 @@ class ProdutoPolicy
         return $user->isEquipe();
     }
 
-    // Inativar e reativar: só o Administrador (story 3.4)
+    // Inativar e reativar: só o Administrador
     public function alterarStatus(User $user, Produto $produto): bool
     {
         return $user->isAdmin();

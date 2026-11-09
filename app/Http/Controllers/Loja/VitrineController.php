@@ -10,11 +10,11 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Story 3.2 – Visualizar e Pesquisar Produtos (vitrine pública, sem login).
+ * Vitrine pública (não precisa de login): lista, pesquisa, filtros e ordenação dos produtos.
  */
 class VitrineController extends Controller
 {
-    private const POR_PAGINA = 20; // RNF.01 da 3.2
+    private const POR_PAGINA = 20; // 20 produtos por página, para a vitrine carregar rápido
 
     private const ORDENACOES = [
         'recentes' => ['created_at', 'desc'],
@@ -52,7 +52,7 @@ class VitrineController extends Controller
         $tamanhos = Produto::naVitrine()->distinct()->orderBy('tamanho')->pluck('tamanho');
         $cores = Produto::naVitrine()->distinct()->orderBy('cor')->pluck('cor');
 
-        // Selo e preço promocional (3.23): só promoções AUTOMÁTICAS Ativas e Vigentes.
+        // Regra: o selo e o preço promocional usam só promoções AUTOMÁTICAS, Ativas e Vigentes.
         // Cupom não aparece na vitrine, porque depende do código digitado no carrinho.
         $automaticas = Promocao::validas()->where('modo', Promocao::AUTOMATICA)->get();
         $promocoes = $produtos->getCollection()->mapWithKeys(fn (Produto $produto) => [

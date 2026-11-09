@@ -11,7 +11,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Validação de Cadastrar (3.26) e Editar (3.28) Fornecedor.
+ * Validação do formulário de Fornecedor (cadastrar e editar).
  * As regras de obrigatoriedade são as mesmas nos dois: CPF/CNPJ continua opcional.
  */
 class FornecedorRequest extends FormRequest

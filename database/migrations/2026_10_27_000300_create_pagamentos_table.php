@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Tentativas de pagamento — processo 3.31.
- * Cada tentativa fica registrada com status Pendente, Aprovado, Recusado ou Estornado (seção 2.3).
+ * Tentativas de pagamento dos pedidos.
+ * Cada tentativa fica registrada com status Pendente, Aprovado, Recusado ou Estornado.
  * Dados de cartão NÃO são guardados: só a bandeira e os 4 últimos dígitos.
  */
 return new class extends Migration
@@ -28,7 +28,8 @@ return new class extends Migration
             $table->string('boleto_linha', 60)->nullable();
             $table->date('boleto_vencimento')->nullable();
 
-            // Quando a aprovação foi processada: impede baixar o estoque duas vezes (RNF.02)
+            // Quando a aprovação foi processada. Se já estiver preenchido, uma 2ª aprovação é ignorada
+            // (assim o estoque nunca é baixado duas vezes)
             $table->timestamp('processado_em')->nullable();
             $table->foreignId('confirmado_por')->nullable()->constrained('users');
             $table->timestamps();

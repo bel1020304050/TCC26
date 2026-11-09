@@ -12,7 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Promoções do lado do cliente: vitrine (3.23), cupom no carrinho (3.30) e pedido (3.18).
+ * Promoções do lado do cliente: selo na vitrine, cupom no carrinho e desconto no pedido.
  */
 class PromocaoLojaTest extends TestCase
 {

@@ -9,7 +9,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Validação de Cadastrar (3.14) e Editar (3.16) Categoria.
+ * Validação do formulário de Categoria (cadastrar e editar).
  */
 class CategoriaRequest extends FormRequest
 {

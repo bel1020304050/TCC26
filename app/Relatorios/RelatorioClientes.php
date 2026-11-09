@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 /**
- * Story 3.34 – Relatório de Clientes (só Administrador).
+ * Relatório de Clientes (só Administrador).
  * Minimização de dados (LGPD): sem senha, telefone ou endereço.
  * Conta encerrada aparece como "Cliente removido", sem e-mail, e suas compras continuam somando.
  */

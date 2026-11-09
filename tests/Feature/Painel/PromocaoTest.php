@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * CRUD de Promoções no painel — stories 3.22 a 3.25.
+ * Cadastro de Promoções no painel.
  */
 class PromocaoTest extends TestCase
 {
@@ -97,7 +97,7 @@ class PromocaoTest extends TestCase
             ->assertSessionHasErrors(['codigo' => 'Este código de cupom já está em uso.']);
     }
 
-    // RNF.01 da 3.22 e permissões da 3.23
+    // Segurança: o Funcionário só consulta promoções
     public function test_funcionario_so_consulta(): void
     {
         $func = User::factory()->funcionario()->create();
@@ -135,7 +135,7 @@ class PromocaoTest extends TestCase
         $this->actingAs($this->admin)->get('/painel/promocoes?busca=mary')->assertSee('MARY20');
     }
 
-    // CT-3-24-01 e RNF.01 da 3.24
+    // CT-3-24-01 (e a auditoria guarda o antes e o depois)
     public function test_prorroga_data_final_com_auditoria(): void
     {
         $promocao = Promocao::factory()->cupom('MARY20')->create(['data_fim' => today()->addDays(5)]);

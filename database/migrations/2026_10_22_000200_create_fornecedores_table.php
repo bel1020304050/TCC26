@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Fornecedores — stories 3.26 a 3.29. Fornecedor não é usuário e não faz login.
+     * Fornecedores da loja. Fornecedor não é usuário e não faz login.
      */
     public function up(): void
     {

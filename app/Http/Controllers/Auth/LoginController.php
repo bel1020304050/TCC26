@@ -13,11 +13,12 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
- * Story 3.13 – Login e Logout (único para os 3 perfis).
+ * Login e logout. A mesma tela serve para clientes e para a equipe;
+ * depois de entrar, cada perfil vai para a sua página inicial.
  */
 class LoginController extends Controller
 {
-    // RNF.01 da 3.13: 5 tentativas erradas em 1 minuto bloqueiam por 1 minuto
+    // Segurança: 5 senhas erradas em 1 minuto bloqueiam novas tentativas por 1 minuto (contra quem tenta adivinhar senhas)
     private const MAX_TENTATIVAS = 5;
     private const BLOQUEIO_SEGUNDOS = 60;
 
@@ -42,7 +43,7 @@ class LoginController extends Controller
         }
 
         // Só entra quem está com status "ativo": conta inativa ou encerrada recebe a mesma
-        // mensagem genérica, sem revelar se o e-mail existe (regra da 3.13)
+        // Segurança: mensagem genérica, para não revelar se o e-mail está cadastrado
         $credenciais = [
             'email' => Str::lower($dados['email']),
             'password' => $dados['password'],
