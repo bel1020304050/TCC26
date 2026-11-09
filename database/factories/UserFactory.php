@@ -23,9 +23,10 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'telefone' => '(44) 9'.fake()->numerify('####-####'),
+            'cpf' => self::cpfValido(),
             'perfil' => User::PERFIL_CLIENTE,
             'status' => User::STATUS_ATIVO,
-            'cep' => fake()->numerify('#####-###'),
+            'cep' => fake()->numerify('875##-###'),
             'rua' => 'Rua '.fake()->lastName(),
             'numero' => (string) fake()->numberBetween(1, 2000),
             'bairro' => 'Centro',
@@ -38,7 +39,7 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn () => [
-            'perfil' => User::PERFIL_ADMIN,
+            'perfil' => User::PERFIL_ADMIN, 'cpf' => null,
             'cep' => null, 'rua' => null, 'numero' => null, 'bairro' => null, 'cidade' => null, 'uf' => null,
         ]);
     }
@@ -46,7 +47,7 @@ class UserFactory extends Factory
     public function gerente(): static
     {
         return $this->state(fn () => [
-            'perfil' => User::PERFIL_GERENTE,
+            'perfil' => User::PERFIL_GERENTE, 'cpf' => null,
             'cep' => null, 'rua' => null, 'numero' => null, 'bairro' => null, 'cidade' => null, 'uf' => null,
         ]);
     }
@@ -54,9 +55,24 @@ class UserFactory extends Factory
     public function atendente(): static
     {
         return $this->state(fn () => [
-            'perfil' => User::PERFIL_ATENDENTE,
+            'perfil' => User::PERFIL_ATENDENTE, 'cpf' => null,
             'cep' => null, 'rua' => null, 'numero' => null, 'bairro' => null, 'cidade' => null, 'uf' => null,
         ]);
+    }
+
+    // Gera um CPF válido e único para os testes: 9 números sorteados + os 2 dígitos verificadores calculados
+    public static function cpfValido(): string
+    {
+        $base = fake()->unique()->numerify('#########');
+        for ($t = 9; $t < 11; $t++) {
+            $soma = 0;
+            for ($i = 0; $i < $t; $i++) {
+                $soma += (int) $base[$i] * (($t + 1) - $i);
+            }
+            $base .= ((10 * $soma) % 11) % 10;
+        }
+
+        return $base;
     }
 
     public function inativo(): static

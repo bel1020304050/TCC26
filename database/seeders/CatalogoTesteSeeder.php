@@ -32,14 +32,26 @@ class CatalogoTesteSeeder extends Seeder
         }
 
         $fornecedores = [];
+        // [nome, tipo, documento, telefone, e-mail, status, [cep, rua, número, complemento, bairro, cidade, uf]]
         foreach ([
-            ['Confecções Aurora Ltda', '12345678000195', '(44) 3622-1000', 'contato@aurora.com.br', Status::ATIVO],
-            ['Malharia Boa Vista Ltda', '98765432000198', '(44) 3622-2000', 'vendas@boavista.com.br', Status::ATIVO],
-            ['Bijus Maringá Ltda', '44556677000186', '(44) 3622-4000', 'bijus@maringa.com.br', Status::ATIVO],
-            ['Jeans Sul Ltda', '11222333000181', '(44) 3622-3000', null, Status::INATIVO],
-        ] as [$nome, $documento, $telefone, $email, $status]) {
+            ['Confecções Aurora Ltda', Fornecedor::JURIDICA, '12345678000195', '(44) 3622-1000', 'contato@aurora.com.br', Status::ATIVO,
+                ['87501-000', 'Avenida Paraná', '3200', 'Sala 4', 'Centro', 'Umuarama', 'PR']],
+            ['Malharia Boa Vista Ltda', Fornecedor::JURIDICA, '98765432000198', '(44) 3622-2000', 'vendas@boavista.com.br', Status::ATIVO,
+                ['87013-000', 'Avenida Brasil', '1500', null, 'Zona 01', 'Maringá', 'PR']],
+            ['Bijus Maringá Ltda', Fornecedor::JURIDICA, '44556677000186', '(44) 3622-4000', 'bijus@maringa.com.br', Status::ATIVO,
+                ['87020-000', 'Rua Santos Dumont', '820', null, 'Zona 03', 'Maringá', 'PR']],
+            ['Jeans Sul Ltda', Fornecedor::JURIDICA, '11222333000181', '(44) 3622-3000', null, Status::INATIVO,
+                ['87200-000', 'Avenida América', '640', null, 'Centro', 'Cianorte', 'PR']],
+            // Exemplo de CNPJ no formato alfanumérico (emitido desde julho de 2026)
+            ['Ateliê Nova Era Ltda', Fornecedor::JURIDICA, '12ABC34501DE35', '(44) 3622-5000', 'contato@novaera.com.br', Status::ATIVO,
+                ['87502-000', 'Rua Desembargador Munhoz de Mello', '1210', null, 'Zona II', 'Umuarama', 'PR']],
+            // Exemplo de fornecedor pessoa física (costureira autônoma)
+            ['Rita Alves Costura', Fornecedor::FISICA, '52998224725', '(44) 99876-1234', 'rita.costura@email.com', Status::ATIVO,
+                ['87504-000', 'Rua Piauí', '77', 'Casa dos fundos', 'Jardim Alvorada', 'Umuarama', 'PR']],
+        ] as [$nome, $tipo, $documento, $telefone, $email, $status, $endereco]) {
             $fornecedor = Fornecedor::firstOrNew(['documento' => $documento]);
-            $fornecedor->fill(['nome' => $nome, 'telefone' => $telefone, 'email' => $email]);
+            $fornecedor->fill(['nome' => $nome, 'tipo_pessoa' => $tipo, 'telefone' => $telefone, 'email' => $email]
+                + array_combine(['cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf'], $endereco));
             $fornecedor->status = $status;
             $fornecedor->save();
             $fornecedores[$nome] = $fornecedor;

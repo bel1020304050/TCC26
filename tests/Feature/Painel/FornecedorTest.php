@@ -30,9 +30,17 @@ class FornecedorTest extends TestCase
     {
         return array_merge([
             'nome' => 'Confecções Aurora Ltda',
+            'tipo_pessoa' => 'juridica',
             'documento' => '12.345.678/0001-95',
             'telefone' => '(44) 3622-1000',
             'email' => 'contato@aurora.com.br',
+            'cep' => '87501000',
+            'rua' => 'Avenida Paraná',
+            'numero' => '3200',
+            'complemento' => 'Sala 4',
+            'bairro' => 'Centro',
+            'cidade' => 'Umuarama',
+            'uf' => 'pr',
             'status' => 'ativo',
         ], $troca);
     }
@@ -47,21 +55,96 @@ class FornecedorTest extends TestCase
         $fornecedor = Fornecedor::sole();
         $this->assertSame('12345678000195', $fornecedor->documento);           // salvo só com números
         $this->assertSame('12.345.678/0001-95', $fornecedor->documentoFormatado());
+        $this->assertSame(Fornecedor::JURIDICA, $fornecedor->tipo_pessoa);
+        // Endereço padronizado: CEP com hífen e UF em maiúsculas
+        $this->assertSame(['87501-000', 'Avenida Paraná', '3200', 'Sala 4', 'Centro', 'Umuarama', 'PR'],
+            array_values($fornecedor->only(['cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf'])));
     }
 
-    public function test_cpf_valido_tambem_e_aceito(): void
+    public function test_pessoa_fisica_aceita_cpf(): void
     {
-        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['documento' => '529.982.247-25']))
+        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['tipo_pessoa' => 'fisica', 'documento' => '529.982.247-25']))
             ->assertSessionHasNoErrors();
+
+        $this->assertSame(Fornecedor::FISICA, Fornecedor::sole()->tipo_pessoa);
+        $this->assertSame('Pessoa Física', Fornecedor::sole()->tipoLabel());
+    }
+
+    // Regra: o tipo de pessoa decide o documento aceito
+    public function test_documento_precisa_combinar_com_o_tipo_de_pessoa(): void
+    {
+        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['tipo_pessoa' => 'fisica', 'documento' => '12.345.678/0001-95']))
+            ->assertSessionHasErrors(['documento' => 'Informe um CPF válido.']);
+
+        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['tipo_pessoa' => 'juridica', 'documento' => '529.982.247-25']))
+            ->assertSessionHasErrors(['documento' => 'Informe um CNPJ válido.']);
+
+        $this->assertSame(0, Fornecedor::count());
+    }
+
+    public function test_tipo_de_pessoa_e_obrigatorio(): void
+    {
+        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['tipo_pessoa' => '']))
+            ->assertSessionHasErrors(['tipo_pessoa' => 'Escolha se o fornecedor é Pessoa Física ou Pessoa Jurídica.']);
+        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['tipo_pessoa' => 'empresa']))
+            ->assertSessionHasErrors('tipo_pessoa');
+    }
+
+    // Regra: CNPJ alfanumérico (Receita Federal, desde 07/2026) é aceito e salvo em maiúsculas
+    public function test_cnpj_alfanumerico_e_aceito(): void
+    {
+        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['documento' => '12.abc.345/01de-35']))
+            ->assertSessionHasNoErrors();
+
+        $fornecedor = Fornecedor::sole();
+        $this->assertSame('12ABC34501DE35', $fornecedor->documento);
+        $this->assertSame('12.ABC.345/01DE-35', $fornecedor->documentoFormatado());
+
+        // Dígito verificador errado é recusado, e o mesmo CNPJ não pode ser repetido
+        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['documento' => '12.ABC.345/01DE-36']))
+            ->assertSessionHasErrors(['documento' => 'Informe um CNPJ válido.']);
+        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['documento' => '12ABC34501DE35']))
+            ->assertSessionHasErrors(['documento' => 'Este documento já pertence a outro fornecedor.']);
+
+        // Pesquisa encontra com letras minúsculas e sem pontuação
+        $this->actingAs($this->admin)->get('/painel/fornecedores?busca=12abc345')->assertSee('Confecções Aurora Ltda');
     }
 
     public function test_cpf_cnpj_e_contatos_sao_opcionais(): void
     {
         $this->actingAs($this->admin)
-            ->post('/painel/fornecedores', ['nome' => 'Bijus Maringá Ltda', 'documento' => '', 'telefone' => '', 'email' => '', 'status' => 'ativo'])
+            ->post('/painel/fornecedores', $this->dados(['nome' => 'Bijus Maringá Ltda', 'documento' => '', 'telefone' => '', 'email' => '']))
             ->assertSessionHasNoErrors();
 
         $this->assertNull(Fornecedor::sole()->documento);
+    }
+
+    // O endereço do fornecedor é obrigatório (complemento continua opcional)
+    public function test_endereco_e_obrigatorio(): void
+    {
+        $this->actingAs($this->admin)
+            ->post('/painel/fornecedores', $this->dados(['cep' => '', 'rua' => '', 'numero' => '', 'bairro' => '', 'cidade' => '', 'uf' => '']))
+            ->assertSessionHasErrors(['cep', 'rua', 'numero', 'bairro', 'cidade', 'uf']);
+
+        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['complemento' => '']))
+            ->assertSessionHasNoErrors();
+    }
+
+    // Regra: CEP com 7 números é recusado; o sistema não completa com zero
+    public function test_cep_com_sete_numeros_e_recusado(): void
+    {
+        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['cep' => '8750100']))
+            ->assertSessionHasErrors(['cep' => 'O CEP deve ter 8 números (ex.: 87501-000).']);
+
+        $this->assertSame(0, Fornecedor::count());
+    }
+
+    public function test_formulario_tem_tipo_de_pessoa_endereco_e_viacep(): void
+    {
+        $this->actingAs($this->admin)->get('/painel/fornecedores/novo')
+            ->assertOk()
+            ->assertSee('Pessoa Física')->assertSee('Pessoa Jurídica')
+            ->assertSee('name="cep"', false)->assertSee('js/viacep.js', false)->assertSee('js/documento.js', false);
     }
 
     public function test_varios_fornecedores_sem_documento_sao_permitidos(): void
@@ -77,9 +160,9 @@ class FornecedorTest extends TestCase
     public function test_documento_invalido_e_recusado(): void
     {
         $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['documento' => '12.345.678/0001-00']))
-            ->assertSessionHasErrors(['documento' => 'Informe um CPF ou CNPJ válido.']);
+            ->assertSessionHasErrors(['documento' => 'Informe um CNPJ válido.']);
 
-        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['documento' => '111.111.111-11']))
+        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['tipo_pessoa' => 'fisica', 'documento' => '111.111.111-11']))
             ->assertSessionHasErrors('documento');
     }
 
@@ -151,6 +234,7 @@ class FornecedorTest extends TestCase
 
         $this->assertSame('(44) 3622-1050', $fornecedor->fresh()->telefone);
         $this->assertSame($fornecedor->id, $produto->fresh()->fornecedor_id);
+        $this->assertSame('Avenida Paraná', $fornecedor->fresh()->rua);
     }
 
     // CT-3-28-02

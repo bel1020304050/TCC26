@@ -22,6 +22,7 @@ class EditarContaRequest extends CriarContaRequest
 
         // Segurança: usa sempre a conta logada, nunca um id vindo do navegador
         $regras['email'] = ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($this->user()->id)];
+        $regras['cpf'] = $this->regrasCpf($this->user()->id);
 
         return $regras;
     }

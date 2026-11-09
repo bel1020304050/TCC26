@@ -14,13 +14,15 @@
             @csrf @method('PUT')
             <h2 class="h6 fw-semibold mb-3">Dados pessoais</h2>
             <div class="row">
-                <x-campo class="col-md-4" name="name" label="Nome completo" obrigatorio :valor="$cliente->name" autocomplete="name" />
-                <x-campo class="col-md-4" name="email" label="E-mail" type="email" obrigatorio :valor="$cliente->email" autocomplete="email" dica="Deve ser único no sistema" />
-                <x-campo class="col-md-4" name="telefone" label="Telefone" opcional :valor="$cliente->telefone" placeholder="(44) 99999-0000" />
+                <x-campo class="col-md-6" name="name" label="Nome completo" obrigatorio :valor="$cliente->name" autocomplete="name" />
+                <x-campo class="col-md-6" name="email" label="E-mail" type="email" obrigatorio :valor="$cliente->email" autocomplete="email" dica="Deve ser único no sistema" />
+                <x-campo class="col-md-6" name="cpf" label="CPF" obrigatorio :valor="$cliente->cpfFormatado()" placeholder="000.000.000-00"
+                         inputmode="numeric" maxlength="14" data-mascara-documento="cpf" dica="Usado na emissão da cobrança" />
+                <x-campo class="col-md-6" name="telefone" label="Telefone" opcional :valor="$cliente->telefone" placeholder="(44) 99999-0000" />
             </div>
 
             <h2 class="h6 fw-semibold mb-3 mt-2" id="endereco">Endereço de entrega</h2>
-            @include('partials.endereco-campos', ['usuario' => $cliente])
+            @include('partials.endereco-campos', ['dono' => $cliente])
             <p class="text-muted small">Alterar o endereço não muda pedidos já criados, que guardam uma cópia do endereço de entrega.</p>
 
             <div class="d-flex justify-content-end gap-2">
@@ -55,5 +57,6 @@
 @endsection
 
 @push('scripts')
+    <script src="{{ asset('js/documento.js') }}"></script>
     <script src="{{ asset('js/viacep.js') }}"></script>
 @endpush

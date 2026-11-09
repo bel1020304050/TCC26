@@ -15,9 +15,17 @@ class FornecedorFactory extends Factory
     {
         return [
             'nome' => fake()->company(),
+            'tipo_pessoa' => Fornecedor::JURIDICA,
             'documento' => null,
             'telefone' => '(44) 3622-'.fake()->numerify('####'),
             'email' => fake()->unique()->companyEmail(),
+            'cep' => '87501-000',
+            'rua' => 'Avenida Paraná',
+            'numero' => (string) fake()->numberBetween(1, 5000),
+            'complemento' => null,
+            'bairro' => 'Centro',
+            'cidade' => 'Umuarama',
+            'uf' => 'PR',
             'status' => Status::ATIVO,
         ];
     }

@@ -19,6 +19,16 @@
                 <div class="col-md-4"><div class="text-muted small">Nome</div>{{ $cliente->name }}</div>
                 <div class="col-md-4"><div class="text-muted small">E-mail</div>{{ $cliente->email }}</div>
                 <div class="col-md-4"><div class="text-muted small">Telefone</div>{{ $cliente->telefone ?: '—' }}</div>
+                <div class="col-md-4">
+                    <div class="text-muted small">CPF</div>
+                    @if ($cliente->cpf)
+                        {{ $cliente->cpfFormatado() }}
+                    @else
+                        {{-- Contas antigas, criadas antes do CPF ser obrigatório --}}
+                        <span class="text-danger">Não informado</span>
+                        <a href="{{ route('loja.conta.edit') }}" class="small ms-1">Informar</a>
+                    @endif
+                </div>
             </div>
         </div>
 
@@ -57,7 +67,7 @@
             <div class="modal-body">
                 <div class="alert alert-warning small">
                     <strong>Esta ação não pode ser desfeita.</strong><br>
-                    Seu login será bloqueado e seus dados pessoais (nome, e-mail, telefone e endereço) serão removidos do cadastro.
+                    Seu login será bloqueado e seus dados pessoais (nome, e-mail, CPF, telefone e endereço) serão removidos do cadastro.
                 </div>
                 <p class="small">Seus pedidos continuam registrados para fins fiscais, com o endereço de entrega que já estava salvo neles. Depois, o mesmo e-mail poderá ser usado em uma conta nova.</p>
                 @if ($emAndamento)

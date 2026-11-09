@@ -1,4 +1,4 @@
-# Mary Modas — Sistema E-commerce (TCC UniALFA)    
+# Mary Modas — Sistema E-commerce (TCC UniALFA)     
 
 Sistema web de vendas e gestão da loja **Mary Modas**, feito em **PHP 8.2 + Laravel 12 + MySQL/MariaDB** para rodar no **XAMPP**.
 
@@ -94,10 +94,10 @@ Criados pelo `php artisan migrate --seed` (os de teste só em `APP_ENV=local`):
 | Gerente | bruno@marymodas.com.br | `gerente123` | Gerencia a loja, menos a equipe |
 | Atendente/Vendedor | rafael@marymodas.com.br | `func12345` | Produtos e pedidos do dia a dia |
 | Atendente/Vendedor inativo | juliana@marymodas.com.br | `func12345` | Não consegue entrar (teste) |
-| Cliente | ana@email.com | `cliente123` | Endereço completo em Umuarama/PR |
+| Cliente | ana@email.com | `cliente123` | CPF 123.456.789-09 e endereço completo em Umuarama/PR |
 
 O seeder também cria o **catálogo de exemplo** dos wireframes: categorias (Vestidos, Blusas, Saias, Acessórios e Jaquetas inativa),
-4 fornecedores com CNPJ válido e 7 produtos. Dica de teste: tente inativar **Vestidos** (tem produtos ativos → bloqueia)
+6 fornecedores com endereço (um com **CNPJ alfanumérico** e um **pessoa física**) e 7 produtos. Dica de teste: tente inativar **Vestidos** (tem produtos ativos → bloqueia)
 e depois **Acessórios** (sem produtos → inativa).
 
 ## 5. O que já funciona
@@ -255,6 +255,22 @@ e depois **Acessórios** (sem produtos → inativa).
   aparecia o erro *Duplicate entry … pedidos_carrinho_id_unique*. Agora os itens vão para um **carrinho novo** e o antigo fica
   finalizado, ligado ao pedido cancelado.
 
+### Fase 13 — Documentos e endereços (stories 3.9–3.12 e 3.26–3.29)
+- **Fornecedor**:
+  - **Tipo de pessoa** obrigatório (Pessoa Física ou Pessoa Jurídica). O campo do documento fica travado até escolher o tipo
+    e passa a aceitar só **CPF** (Física) ou só **CNPJ** (Jurídica). O documento continua opcional e único.
+  - **CNPJ alfanumérico**: desde julho de 2026 a Receita emite CNPJ com letras (ex.: `12.ABC.345/01DE-35`).
+    As 12 primeiras posições aceitam letras e números, e os 2 dígitos verificadores continuam numéricos.
+    Os CNPJs antigos, só com números, continuam valendo.
+  - **Endereço obrigatório** (CEP, rua, número, bairro, cidade e UF; complemento opcional), com preenchimento pela **ViaCEP**.
+  - A lista mostra o tipo de pessoa, a cidade/UF e os contatos.
+- **Cliente**: **CPF obrigatório** em "Criar conta" e "Editar meus dados", com máscara, validação dos dígitos e sem repetir
+  entre contas. Contas antigas sem CPF veem "Não informado" em Meus dados. Ao **encerrar a conta**, o CPF é apagado junto
+  com os outros dados pessoais (e não vai para a auditoria).
+- **CEP** (cliente e fornecedor): sempre 8 números. Com menos, ao sair do campo aparece *"CEP incompleto: digite os 8 números."*,
+  e o servidor recusa com *"O CEP deve ter 8 números (ex.: 87501-000)."*. O sistema **não completa com zero**,
+  porque não dá para saber qual número faltou.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -271,12 +287,13 @@ e depois **Acessórios** (sem produtos → inativa).
 | 10 | Relatórios | 3.32–3.34 | ✅ Pronta |
 | 11 | Revisão de comentários e tela inicial do painel | — | ✅ Pronta |
 | 12 | Perfis (Administrador, Gerente, Atendente/Vendedor) | 2.2, 3.5–3.8 | ✅ Pronta |
-| 13 | Documentos e endereços (fornecedor PF/PJ, CPF do cliente, CEP) | 3.9–3.12, 3.26–3.29 | A fazer |
-| 14 | PDF com dompdf | 3.32–3.34 | A fazer |
-| 15 | Auditoria (motivo obrigatório e relatório) | 3.35 | A fazer |
-| 16 | Melhorias na loja (página do produto, cupons visíveis, rastreio) | 3.2, 3.20, 3.30 | A fazer |
-| 17 | Pagamento no sandbox do Asaas | 3.31 | A fazer |
-| 18 | Fechamento (documentação e apresentação) | — | A fazer |
+| 13 | Documentos e endereços (fornecedor PF/PJ, CPF do cliente, CEP) | 3.9–3.12, 3.26–3.29 | ✅ Pronta |
+| 14 | Contas e senhas (verificação de e-mail, recuperação e senha provisória) | 3.5–3.13 | A fazer |
+| 15 | PDF com dompdf | 3.32–3.34 | A fazer |
+| 16 | Auditoria (motivo obrigatório e relatório) | 3.35 | A fazer |
+| 17 | Melhorias na loja (página do produto, cupons visíveis, rastreio) | 3.2, 3.20, 3.30 | A fazer |
+| 18 | Pagamento no sandbox do Asaas | 3.31 | A fazer |
+| 19 | Fechamento (documentação e apresentação) | — | A fazer |
 
 ### Fase 11 — Revisão de comentários
 - Os comentários do código explicam **o que o trecho faz e por quê**, com rótulos: `Validação:`, `Regra:`, `Segurança:`, `Banco:` e `LGPD:`.
@@ -294,7 +311,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | 3.1, 3.3, 3.4 | Cadastrar, editar e inativar produto | `Painel/ProdutoController`, `Requests/ProdutoRequest`, `Policies/ProdutoPolicy`, `views/painel/produtos` |
 | 3.2 | Vitrine (pesquisar e filtrar produtos) | `Loja/VitrineController`, `Models/Produto` (`scopeNaVitrine`), `views/loja/vitrine` |
 | 3.5–3.8 | Usuários da equipe | `Painel/UsuarioController`, `Requests/UsuarioRequest`, `Policies/UserPolicy`, `Middleware/EncerraSessaoInativa` |
-| 3.9 | Criar conta (cliente) | `Auth/RegisterController`, `Requests/CriarContaRequest`, `public/js/viacep.js` |
+| 3.9 | Criar conta (cliente) | `Auth/RegisterController`, `Requests/CriarContaRequest`, `Support/Cep`, `public/js/viacep.js`, `public/js/documento.js` |
 | 3.10, 3.11 | Consultar e editar meus dados | `Loja/ContaController`, `Requests/EditarContaRequest`, `views/loja/conta` |
 | 3.12 | Encerrar minha conta (LGPD) | `Services/EncerrarConta`, `Loja/ContaController@destroy` |
 | 3.13 | Login e logout | `Auth/LoginController`, `Middleware/VerificaPerfil` |
@@ -303,7 +320,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | 3.19 | Consultar pedidos | `Loja/PedidoController@index`/`@show`, `Painel/PedidoController`, `Policies/PedidoPolicy` |
 | 3.20, 3.21 | Atualizar status e cancelar pedido | `Services/AndamentoPedido`, `Painel/PedidoController`, `Loja/PedidoController@cancelar` |
 | 3.22–3.25 | Promoções e cupons | `Painel/PromocaoController`, `Requests/PromocaoRequest`, `Models/Promocao` |
-| 3.26–3.29 | Fornecedores | `Painel/FornecedorController`, `Requests/FornecedorRequest`, `Rules/CpfCnpj` |
+| 3.26–3.29 | Fornecedores | `Painel/FornecedorController`, `Requests/FornecedorRequest`, `Rules/CpfCnpj`, `Support/Documento` |
 | 3.30 | Carrinho e cupom | `Loja/CarrinhoController`, `Models/Carrinho` (`totais()`) |
 | 3.31 ⭐ | Processo de pagamento | `Services/FinalizarCompra`, `Loja/PagamentoController`, `Pagamentos/` |
 | 3.32–3.34 | Relatórios | `Painel/RelatorioController`, `Relatorios/RelatorioVendas`, `RelatorioEstoque`, `RelatorioClientes` |
@@ -333,7 +350,8 @@ database/migrations/            Estrutura das tabelas
 database/seeders/               Administrador inicial, usuários, catálogo e pedidos de teste
 lang/pt_BR/                     Mensagens em português
 public/css/mary.css             Cores e estilo da Mary Modas
-public/js/viacep.js             Preenchimento do endereço pelo CEP
+public/js/viacep.js             CEP: máscara, aviso de incompleto e preenchimento do endereço
+public/js/documento.js          Máscara de CPF e CNPJ (inclusive alfanumérico)
 public/img/                     Imagem padrão de produto
 storage/app/public/produtos/    Imagens enviadas no cadastro (não vão para o Git)
 resources/views/                Telas (Blade)
@@ -347,7 +365,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (225 testes até a Fase 12) |
+| `php artisan test` | Roda os testes automatizados (239 testes até a Fase 13) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 
