@@ -72,13 +72,13 @@ Route::post('/sair', [LoginController::class, 'destroy'])->middleware('auth')->n
 
 /*
 |--------------------------------------------------------------------------
-| Painel administrativo: só a equipe (Administrador e Funcionário)
+| Painel administrativo: só a equipe (Administrador, Gerente e Atendente/Vendedor)
 |--------------------------------------------------------------------------
 */
-Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,funcionario'])->group(function () {
+Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,gerente,atendente'])->group(function () {
     Route::get('/', InicioController::class)->name('inicio');
 
-    // Produtos: o Funcionário cadastra e edita; só o Administrador inativa.
+    // Produtos: toda a equipe cadastra e edita; Administrador e Gerente inativam.
     Route::resource('produtos', ProdutoController::class)
         ->except(['show', 'destroy'])
         ->parameters(['produtos' => 'produto']);
@@ -94,7 +94,7 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,func
     // Boleto: o Administrador confirma que foi pago
     Route::post('pagamentos/{pagamento}/confirmar-boleto', [PainelPagamentoController::class, 'confirmarBoleto'])->name('pagamentos.confirmar-boleto');
 
-    // Promoções: o Funcionário só consulta; o resto é do Administrador.
+    // Promoções: o Atendente só consulta; Administrador e Gerente fazem o resto.
     Route::resource('promocoes', PromocaoController::class)
         ->except(['show', 'destroy'])
         ->parameters(['promocoes' => 'promocao']);
@@ -108,7 +108,7 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,func
     Route::get('relatorios/clientes', [RelatorioController::class, 'clientes'])->name('relatorios.clientes');
 
     // Categorias e Fornecedores
-    // Funcionário só consulta; cadastrar, editar e inativar são do Administrador (Policies).
+    // O Atendente só consulta; Administrador e Gerente cadastram, editam e inativam (Policies).
     Route::resource('categorias', CategoriaController::class)
         ->except(['show', 'destroy'])
         ->parameters(['categorias' => 'categoria']);

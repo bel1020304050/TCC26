@@ -16,7 +16,6 @@ class AdminSeeder extends Seeder
         $admin = User::firstOrNew(['email' => 'mary@marymodas.com.br']);
         $admin->fill([
             'name' => 'Mary Oliveira',
-            'cargo' => 'Proprietária',
             'telefone' => '(44) 3622-0000',
         ]);
         $admin->perfil = User::PERFIL_ADMIN;

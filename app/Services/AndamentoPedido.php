@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Carrinho;
 use App\Models\Pagamento;
 use App\Models\Pedido;
 use App\Models\Produto;
@@ -67,11 +66,8 @@ class AndamentoPedido
                     'mensagem' => 'Cobrança cancelada junto com o pedido.',
                 ]);
 
-                // Regra: o carrinho volta a ficar editável
-                if ($pedido->carrinho && $pedido->carrinho->status === Carrinho::EM_PAGAMENTO) {
-                    $pedido->carrinho->status = Carrinho::ABERTO;
-                    $pedido->carrinho->save();
-                }
+                // Regra: os itens voltam para um carrinho editável (ver Carrinho::devolverItensAoCliente)
+                $pedido->carrinho?->devolverItensAoCliente();
             } else {
                 // Pago ou Em Separação: estorna o pagamento aprovado e devolve as peças ao estoque
                 $pedido->pagamentos()->where('status', Pagamento::APROVADO)->get()->each(function (Pagamento $pagamento) {

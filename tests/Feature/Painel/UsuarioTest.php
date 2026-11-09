@@ -29,8 +29,7 @@ class UsuarioTest extends TestCase
             'name' => 'Rafael Martins',
             'email' => 'rafael@marymodas.com.br',
             'telefone' => '(44) 99876-1020',
-            'cargo' => 'Subgerente',
-            'perfil' => 'funcionario',
+            'perfil' => 'atendente',
             'status' => 'ativo',
             'password' => 'senha1234',
             'password_confirmation' => 'senha1234',
@@ -38,15 +37,14 @@ class UsuarioTest extends TestCase
     }
 
     // CT-3-5-01
-    public function test_admin_cadastra_funcionario_que_consegue_entrar(): void
+    public function test_admin_cadastra_atendente_que_consegue_entrar(): void
     {
         $this->actingAs($this->admin)->post('/painel/usuarios', $this->dados())
             ->assertRedirect(route('painel.usuarios.index'))
             ->assertSessionHas('sucesso');
 
         $rafael = User::where('email', 'rafael@marymodas.com.br')->sole();
-        $this->assertTrue($rafael->isFuncionario());
-        $this->assertSame('Subgerente', $rafael->cargo);
+        $this->assertTrue($rafael->isAtendente());
         $this->assertTrue(Hash::check('senha1234', $rafael->password));
         $this->assertDatabaseHas('auditorias', ['acao' => 'criou', 'entidade' => 'users', 'entidade_id' => $rafael->id]);
 
@@ -82,8 +80,8 @@ class UsuarioTest extends TestCase
     // CT-3-6-01: pesquisa
     public function test_lista_so_equipe_e_pesquisa_por_nome(): void
     {
-        User::factory()->funcionario()->create(['name' => 'Rafael Martins']);
-        User::factory()->funcionario()->create(['name' => 'Juliana Lima', 'email' => 'juliana@teste.com']);
+        User::factory()->atendente()->create(['name' => 'Rafael Martins']);
+        User::factory()->atendente()->create(['name' => 'Juliana Lima', 'email' => 'juliana@teste.com']);
         User::factory()->create(['name' => 'Ana Cliente']);
 
         $this->actingAs($this->admin)->get('/painel/usuarios')
@@ -98,7 +96,7 @@ class UsuarioTest extends TestCase
 
     public function test_filtros_por_perfil_e_status(): void
     {
-        User::factory()->funcionario()->inativo()->create(['name' => 'Juliana Lima']);
+        User::factory()->atendente()->inativo()->create(['name' => 'Juliana Lima']);
         User::factory()->admin()->create(['name' => 'Bruno Costa']);
 
         $this->actingAs($this->admin)->get('/painel/usuarios?status=inativo')->assertSee('Juliana Lima')->assertDontSee('Bruno Costa');
@@ -106,9 +104,9 @@ class UsuarioTest extends TestCase
     }
 
     // CT-3-6-02
-    public function test_funcionario_nao_acessa_usuarios(): void
+    public function test_atendente_nao_acessa_usuarios(): void
     {
-        $func = User::factory()->funcionario()->create();
+        $func = User::factory()->atendente()->create();
 
         $this->actingAs($func)->get('/painel/usuarios')->assertForbidden();
         $this->actingAs($func)->get('/painel/usuarios/novo')->assertForbidden();
@@ -117,15 +115,15 @@ class UsuarioTest extends TestCase
 
     public function test_senha_nunca_aparece_na_listagem(): void
     {
-        $func = User::factory()->funcionario()->create();
+        $func = User::factory()->atendente()->create();
 
         $this->actingAs($this->admin)->get('/painel/usuarios')->assertDontSee($func->password);
     }
 
     // CT-3-7-01: promover funcionário a administrador
-    public function test_promove_funcionario_a_administrador_com_auditoria(): void
+    public function test_promove_atendente_a_administrador_com_auditoria(): void
     {
-        $func = User::factory()->funcionario()->create();
+        $func = User::factory()->atendente()->create();
 
         $this->actingAs($this->admin)
             ->put("/painel/usuarios/{$func->id}", $this->dados(['name' => $func->name, 'email' => $func->email, 'perfil' => 'admin', 'password' => '', 'password_confirmation' => '']))
@@ -133,7 +131,7 @@ class UsuarioTest extends TestCase
 
         $this->assertTrue($func->fresh()->isAdmin());
         $detalhes = Auditoria::where('acao', 'editou')->sole()->detalhes;
-        $this->assertSame('funcionario', $detalhes['antes']['perfil']);
+        $this->assertSame('atendente', $detalhes['antes']['perfil']);
         $this->assertSame('admin', $detalhes['depois']['perfil']);
         $this->assertFalse($detalhes['senha_alterada']);
     }
@@ -142,7 +140,7 @@ class UsuarioTest extends TestCase
     public function test_admin_nao_altera_o_proprio_perfil(): void
     {
         $this->actingAs($this->admin)
-            ->put("/painel/usuarios/{$this->admin->id}", $this->dados(['name' => $this->admin->name, 'email' => $this->admin->email, 'perfil' => 'funcionario', 'password' => '', 'password_confirmation' => '']))
+            ->put("/painel/usuarios/{$this->admin->id}", $this->dados(['name' => $this->admin->name, 'email' => $this->admin->email, 'perfil' => 'atendente', 'password' => '', 'password_confirmation' => '']))
             ->assertSessionHasErrors(['perfil' => 'Você não pode alterar o seu próprio perfil.']);
 
         $this->assertTrue($this->admin->fresh()->isAdmin());
@@ -150,7 +148,7 @@ class UsuarioTest extends TestCase
 
     public function test_senha_em_branco_mantem_a_atual_e_nova_senha_troca(): void
     {
-        $func = User::factory()->funcionario()->create(['password' => 'antiga1234']);
+        $func = User::factory()->atendente()->create(['password' => 'antiga1234']);
         $base = ['name' => $func->name, 'email' => $func->email];
 
         $this->actingAs($this->admin)->put("/painel/usuarios/{$func->id}", $this->dados($base + ['password' => '', 'password_confirmation' => '']));
@@ -168,9 +166,9 @@ class UsuarioTest extends TestCase
     }
 
     // CT-3-8-01: inativar derruba o acesso
-    public function test_inativa_funcionario_e_bloqueia_login(): void
+    public function test_inativa_atendente_e_bloqueia_login(): void
     {
-        $func = User::factory()->funcionario()->create();
+        $func = User::factory()->atendente()->create();
 
         $this->actingAs($this->admin)->patch("/painel/usuarios/{$func->id}/inativar")->assertSessionHas('sucesso');
 
@@ -182,9 +180,9 @@ class UsuarioTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_reativa_funcionario(): void
+    public function test_reativa_atendente(): void
     {
-        $func = User::factory()->funcionario()->inativo()->create();
+        $func = User::factory()->atendente()->inativo()->create();
 
         $this->actingAs($this->admin)->patch("/painel/usuarios/{$func->id}/reativar")->assertSessionHas('sucesso');
 

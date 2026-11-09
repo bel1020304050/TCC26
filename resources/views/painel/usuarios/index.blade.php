@@ -11,7 +11,8 @@
     <select name="perfil" class="form-select" style="width: 180px;" aria-label="Filtrar por perfil">
         <option value="">Perfil: Todos</option>
         <option value="admin" @selected($perfil === 'admin')>Administrador</option>
-        <option value="funcionario" @selected($perfil === 'funcionario')>Funcionário</option>
+        <option value="gerente" @selected($perfil === 'gerente')>Gerente</option>
+        <option value="atendente" @selected($perfil === 'atendente')>Atendente/Vendedor</option>
     </select>
     <select name="status" class="form-select" style="width: 160px;" aria-label="Filtrar por status">
         <option value="">Status: Todos</option>
@@ -32,7 +33,6 @@
                 <tr>
                     <th>Nome</th>
                     <th>E-mail</th>
-                    <th>Cargo</th>
                     <th>Perfil</th>
                     <th>Status</th>
                     <th class="text-end">Ações</th>
@@ -47,7 +47,6 @@
                             @if ($souEu) <span class="badge badge-perfil ms-1">você</span> @endif
                         </td>
                         <td>{{ $usuario->email }}</td>
-                        <td>{{ $usuario->cargo ?: '—' }}</td>
                         <td>{{ $usuario->perfilLabel() }}</td>
                         <td><x-status-badge :status="$usuario->status" /></td>
                         <td class="text-end text-nowrap">

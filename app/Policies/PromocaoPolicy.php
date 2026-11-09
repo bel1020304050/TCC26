@@ -7,8 +7,8 @@ use App\Models\User;
 
 /**
  * Permissões de Promoção:
- * - Administrador: cadastra, edita, inativa e reativa.
- * - Funcionário: só consulta (para tirar dúvidas dos clientes).
+ * - Administrador e Gerente: cadastram, editam, inativam e reativam.
+ * - Atendente/Vendedor: só consulta (para tirar dúvidas dos clientes).
  */
 class PromocaoPolicy
 {
@@ -19,16 +19,16 @@ class PromocaoPolicy
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->isGestao();
     }
 
     public function update(User $user, Promocao $promocao): bool
     {
-        return $user->isAdmin();
+        return $user->isGestao();
     }
 
     public function alterarStatus(User $user, Promocao $promocao): bool
     {
-        return $user->isAdmin();
+        return $user->isGestao();
     }
 }

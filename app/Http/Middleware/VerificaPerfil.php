@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Libera a rota só para os perfis informados.
- * Uso nas rotas: ->middleware('perfil:admin') ou ->middleware('perfil:admin,funcionario')
+ * Uso nas rotas: ->middleware('perfil:admin') ou ->middleware('perfil:admin,gerente,atendente')
  */
 class VerificaPerfil
 {

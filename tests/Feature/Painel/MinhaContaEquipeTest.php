@@ -14,9 +14,9 @@ class MinhaContaEquipeTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_funcionario_abre_e_atualiza_nome_e_telefone(): void
+    public function test_atendente_abre_e_atualiza_nome_e_telefone(): void
     {
-        $func = User::factory()->funcionario()->create();
+        $func = User::factory()->atendente()->create();
 
         $this->actingAs($func)->get('/painel/minha-conta')->assertOk()->assertSee($func->email);
 
@@ -27,13 +27,13 @@ class MinhaContaEquipeTest extends TestCase
         $func->refresh();
         $this->assertSame('Rafael M.', $func->name);
         $this->assertSame('(44) 90000-0000', $func->telefone);
-        $this->assertTrue($func->isFuncionario());      // perfil não muda por aqui
+        $this->assertTrue($func->isAtendente());      // perfil não muda por aqui
         $this->assertNotSame('outro@x.com', $func->email); // e-mail também não
     }
 
     public function test_troca_senha_com_a_senha_atual_correta(): void
     {
-        $func = User::factory()->funcionario()->create(['password' => 'antiga1234']);
+        $func = User::factory()->atendente()->create(['password' => 'antiga1234']);
 
         $this->actingAs($func)
             ->put('/painel/minha-conta/senha', ['senha_atual' => 'antiga1234', 'password' => 'nova12345', 'password_confirmation' => 'nova12345'])
@@ -44,7 +44,7 @@ class MinhaContaEquipeTest extends TestCase
 
     public function test_senha_atual_errada_e_recusada(): void
     {
-        $func = User::factory()->funcionario()->create(['password' => 'antiga1234']);
+        $func = User::factory()->atendente()->create(['password' => 'antiga1234']);
 
         $this->actingAs($func)
             ->put('/painel/minha-conta/senha', ['senha_atual' => 'errada123', 'password' => 'nova12345', 'password_confirmation' => 'nova12345'])

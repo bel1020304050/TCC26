@@ -8,7 +8,6 @@
     <h2 class="h5 mb-1">Olá, {{ $usuario->name }}!</h2>
     <p class="text-muted mb-0">
         Você está conectada(o) como <span class="badge badge-perfil">{{ $usuario->perfilLabel() }}</span>
-        @if ($usuario->cargo) · {{ $usuario->cargo }} @endif
     </p>
 </div>
 

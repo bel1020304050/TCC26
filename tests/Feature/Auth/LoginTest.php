@@ -19,15 +19,15 @@ class LoginTest extends TestCase
     }
 
     // CT-3-13-01: funcionário entra e cai no painel
-    public function test_funcionario_entra_e_vai_para_o_painel(): void
+    public function test_atendente_entra_e_vai_para_o_painel(): void
     {
-        $func = User::factory()->funcionario()->create();
+        $func = User::factory()->atendente()->create();
 
         $this->post('/entrar', ['email' => $func->email, 'password' => 'password'])
             ->assertRedirect(route('painel.inicio'));
 
         $this->assertAuthenticatedAs($func);
-        $this->get('/painel')->assertOk()->assertSee('Funcionário');
+        $this->get('/painel')->assertOk()->assertSee('Atendente');
     }
 
     public function test_administrador_entra_e_vai_para_o_painel(): void
@@ -70,7 +70,7 @@ class LoginTest extends TestCase
 
     public function test_conta_inativa_nao_entra_mesmo_com_senha_certa(): void
     {
-        $func = User::factory()->funcionario()->inativo()->create();
+        $func = User::factory()->atendente()->inativo()->create();
 
         $this->post('/entrar', ['email' => $func->email, 'password' => 'password'])
             ->assertSessionHasErrors(['email' => 'E-mail ou senha inválidos.']);

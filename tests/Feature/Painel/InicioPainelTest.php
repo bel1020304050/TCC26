@@ -49,11 +49,13 @@ class InicioPainelTest extends TestCase
             ->assertDontSee('Andamento do sistema');
     }
 
-    public function test_funcionario_ve_o_resumo_sem_link_para_o_relatorio_de_vendas(): void
+    public function test_gerente_e_atendente_veem_o_resumo_com_atalho_para_vendas(): void
     {
-        $this->actingAs(User::factory()->funcionario()->create())->get('/painel')
-            ->assertOk()
-            ->assertSee('Vendas do mês')
-            ->assertDontSee(route('painel.relatorios.vendas'));
+        foreach ([User::factory()->gerente()->create(), User::factory()->atendente()->create()] as $usuario) {
+            $this->actingAs($usuario)->get('/painel')
+                ->assertOk()
+                ->assertSee('Vendas do mês')
+                ->assertSee(route('painel.relatorios.vendas'));
+        }
     }
 }

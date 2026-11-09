@@ -91,9 +91,9 @@ Criados pelo `php artisan migrate --seed` (os de teste só em `APP_ENV=local`):
 | Perfil | E-mail | Senha | Observação |
 |---|---|---|---|
 | Administrador | mary@marymodas.com.br | `admin12345` | Dona da loja (vem do `SEED_ADMIN_PASSWORD` do `.env`) |
-| Administrador | bruno@marymodas.com.br | `admin12345` | Gerente |
-| Funcionário | rafael@marymodas.com.br | `func12345` | Subgerente |
-| Funcionário inativo | juliana@marymodas.com.br | `func12345` | Não consegue entrar (teste) |
+| Gerente | bruno@marymodas.com.br | `gerente123` | Gerencia a loja, menos a equipe |
+| Atendente/Vendedor | rafael@marymodas.com.br | `func12345` | Produtos e pedidos do dia a dia |
+| Atendente/Vendedor inativo | juliana@marymodas.com.br | `func12345` | Não consegue entrar (teste) |
 | Cliente | ana@email.com | `cliente123` | Endereço completo em Umuarama/PR |
 
 O seeder também cria o **catálogo de exemplo** dos wireframes: categorias (Vestidos, Blusas, Saias, Acessórios e Jaquetas inativa),
@@ -234,6 +234,27 @@ e depois **Acessórios** (sem produtos → inativa).
 - Relatório de clientes sem telefone e endereço (LGPD). Conta encerrada aparece como "Cliente removido", sem e-mail.
 - As rotas e as exportações recusam quem não tem permissão (Cliente, ou Funcionário em Vendas e Clientes).
 
+### Fase 12 — Perfis da equipe (seção 2.2 e stories 3.5–3.8)
+- A equipe passa a ter **três perfis**: **Administrador**, **Gerente** e **Atendente/Vendedor**. O campo **Cargo** saiu:
+  agora o perfil é a única informação de função, e ele é que define as permissões.
+- A migration converte quem era `funcionario` em `atendente`, então ninguém perde o acesso.
+- Onde as fases anteriores falam em **Funcionário**, leia **Atendente/Vendedor**. As permissões atuais são estas:
+
+| Ação | Administrador | Gerente | Atendente/Vendedor |
+|---|:---:|:---:|:---:|
+| Usuários da equipe (cadastrar, editar, inativar) | ✅ | — | — |
+| Categorias, Fornecedores e Promoções: cadastrar e editar | ✅ | ✅ | Só consulta |
+| Inativar/Reativar categoria, fornecedor, produto e promoção | ✅ | ✅ | — |
+| Produtos: cadastrar, editar e repor estoque | ✅ | ✅ | ✅ |
+| Pedidos: consultar e avançar o status | ✅ | ✅ | ✅ |
+| Cancelar pedido aguardando pagamento | ✅ | ✅ | ✅ |
+| Cancelar pedido pago (com estorno) e confirmar boleto | ✅ | ✅ | — |
+| Relatórios de Vendas, Produtos/Estoque e Clientes | ✅ | ✅ | ✅ |
+
+- **Correção junto com esta fase**: quando um pedido aguardando pagamento era cancelado e o cliente tentava comprar de novo,
+  aparecia o erro *Duplicate entry … pedidos_carrinho_id_unique*. Agora os itens vão para um **carrinho novo** e o antigo fica
+  finalizado, ligado ao pedido cancelado.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -249,7 +270,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | 9 | Conta do cliente (consultar, editar, encerrar) | 3.10–3.12 | ✅ Pronta |
 | 10 | Relatórios | 3.32–3.34 | ✅ Pronta |
 | 11 | Revisão de comentários e tela inicial do painel | — | ✅ Pronta |
-| 12 | Perfis (Administrador, Gerente, Atendente/Vendedor) | 2.2, 3.5–3.8 | A fazer |
+| 12 | Perfis (Administrador, Gerente, Atendente/Vendedor) | 2.2, 3.5–3.8 | ✅ Pronta |
 | 13 | Documentos e endereços (fornecedor PF/PJ, CPF do cliente, CEP) | 3.9–3.12, 3.26–3.29 | A fazer |
 | 14 | PDF com dompdf | 3.32–3.34 | A fazer |
 | 15 | Auditoria (motivo obrigatório e relatório) | 3.35 | A fazer |
@@ -300,7 +321,7 @@ app/Http/Requests/              Validações (Form Requests)
 app/Models/                     User, Categoria, Fornecedor, Produto, Auditoria, Carrinho, Pedido
 app/Models/Concerns/TemStatus   Comportamento comum de Ativo/Inativo (exclusão lógica)
 app/Pagamentos/                 Provedor de pagamento (interface + simulado)
-app/Policies/                   Quem pode fazer o quê em cada cadastro (Admin x Funcionário)
+app/Policies/                   Quem pode fazer o quê em cada cadastro (Administrador, Gerente e Atendente)
 app/Relatorios/                 Os 3 relatórios (consulta, colunas, indicadores)
 app/Services/FinalizarCompra    Processo de pagamento (pagar, aprovar, baixar estoque, finalizar carrinho)
 app/Services/AndamentoPedido    Atualizar status e cancelar pedido
@@ -326,7 +347,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (214 testes até a Fase 11) |
+| `php artisan test` | Roda os testes automatizados (225 testes até a Fase 12) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

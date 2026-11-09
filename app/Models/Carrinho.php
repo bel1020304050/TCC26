@@ -58,6 +58,35 @@ class Carrinho extends Model
             ?? static::create(['user_id' => $cliente->id]);
     }
 
+    /**
+     * Regra: quando um pedido é cancelado antes do pagamento, o cliente recebe os itens de volta num carrinho editável.
+     *
+     * Banco: cada pedido aponta para o carrinho que o gerou, e a coluna pedidos.carrinho_id é única
+     * (um carrinho gera no máximo um pedido). Por isso NÃO reabrimos o mesmo carrinho: se ele voltasse
+     * a ser "aberto", o próximo pedido tentaria usar o mesmo carrinho_id e o banco recusaria.
+     * Em vez disso, o carrinho antigo fica encerrado junto do pedido cancelado, e os itens
+     * (e o cupom) são copiados para um carrinho novo.
+     */
+    public function devolverItensAoCliente(): ?self
+    {
+        if ($this->status !== self::EM_PAGAMENTO) {
+            return null;
+        }
+
+        $novo = static::create(['user_id' => $this->user_id]);
+        $novo->cupom = $this->cupom;
+        $novo->save();
+
+        foreach ($this->itens as $item) {
+            $novo->itens()->create(['produto_id' => $item->produto_id, 'quantidade' => $item->quantidade]);
+        }
+
+        $this->status = self::FINALIZADO;
+        $this->save();
+
+        return $novo;
+    }
+
     // Quantidade total de peças (para o "Carrinho (n)" do topo)
     public static function quantidadeDoCliente(User $cliente): int
     {

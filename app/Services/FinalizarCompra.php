@@ -178,12 +178,9 @@ class FinalizarCompra
             ->values()->all();
     }
 
-    // Regra: pedido cancelado antes do pagamento devolve o carrinho para "Aberto" (editável)
+    // Regra: pedido cancelado antes do pagamento devolve os itens para um carrinho editável
     private function reabrirCarrinho(Pedido $pedido): void
     {
-        if ($pedido->carrinho && $pedido->carrinho->status === Carrinho::EM_PAGAMENTO) {
-            $pedido->carrinho->status = Carrinho::ABERTO;
-            $pedido->carrinho->save();
-        }
+        $pedido->carrinho?->devolverItensAoCliente();
     }
 }

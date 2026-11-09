@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 /**
- * Relatório de Vendas (só Administrador).
+ * Relatório de Vendas (toda a equipe).
  * Venda paga = Pago, Em Separação, Enviado ou Entregue. O resto aparece na lista, mas não entra no faturamento.
  */
 class RelatorioVendas extends Relatorio

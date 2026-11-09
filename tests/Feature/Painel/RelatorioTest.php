@@ -20,13 +20,13 @@ class RelatorioTest extends TestCase
 
     private User $admin;
 
-    private User $funcionario;
+    private User $atendente;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->admin = User::factory()->admin()->create();
-        $this->funcionario = User::factory()->funcionario()->create();
+        $this->atendente = User::factory()->atendente()->create();
     }
 
     private function pedido(User $cliente, string $status, float $total, string $data, ?string $forma = null): Pedido
@@ -91,14 +91,17 @@ class RelatorioTest extends TestCase
             ->assertSeeInOrder(['Vendas pagas no período', '0', 'Faturamento', 'R$ 0,00', 'Ticket médio', 'R$ 0,00']);
     }
 
-    // Segurança: Vendas e Clientes recusam quem não é Administrador, inclusive na exportação
-    public function test_vendas_e_clientes_so_para_admin_inclusive_exportacao(): void
+    // Segurança: os 3 relatórios são de toda a equipe; cliente é recusado, inclusive na exportação
+    public function test_relatorios_para_toda_a_equipe_e_nunca_para_cliente(): void
     {
         $cliente = User::factory()->create();
+        $equipe = [$this->admin, User::factory()->gerente()->create(), $this->atendente];
 
-        foreach (['vendas', 'clientes'] as $relatorio) {
+        foreach (['vendas', 'clientes', 'estoque'] as $relatorio) {
             foreach (['', '?exportar=csv', '?exportar=pdf'] as $sufixo) {
-                $this->actingAs($this->funcionario)->get("/painel/relatorios/{$relatorio}{$sufixo}")->assertForbidden();
+                foreach ($equipe as $usuario) {
+                    $this->actingAs($usuario)->get("/painel/relatorios/{$relatorio}{$sufixo}")->assertOk();
+                }
                 $this->actingAs($cliente)->get("/painel/relatorios/{$relatorio}{$sufixo}")->assertForbidden();
             }
         }
@@ -134,12 +137,12 @@ class RelatorioTest extends TestCase
     }
 
     // CT-3-33-01
-    public function test_funcionario_gera_estoque_com_destaque_de_estoque_baixo(): void
+    public function test_atendente_gera_estoque_com_destaque_de_estoque_baixo(): void
     {
         Produto::factory()->create(['nome' => 'Saia Midi', 'estoque' => 6]);
         Produto::factory()->create(['nome' => 'Blusa Básica', 'estoque' => 25]);
 
-        $this->actingAs($this->funcionario)->get('/painel/relatorios/estoque')
+        $this->actingAs($this->atendente)->get('/painel/relatorios/estoque')
             ->assertOk()
             ->assertSeeInOrder(['Produtos listados', '2', 'Unidades em estoque', '31', 'Com estoque baixo', '1'])
             ->assertSee('mm-linha-destaque', false)
@@ -165,7 +168,7 @@ class RelatorioTest extends TestCase
         $vazia = Categoria::factory()->create(['nome' => 'Acessórios']);
         Produto::factory()->create();
 
-        $this->actingAs($this->funcionario)->get("/painel/relatorios/estoque?categoria={$vazia->id}")
+        $this->actingAs($this->atendente)->get("/painel/relatorios/estoque?categoria={$vazia->id}")
             ->assertOk()->assertSee('Nenhum resultado para os filtros escolhidos.')->assertSeeInOrder(['Produtos listados', '0']);
     }
 
@@ -242,10 +245,11 @@ class RelatorioTest extends TestCase
         $this->assertStringNotContainsString('91234-5678', $csv);
     }
 
-    public function test_pagina_inicial_mostra_so_os_relatorios_permitidos(): void
+    public function test_pagina_inicial_mostra_os_tres_relatorios_para_a_equipe(): void
     {
-        $this->actingAs($this->funcionario)->get('/painel/relatorios')
-            ->assertOk()->assertSee('Produtos / Estoque')->assertDontSee(route('painel.relatorios.vendas'));
+        $this->actingAs($this->atendente)->get('/painel/relatorios')
+            ->assertOk()->assertSee('Produtos / Estoque')
+            ->assertSee(route('painel.relatorios.vendas'))->assertSee(route('painel.relatorios.clientes'));
         $this->actingAs($this->admin)->get('/painel/relatorios')
             ->assertSee(route('painel.relatorios.vendas'))->assertSee(route('painel.relatorios.clientes'));
     }

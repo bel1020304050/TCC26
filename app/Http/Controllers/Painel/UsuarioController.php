@@ -19,7 +19,6 @@ use Illuminate\View\View;
  */
 class UsuarioController extends Controller
 {
-    private const PERFIS = [User::PERFIL_FUNCIONARIO, User::PERFIL_ADMIN];
 
     // Lista só a equipe; clientes não aparecem aqui (eles ficam no Relatório de Clientes)
     public function index(Request $request): View
@@ -35,7 +34,7 @@ class UsuarioController extends Controller
             ->when($busca !== '', fn ($q) => $q->where(fn ($q) => $q
                 ->where('name', 'like', "%{$busca}%")
                 ->orWhere('email', 'like', "%{$busca}%")))
-            ->when(in_array($perfil, self::PERFIS, true), fn ($q) => $q->where('perfil', $perfil))
+            ->when(in_array($perfil, User::PERFIS_EQUIPE, true), fn ($q) => $q->where('perfil', $perfil))
             ->when(in_array($status, Status::OPCOES, true), fn ($q) => $q->where('status', $status))
             ->orderBy('name')
             ->paginate(15)
@@ -49,12 +48,12 @@ class UsuarioController extends Controller
     {
         Gate::authorize('create', User::class);
 
-        return view('painel.usuarios.form', ['usuario' => new User(['perfil' => User::PERFIL_FUNCIONARIO])]);
+        return view('painel.usuarios.form', ['usuario' => new User(['perfil' => User::PERFIL_ATENDENTE])]);
     }
 
     public function store(UsuarioRequest $request): RedirectResponse
     {
-        $usuario = new User($request->safe()->only(['name', 'email', 'telefone', 'cargo', 'password']));
+        $usuario = new User($request->safe()->only(['name', 'email', 'telefone', 'password']));
         $usuario->perfil = $request->validated('perfil');   // definido no servidor, nunca em massa
         $usuario->status = $request->validated('status');
         $usuario->save();
@@ -82,7 +81,7 @@ class UsuarioController extends Controller
             return back()->withInput()->with('erro', 'O sistema precisa de pelo menos um Administrador ativo.');
         }
 
-        $campos = ['name', 'email', 'telefone', 'cargo'];
+        $campos = ['name', 'email', 'telefone'];
         $antes = $usuario->only([...$campos, 'perfil']);
 
         $usuario->fill($request->safe()->only($campos));

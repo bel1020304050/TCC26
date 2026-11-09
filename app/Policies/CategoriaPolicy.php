@@ -7,8 +7,8 @@ use App\Models\User;
 
 /**
  * Permissões de Categoria:
- * - Administrador: CRUD completo.
- * - Funcionário: só consulta.
+ * - Administrador e Gerente: cadastrar, editar, inativar e reativar.
+ * - Atendente/Vendedor: só consulta.
  * - Cliente: sem acesso.
  */
 class CategoriaPolicy
@@ -20,17 +20,17 @@ class CategoriaPolicy
 
     public function create(User $user): bool
     {
-        return $user->isAdmin();
+        return $user->isGestao();
     }
 
     public function update(User $user, Categoria $categoria): bool
     {
-        return $user->isAdmin();
+        return $user->isGestao();
     }
 
     // Inativar e reativar (exclusão lógica)
     public function alterarStatus(User $user, Categoria $categoria): bool
     {
-        return $user->isAdmin();
+        return $user->isGestao();
     }
 }

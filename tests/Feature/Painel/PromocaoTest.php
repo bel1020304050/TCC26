@@ -97,10 +97,10 @@ class PromocaoTest extends TestCase
             ->assertSessionHasErrors(['codigo' => 'Este código de cupom já está em uso.']);
     }
 
-    // Segurança: o Funcionário só consulta promoções
-    public function test_funcionario_so_consulta(): void
+    // Segurança: o Atendente só consulta promoções
+    public function test_atendente_so_consulta(): void
     {
-        $func = User::factory()->funcionario()->create();
+        $func = User::factory()->atendente()->create();
         $promocao = Promocao::factory()->create(['nome' => 'Queima de Saias']);
 
         $this->actingAs($func)->get('/painel/promocoes')->assertOk()->assertSee('Queima de Saias')

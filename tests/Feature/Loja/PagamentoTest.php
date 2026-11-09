@@ -163,9 +163,9 @@ class PagamentoTest extends TestCase
         $this->assertNotEmpty($boleto->boleto_linha);
         $this->assertSame(Pedido::AGUARDANDO_PAGAMENTO, $this->pedido->fresh()->status);
 
-        // Cliente e Funcionário não confirmam
+        // Cliente e Atendente não confirmam
         $this->actingAs($this->cliente)->post("/painel/pagamentos/{$boleto->id}/confirmar-boleto")->assertForbidden();
-        $this->actingAs(User::factory()->funcionario()->create())->post("/painel/pagamentos/{$boleto->id}/confirmar-boleto")->assertForbidden();
+        $this->actingAs(User::factory()->atendente()->create())->post("/painel/pagamentos/{$boleto->id}/confirmar-boleto")->assertForbidden();
 
         $admin = User::factory()->admin()->create();
         $this->actingAs($admin)->get("/painel/pedidos/{$this->pedido->id}")->assertSee('Confirmar compensação do boleto');
@@ -205,7 +205,13 @@ class PagamentoTest extends TestCase
         $this->assertSame(Pedido::CANCELADO, $this->pedido->fresh()->status);
         $this->assertSame(1, $this->vestido->fresh()->estoque); // nada baixado
         $this->assertSame(12, $this->blusa->fresh()->estoque);
-        $this->assertSame(Carrinho::ABERTO, $this->pedido->carrinho()->first()->status); // volta a ser editável
+        // Os itens voltam para um carrinho novo e editável, e o cliente consegue comprar de novo
+        $novo = Carrinho::doCliente($this->cliente);
+        $this->assertTrue($novo->isAberto());
+        $this->assertSame(2, $novo->itens()->count());
+        $this->vestido->update(['estoque' => 8]);
+        $this->actingAs($this->cliente)->post('/pedidos');
+        $this->assertSame(2, Pedido::count());
     }
 
     public function test_estoque_revalidado_antes_de_enviar_ao_provedor(): void

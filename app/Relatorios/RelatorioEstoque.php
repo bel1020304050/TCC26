@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 /**
- * Relatório de Produtos / Estoque (Administrador e Funcionário).
+ * Relatório de Produtos / Estoque (toda a equipe).
  * Estoque baixo = 10 unidades ou menos.
  */
 class RelatorioEstoque extends Relatorio

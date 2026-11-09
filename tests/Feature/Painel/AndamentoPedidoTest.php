@@ -20,7 +20,7 @@ class AndamentoPedidoTest extends TestCase
 
     private User $cliente;
 
-    private User $funcionario;
+    private User $atendente;
 
     private User $admin;
 
@@ -30,7 +30,7 @@ class AndamentoPedidoTest extends TestCase
     {
         parent::setUp();
         $this->cliente = User::factory()->create();
-        $this->funcionario = User::factory()->funcionario()->create(['name' => 'Rafael Martins']);
+        $this->atendente = User::factory()->atendente()->create(['name' => 'Rafael Martins']);
         $this->admin = User::factory()->admin()->create();
         $this->vestido = Produto::factory()->create(['preco' => 100, 'estoque' => 8]);
     }
@@ -61,15 +61,15 @@ class AndamentoPedidoTest extends TestCase
     }
 
     // CT-3-20-01
-    public function test_funcionario_avanca_pago_para_em_separacao_com_historico(): void
+    public function test_atendente_avanca_pago_para_em_separacao_com_historico(): void
     {
         $pedido = $this->pedidoPago();
 
-        $this->mudarStatus($this->funcionario, $pedido, Pedido::EM_SEPARACAO)->assertSessionHas('sucesso');
+        $this->mudarStatus($this->atendente, $pedido, Pedido::EM_SEPARACAO)->assertSessionHas('sucesso');
 
         $this->assertSame(Pedido::EM_SEPARACAO, $pedido->fresh()->status);
         $this->assertDatabaseHas('pedido_historicos', [
-            'pedido_id' => $pedido->id, 'status_anterior' => 'pago', 'status' => 'em_separacao', 'user_id' => $this->funcionario->id,
+            'pedido_id' => $pedido->id, 'status_anterior' => 'pago', 'status' => 'em_separacao', 'user_id' => $this->atendente->id,
         ]);
         $this->assertDatabaseHas('auditorias', ['acao' => 'alterou_status', 'entidade' => 'pedidos', 'entidade_id' => $pedido->id]);
 
@@ -82,7 +82,7 @@ class AndamentoPedidoTest extends TestCase
         $pedido = $this->pedidoPago();
 
         foreach ([Pedido::EM_SEPARACAO, Pedido::ENVIADO, Pedido::ENTREGUE] as $proximo) {
-            $this->mudarStatus($this->funcionario, $pedido, $proximo)->assertSessionHas('sucesso');
+            $this->mudarStatus($this->atendente, $pedido, $proximo)->assertSessionHas('sucesso');
         }
 
         $this->assertSame(Pedido::ENTREGUE, $pedido->fresh()->status);
@@ -94,9 +94,9 @@ class AndamentoPedidoTest extends TestCase
     {
         $pedido = $this->pedidoPago();
 
-        $this->mudarStatus($this->funcionario, $pedido, Pedido::ENTREGUE)
+        $this->mudarStatus($this->atendente, $pedido, Pedido::ENTREGUE)
             ->assertSessionHas('erro', 'Transição não permitida: o próximo status permitido é Em Separação.');
-        $this->mudarStatus($this->funcionario, $pedido, Pedido::AGUARDANDO_PAGAMENTO)->assertSessionHas('erro');
+        $this->mudarStatus($this->atendente, $pedido, Pedido::AGUARDANDO_PAGAMENTO)->assertSessionHas('erro');
 
         $this->assertSame(Pedido::PAGO, $pedido->fresh()->status);
     }
@@ -121,7 +121,7 @@ class AndamentoPedidoTest extends TestCase
     {
         $pedido = $this->pedidoPago();
 
-        $this->actingAs($this->funcionario)->get('/painel/pedidos')
+        $this->actingAs($this->atendente)->get('/painel/pedidos')
             ->assertSee('Atualizar status')
             ->assertSee('<option value="em_separacao">Em Separação</option>', false)
             ->assertDontSee('<option value="entregue">', false);
@@ -138,7 +138,12 @@ class AndamentoPedidoTest extends TestCase
             ->assertSessionHas('sucesso');
 
         $this->assertSame(Pedido::CANCELADO, $pedido->fresh()->status);
-        $this->assertSame(Carrinho::ABERTO, $pedido->carrinho()->first()->status);
+        // Os itens voltam para um carrinho NOVO e editável; o antigo fica encerrado junto do pedido cancelado
+        $this->assertSame(Carrinho::FINALIZADO, $pedido->carrinho()->first()->status);
+        $novo = Carrinho::doCliente($this->cliente);
+        $this->assertTrue($novo->isAberto());
+        $this->assertNotSame($pedido->carrinho_id, $novo->id);
+        $this->assertSame(2, $novo->itens()->sole()->quantidade);
         $this->assertSame(Pagamento::RECUSADO, Pagamento::sole()->status); // PIX deixou de valer
         $this->assertSame(8, $this->vestido->fresh()->estoque);
         $this->assertDatabaseHas('pedido_historicos', ['pedido_id' => $pedido->id, 'status' => 'cancelado', 'user_id' => $this->cliente->id]);
@@ -146,6 +151,28 @@ class AndamentoPedidoTest extends TestCase
 
         // Permanece no histórico do cliente
         $this->actingAs($this->cliente)->get('/meus-pedidos')->assertSee($pedido->numero())->assertSee('Cancelado');
+    }
+
+    // Erro encontrado no teste manual: cancelar e comprar de novo dava "Duplicate entry" em pedidos.carrinho_id
+    public function test_cliente_cancela_e_consegue_comprar_de_novo(): void
+    {
+        $primeiro = $this->pedidoAguardando();
+        $this->actingAs($this->cliente)->patch("/meus-pedidos/{$primeiro->id}/cancelar");
+
+        $this->actingAs($this->cliente)->get('/carrinho')->assertOk()->assertSee('Finalizar compra');
+        $this->actingAs($this->cliente)->post('/pedidos')->assertSessionHasNoErrors();
+
+        $segundo = Pedido::latest('id')->first();
+        $this->assertNotSame($primeiro->id, $segundo->id);
+        $this->assertSame(Pedido::AGUARDANDO_PAGAMENTO, $segundo->status);
+        $this->assertNotSame($primeiro->carrinho_id, $segundo->carrinho_id);
+        $this->assertSame(Pedido::CANCELADO, $primeiro->fresh()->status);
+
+        // Dá para cancelar e comprar mais uma vez
+        $this->actingAs($this->cliente)->patch("/meus-pedidos/{$segundo->id}/cancelar");
+        $this->actingAs($this->cliente)->post('/pedidos');
+        $this->assertSame(3, Pedido::count());
+        $this->assertSame(1, Carrinho::where('user_id', $this->cliente->id)->where('status', Carrinho::EM_PAGAMENTO)->count());
     }
 
     public function test_pix_pago_depois_do_cancelamento_nao_baixa_estoque(): void
@@ -162,24 +189,24 @@ class AndamentoPedidoTest extends TestCase
     }
 
     // CT-3-21-02
-    public function test_funcionario_nao_cancela_pedido_pago(): void
+    public function test_atendente_nao_cancela_pedido_pago(): void
     {
         $pedido = $this->pedidoPago();
 
-        $this->actingAs($this->funcionario)->from("/painel/pedidos/{$pedido->id}")
+        $this->actingAs($this->atendente)->from("/painel/pedidos/{$pedido->id}")
             ->patch("/painel/pedidos/{$pedido->id}/cancelar", ['motivo' => 'Cliente pediu'])
-            ->assertSessionHas('erro', 'Pedidos pagos só podem ser cancelados pelo Administrador, com estorno.');
+            ->assertSessionHas('erro', 'Pedidos pagos só podem ser cancelados pelo Administrador ou pelo Gerente, com estorno.');
 
         $this->assertSame(Pedido::PAGO, $pedido->fresh()->status);
-        $this->actingAs($this->funcionario)->get("/painel/pedidos/{$pedido->id}")
-            ->assertSee('Pedidos pagos só podem ser cancelados pelo Administrador')
+        $this->actingAs($this->atendente)->get("/painel/pedidos/{$pedido->id}")
+            ->assertSee('Pedidos pagos só podem ser cancelados pelo Administrador ou pelo Gerente')
             ->assertDontSee('Confirmar cancelamento');
     }
 
     public function test_admin_cancela_pedido_pago_com_estorno_e_devolucao_ao_estoque(): void
     {
         $pedido = $this->pedidoPago();
-        $this->mudarStatus($this->funcionario, $pedido, Pedido::EM_SEPARACAO);
+        $this->mudarStatus($this->atendente, $pedido, Pedido::EM_SEPARACAO);
 
         $this->actingAs($this->admin)->from("/painel/pedidos/{$pedido->id}")
             ->patch("/painel/pedidos/{$pedido->id}/cancelar", ['motivo' => 'Cliente desistiu por telefone'])
@@ -198,11 +225,11 @@ class AndamentoPedidoTest extends TestCase
     {
         $pedido = $this->pedidoAguardando();
 
-        $this->actingAs($this->funcionario)->patch("/painel/pedidos/{$pedido->id}/cancelar", ['motivo' => ''])
+        $this->actingAs($this->atendente)->patch("/painel/pedidos/{$pedido->id}/cancelar", ['motivo' => ''])
             ->assertSessionHasErrors('motivo');
         $this->assertSame(Pedido::AGUARDANDO_PAGAMENTO, $pedido->fresh()->status);
 
-        $this->actingAs($this->funcionario)->patch("/painel/pedidos/{$pedido->id}/cancelar", ['motivo' => 'Pedido duplicado'])
+        $this->actingAs($this->atendente)->patch("/painel/pedidos/{$pedido->id}/cancelar", ['motivo' => 'Pedido duplicado'])
             ->assertSessionHas('sucesso');
         $this->assertSame(Pedido::CANCELADO, $pedido->fresh()->status);
     }
@@ -210,8 +237,8 @@ class AndamentoPedidoTest extends TestCase
     public function test_enviado_entregue_e_cancelado_nao_podem_ser_cancelados(): void
     {
         $pedido = $this->pedidoPago();
-        $this->mudarStatus($this->funcionario, $pedido, Pedido::EM_SEPARACAO);
-        $this->mudarStatus($this->funcionario, $pedido, Pedido::ENVIADO);
+        $this->mudarStatus($this->atendente, $pedido, Pedido::EM_SEPARACAO);
+        $this->mudarStatus($this->atendente, $pedido, Pedido::ENVIADO);
 
         $this->actingAs($this->admin)->from("/painel/pedidos/{$pedido->id}")
             ->patch("/painel/pedidos/{$pedido->id}/cancelar", ['motivo' => 'Tentativa'])

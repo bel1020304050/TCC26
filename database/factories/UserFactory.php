@@ -38,15 +38,23 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn () => [
-            'perfil' => User::PERFIL_ADMIN, 'cargo' => 'Gerente',
+            'perfil' => User::PERFIL_ADMIN,
             'cep' => null, 'rua' => null, 'numero' => null, 'bairro' => null, 'cidade' => null, 'uf' => null,
         ]);
     }
 
-    public function funcionario(): static
+    public function gerente(): static
     {
         return $this->state(fn () => [
-            'perfil' => User::PERFIL_FUNCIONARIO, 'cargo' => 'Vendedora',
+            'perfil' => User::PERFIL_GERENTE,
+            'cep' => null, 'rua' => null, 'numero' => null, 'bairro' => null, 'cidade' => null, 'uf' => null,
+        ]);
+    }
+
+    public function atendente(): static
+    {
+        return $this->state(fn () => [
+            'perfil' => User::PERFIL_ATENDENTE,
             'cep' => null, 'rua' => null, 'numero' => null, 'bairro' => null, 'cidade' => null, 'uf' => null,
         ]);
     }

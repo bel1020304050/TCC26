@@ -22,7 +22,7 @@
             </form>
 
             <p class="text-muted small mt-4 mb-0">
-                Login único para clientes, funcionários e administradores: após entrar, cada perfil é levado à sua área.
+                Login único para clientes e para a equipe da loja: após entrar, cada perfil é levado à sua área.
             </p>
         </div>
     </div>

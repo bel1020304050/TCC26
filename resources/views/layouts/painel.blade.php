@@ -10,14 +10,14 @@
         // Menu lateral. "perfis" = quem vê o item; "ativo" = rotas que deixam o item destacado.
         // Segurança: esconder o item é só visual; cada rota também confere a permissão no servidor.
         $menu = [
-            ['titulo' => 'Início', 'icone' => 'house', 'rota' => 'painel.inicio', 'perfis' => ['admin', 'funcionario']],
-            ['titulo' => 'Produtos', 'icone' => 'tag', 'rota' => 'painel.produtos.index', 'ativo' => 'painel.produtos.*', 'perfis' => ['admin', 'funcionario']],
-            ['titulo' => 'Categorias', 'icone' => 'grid', 'rota' => 'painel.categorias.index', 'ativo' => 'painel.categorias.*', 'perfis' => ['admin', 'funcionario']],
-            ['titulo' => 'Pedidos', 'icone' => 'receipt', 'rota' => 'painel.pedidos.index', 'ativo' => 'painel.pedidos.*', 'perfis' => ['admin', 'funcionario']],
-            ['titulo' => 'Promoções', 'icone' => 'percent', 'rota' => 'painel.promocoes.index', 'ativo' => 'painel.promocoes.*', 'perfis' => ['admin', 'funcionario']],
-            ['titulo' => 'Fornecedores', 'icone' => 'truck', 'rota' => 'painel.fornecedores.index', 'ativo' => 'painel.fornecedores.*', 'perfis' => ['admin', 'funcionario']],
+            ['titulo' => 'Início', 'icone' => 'house', 'rota' => 'painel.inicio', 'perfis' => ['admin', 'gerente', 'atendente']],
+            ['titulo' => 'Produtos', 'icone' => 'tag', 'rota' => 'painel.produtos.index', 'ativo' => 'painel.produtos.*', 'perfis' => ['admin', 'gerente', 'atendente']],
+            ['titulo' => 'Categorias', 'icone' => 'grid', 'rota' => 'painel.categorias.index', 'ativo' => 'painel.categorias.*', 'perfis' => ['admin', 'gerente', 'atendente']],
+            ['titulo' => 'Pedidos', 'icone' => 'receipt', 'rota' => 'painel.pedidos.index', 'ativo' => 'painel.pedidos.*', 'perfis' => ['admin', 'gerente', 'atendente']],
+            ['titulo' => 'Promoções', 'icone' => 'percent', 'rota' => 'painel.promocoes.index', 'ativo' => 'painel.promocoes.*', 'perfis' => ['admin', 'gerente', 'atendente']],
+            ['titulo' => 'Fornecedores', 'icone' => 'truck', 'rota' => 'painel.fornecedores.index', 'ativo' => 'painel.fornecedores.*', 'perfis' => ['admin', 'gerente', 'atendente']],
             ['titulo' => 'Usuários', 'icone' => 'people', 'rota' => 'painel.usuarios.index', 'ativo' => 'painel.usuarios.*', 'perfis' => ['admin']],
-            ['titulo' => 'Relatórios', 'icone' => 'bar-chart', 'rota' => 'painel.relatorios.index', 'ativo' => 'painel.relatorios.*', 'perfis' => ['admin', 'funcionario']],
+            ['titulo' => 'Relatórios', 'icone' => 'bar-chart', 'rota' => 'painel.relatorios.index', 'ativo' => 'painel.relatorios.*', 'perfis' => ['admin', 'gerente', 'atendente']],
         ];
     @endphp
 
