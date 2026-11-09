@@ -17,11 +17,20 @@ class Fornecedor extends Model
     // O Laravel deduziria "fornecedors"; em português o plural é "fornecedores"
     protected $table = 'fornecedores';
 
-    protected $fillable = ['nome', 'documento', 'telefone', 'email'];
+    public const FISICA = 'fisica';
+
+    public const JURIDICA = 'juridica';
+
+    public const TIPOS = [self::FISICA => 'Pessoa Física', self::JURIDICA => 'Pessoa Jurídica'];
+
+    protected $fillable = [
+        'nome', 'tipo_pessoa', 'documento', 'telefone', 'email',
+        'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf',
+    ];
 
     protected $attributes = ['status' => Status::ATIVO];
 
-    // Salva o CPF/CNPJ só com números (facilita a pesquisa e a regra de único)
+    // Salva o CPF/CNPJ sem pontuação e em maiúsculas (facilita a pesquisa e a regra de único)
     protected function documento(): Attribute
     {
         return Attribute::make(
@@ -33,6 +42,22 @@ class Fornecedor extends Model
     public function documentoFormatado(): ?string
     {
         return Documento::formatar($this->documento);
+    }
+
+    public function tipoLabel(): string
+    {
+        return self::TIPOS[$this->tipo_pessoa] ?? $this->tipo_pessoa;
+    }
+
+    // "Rua Ipiranga, 450 – Sala 2 · Centro · Maringá/PR · CEP 87020-000"
+    public function enderecoCompleto(): ?string
+    {
+        if (! $this->rua) {
+            return null;
+        }
+
+        return $this->rua.', '.$this->numero.($this->complemento ? ' – '.$this->complemento : '')
+            .' · '.$this->bairro.' · '.$this->cidade.'/'.$this->uf.' · CEP '.$this->cep;
     }
 
     public function produtos(): HasMany

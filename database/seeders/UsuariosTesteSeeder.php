@@ -28,7 +28,7 @@ class UsuariosTesteSeeder extends Seeder
             ],
             [
                 'dados' => [
-                    'name' => 'Ana Souza', 'email' => 'ana@email.com', 'telefone' => '(44) 99999-0000',
+                    'name' => 'Ana Souza', 'email' => 'ana@email.com', 'telefone' => '(44) 99999-0000', 'cpf' => '123.456.789-09',
                     'cep' => '87501-000', 'rua' => 'Avenida Brasil', 'numero' => '120', 'complemento' => 'Apto 32',
                     'bairro' => 'Centro', 'cidade' => 'Umuarama', 'uf' => 'PR',
                 ],

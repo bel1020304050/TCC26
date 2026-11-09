@@ -4,32 +4,43 @@ namespace App\Support;
 
 /**
  * Funções para CPF e CNPJ: limpar, validar e formatar.
- * Os dois usam "dígitos verificadores": os últimos 2 números são calculados a partir dos
+ * Os dois usam "dígitos verificadores": os últimos 2 caracteres são calculados a partir dos
  * anteriores. Se o cálculo não bater, o documento foi digitado errado.
+ *
+ * Regra: desde julho de 2026 a Receita Federal emite CNPJ alfanumérico (ex.: 12.ABC.345/01DE-35).
+ * As 12 primeiras posições aceitam letras e números; os 2 dígitos verificadores continuam numéricos.
+ * Os CNPJs antigos, só com números, continuam válidos pelo mesmo cálculo.
  */
 final class Documento
 {
-    // "12.345.678/0001-95" -> "12345678000195"
+    public const CPF = 'cpf';
+
+    public const CNPJ = 'cnpj';
+
+    // "12.abc.345/01de-35" -> "12ABC34501DE35"; "529.982.247-25" -> "52998224725"
     public static function limpar(?string $valor): string
     {
-        return preg_replace('/\D/', '', (string) $valor);
+        return preg_replace('/[^0-9A-Z]/', '', mb_strtoupper((string) $valor));
     }
 
+    // Valida pelo tamanho: 11 caracteres = CPF, 14 = CNPJ
     public static function valido(?string $valor): bool
     {
-        $numeros = self::limpar($valor);
+        $limpo = self::limpar($valor);
 
-        return match (strlen($numeros)) {
-            11 => self::cpfValido($numeros),
-            14 => self::cnpjValido($numeros),
+        return match (strlen($limpo)) {
+            11 => self::cpfValido($limpo),
+            14 => self::cnpjValido($limpo),
             default => false,
         };
     }
 
-    public static function cpfValido(string $cpf): bool
+    public static function cpfValido(?string $valor): bool
     {
-        // Sequências repetidas (111.111.111-11) passam na conta, mas não são válidas
-        if (strlen($cpf) !== 11 || preg_match('/^(\d)\1{10}$/', $cpf)) {
+        $cpf = self::limpar($valor);
+
+        // Só números, e sequências repetidas (111.111.111-11) passam na conta, mas não são válidas
+        if (! preg_match('/^\d{11}$/', $cpf) || preg_match('/^(\d)\1{10}$/', $cpf)) {
             return false;
         }
 
@@ -47,9 +58,11 @@ final class Documento
         return true;
     }
 
-    public static function cnpjValido(string $cnpj): bool
+    public static function cnpjValido(?string $valor): bool
     {
-        if (strlen($cnpj) !== 14 || preg_match('/^(\d)\1{13}$/', $cnpj)) {
+        $cnpj = self::limpar($valor);
+
+        if (! preg_match('/^[0-9A-Z]{12}\d{2}$/', $cnpj) || preg_match('/^(.)\1{13}$/', $cnpj)) {
             return false;
         }
 
@@ -58,7 +71,8 @@ final class Documento
         foreach ([12, 13] as $indice => $posicao) {
             $soma = 0;
             for ($i = 0; $i < $posicao; $i++) {
-                $soma += (int) $cnpj[$i] * $pesos[$indice][$i];
+                // Cada caractere vale o código ASCII menos 48: '0'..'9' = 0..9, 'A' = 17, 'B' = 18 ...
+                $soma += (ord($cnpj[$i]) - 48) * $pesos[$indice][$i];
             }
             $resto = $soma % 11;
             $digito = $resto < 2 ? 0 : 11 - $resto;
@@ -70,14 +84,14 @@ final class Documento
         return true;
     }
 
-    // "12345678000195" -> "12.345.678/0001-95"; "52998224725" -> "529.982.247-25"
+    // "12345678000195" -> "12.345.678/0001-95"; "12ABC34501DE35" -> "12.ABC.345/01DE-35"; "52998224725" -> "529.982.247-25"
     public static function formatar(?string $valor): ?string
     {
-        $n = self::limpar($valor);
+        $limpo = self::limpar($valor);
 
-        return match (strlen($n)) {
-            11 => preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $n),
-            14 => preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $n),
+        return match (strlen($limpo)) {
+            11 => preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $limpo),
+            14 => preg_replace('/(\w{2})(\w{3})(\w{3})(\w{4})(\w{2})/', '$1.$2.$3/$4-$5', $limpo),
             default => $valor ?: null,
         };
     }

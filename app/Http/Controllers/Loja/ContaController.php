@@ -20,7 +20,10 @@ use Illuminate\View\View;
  */
 class ContaController extends Controller
 {
-    private const CAMPOS = ['name', 'email', 'telefone', 'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf'];
+    private const CAMPOS = ['name', 'email', 'cpf', 'telefone', 'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf'];
+
+    // LGPD: o CPF não vai para a auditoria (lá fica só que a conta foi editada)
+    private const CAMPOS_AUDITORIA = ['name', 'email', 'telefone', 'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf'];
 
     // Tela "Meus dados"
     public function show(Request $request): View
@@ -41,11 +44,11 @@ class ContaController extends Controller
     public function update(EditarContaRequest $request): RedirectResponse
     {
         $cliente = $request->user();
-        $antes = $cliente->only(self::CAMPOS);
+        $antes = $cliente->only(self::CAMPOS_AUDITORIA);
 
         $cliente->fill($request->safe()->only(self::CAMPOS)); // perfil/status nunca vêm do formulário
         $cliente->save();
-        Auditoria::registrar('editou', $cliente, ['antes' => $antes, 'depois' => $cliente->only(self::CAMPOS)]);
+        Auditoria::registrar('editou', $cliente, ['antes' => $antes, 'depois' => $cliente->only(self::CAMPOS_AUDITORIA)]);
 
         // Pedidos já criados guardam a própria cópia do endereço: não mudam
         return redirect()->route('loja.conta')->with('sucesso', 'Seus dados foram atualizados. Os próximos pedidos usarão este endereço.');

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Documento;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -40,7 +41,7 @@ class User extends Authenticatable
      * Segurança: se alguém enviar um campo "perfil=admin" pelo navegador, ele é ignorado.
      */
     protected $fillable = [
-        'name', 'email', 'password', 'telefone',
+        'name', 'email', 'password', 'telefone', 'cpf',
         'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf',
     ];
 
@@ -67,6 +68,18 @@ class User extends Authenticatable
     protected function email(): Attribute
     {
         return Attribute::make(set: fn (?string $value) => $value === null ? null : mb_strtolower(trim($value)));
+    }
+
+    // CPF salvo só com números (11 dígitos); vazio vira null
+    protected function cpf(): Attribute
+    {
+        return Attribute::make(set: fn (?string $value) => ($limpo = Documento::limpar($value)) === '' ? null : $limpo);
+    }
+
+    // Para exibir na tela: 529.982.247-25
+    public function cpfFormatado(): ?string
+    {
+        return Documento::formatar($this->cpf);
     }
 
     protected function uf(): Attribute

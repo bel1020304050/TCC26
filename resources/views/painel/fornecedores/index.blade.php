@@ -18,8 +18,8 @@
                 <tr>
                     <th>Fornecedor</th>
                     <th>CPF / CNPJ</th>
-                    <th>Telefone</th>
-                    <th>E-mail</th>
+                    <th>Cidade/UF</th>
+                    <th>Contato</th>
                     <th class="text-center">Produtos ativos</th>
                     <th>Status</th>
                     @if ($podeAlterar) <th class="text-end">Ações</th> @endif
@@ -29,9 +29,15 @@
                 @forelse ($fornecedores as $fornecedor)
                     <tr>
                         <td class="fw-semibold">{{ $fornecedor->nome }}</td>
-                        <td class="text-nowrap">{{ $fornecedor->documentoFormatado() ?? '—' }}</td>
-                        <td class="text-nowrap">{{ $fornecedor->telefone ?: '—' }}</td>
-                        <td>{{ $fornecedor->email ?: '—' }}</td>
+                        <td class="text-nowrap">
+                            {{ $fornecedor->documentoFormatado() ?? '—' }}
+                            <div class="text-muted small">{{ $fornecedor->tipoLabel() }}</div>
+                        </td>
+                        <td class="text-nowrap">{{ $fornecedor->cidade ? $fornecedor->cidade.'/'.$fornecedor->uf : '—' }}</td>
+                        <td>
+                            <div class="text-nowrap">{{ $fornecedor->telefone ?: '—' }}</div>
+                            @if ($fornecedor->email) <div class="text-muted small">{{ $fornecedor->email }}</div> @endif
+                        </td>
                         <td class="text-center">{{ $fornecedor->produtos_ativos_count }}</td>
                         <td><x-status-badge :status="$fornecedor->status" /></td>
                         @if ($podeAlterar)

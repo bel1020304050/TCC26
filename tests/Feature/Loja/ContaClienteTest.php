@@ -25,7 +25,7 @@ class ContaClienteTest extends TestCase
         parent::setUp();
         $this->ana = User::factory()->create([
             'name' => 'Ana Souza', 'email' => 'ana@email.com', 'telefone' => '(44) 99999-0000', 'password' => 'cliente123',
-            'cep' => '87501-000', 'rua' => 'Avenida Brasil', 'numero' => '120', 'complemento' => 'Apto 32',
+            'cpf' => '12345678909', 'cep' => '87501-000', 'rua' => 'Avenida Brasil', 'numero' => '120', 'complemento' => 'Apto 32',
             'bairro' => 'Centro', 'cidade' => 'Umuarama', 'uf' => 'PR',
         ]);
     }
@@ -33,7 +33,7 @@ class ContaClienteTest extends TestCase
     private function dados(array $troca = []): array
     {
         return array_merge([
-            'name' => 'Ana Souza', 'email' => 'ana@email.com', 'telefone' => '(44) 99999-0000',
+            'name' => 'Ana Souza', 'email' => 'ana@email.com', 'telefone' => '(44) 99999-0000', 'cpf' => '123.456.789-09',
             'cep' => '87502-000', 'rua' => 'Rua Piauí', 'numero' => '45', 'complemento' => '',
             'bairro' => 'Zona I', 'cidade' => 'Umuarama', 'uf' => 'PR',
         ], $troca);
@@ -162,6 +162,7 @@ class ContaClienteTest extends TestCase
         $this->assertSame('Cliente removido', $ana->name);
         $this->assertNotSame('ana@email.com', $ana->email);
         $this->assertNull($ana->telefone);
+        $this->assertNull($ana->cpf);
         $this->assertNull($ana->rua);
         $this->assertNull($ana->cep);
         $this->assertDatabaseMissing('sessions', ['user_id' => $this->ana->id]);
@@ -184,6 +185,30 @@ class ContaClienteTest extends TestCase
             ->assertSessionHasNoErrors();
         $this->assertSame(2, User::clientes()->count());
         $this->assertTrue(User::where('email', 'ana@email.com')->sole()->isAtivo());
+        // LGPD: o CPF também foi liberado na anonimização, então a conta nova pode usar o mesmo
+        $this->assertSame('12345678909', User::where('email', 'ana@email.com')->sole()->cpf);
+    }
+
+    public function test_meus_dados_mostram_o_cpf_formatado_e_a_edicao_valida_o_cpf(): void
+    {
+        $this->actingAs($this->ana)->get('/minha-conta')->assertSee('123.456.789-09');
+
+        User::factory()->create(['cpf' => '52998224725']);
+        $this->actingAs($this->ana)->put('/minha-conta', $this->dados(['cpf' => '529.982.247-25']))
+            ->assertSessionHasErrors(['cpf' => 'Este CPF já está cadastrado em outra conta.']);
+        $this->actingAs($this->ana)->put('/minha-conta', $this->dados(['cpf' => '123.456.789-00']))
+            ->assertSessionHasErrors(['cpf' => 'Informe um CPF válido.']);
+
+        // Manter o próprio CPF não conta como duplicado
+        $this->actingAs($this->ana)->put('/minha-conta', $this->dados())->assertSessionHasNoErrors();
+    }
+
+    public function test_conta_antiga_sem_cpf_ve_aviso_para_informar(): void
+    {
+        $this->ana->update(['cpf' => null]);
+
+        $this->actingAs($this->ana)->get('/minha-conta')->assertSee('Não informado')->assertSee('Informar');
+        $this->actingAs($this->ana)->put('/minha-conta', $this->dados(['cpf' => '']))->assertSessionHasErrors('cpf');
     }
 
     // CT-3-12-02

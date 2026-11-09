@@ -25,15 +25,15 @@ class FornecedorController extends Controller
 
         $busca = trim((string) $request->query('busca'));
         $status = $request->query('status');
-        $digitos = Documento::limpar($busca);
+        $documento = Documento::limpar($busca); // sem pontuação; CNPJ alfanumérico em maiúsculas
 
         $fornecedores = Fornecedor::query()
             ->withCount(['produtos as produtos_ativos_count' => fn ($q) => $q->ativos()])
-            ->when($busca !== '', function ($q) use ($busca, $digitos) {
-                $q->where(function ($q) use ($busca, $digitos) {
+            ->when($busca !== '', function ($q) use ($busca, $documento) {
+                $q->where(function ($q) use ($busca, $documento) {
                     $q->where('nome', 'like', "%{$busca}%");
-                    if (strlen($digitos) >= 3) {
-                        $q->orWhere('documento', 'like', "%{$digitos}%");
+                    if (strlen($documento) >= 3) {
+                        $q->orWhere('documento', 'like', "%{$documento}%");
                     }
                 });
             })
@@ -77,7 +77,7 @@ class FornecedorController extends Controller
 
     public function update(FornecedorRequest $request, Fornecedor $fornecedor): RedirectResponse
     {
-        $campos = ['nome', 'documento', 'telefone', 'email'];
+        $campos = ['nome', 'tipo_pessoa', 'documento', 'telefone', 'email', 'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf'];
         $antes = $fornecedor->only($campos);
         $fornecedor->update($request->validated()); // os produtos continuam vinculados
 

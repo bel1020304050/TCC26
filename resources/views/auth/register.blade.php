@@ -16,6 +16,8 @@
                 <h2 class="h6 fw-semibold mb-3">Dados de acesso</h2>
                 <x-campo name="name" label="Nome completo" obrigatorio autocomplete="name" />
                 <x-campo name="email" label="E-mail" type="email" obrigatorio autocomplete="email" />
+                <x-campo name="cpf" label="CPF" obrigatorio placeholder="000.000.000-00" inputmode="numeric" maxlength="14"
+                         data-mascara-documento="cpf" dica="Usado na emissão da cobrança" />
                 <x-campo name="telefone" label="Telefone" opcional placeholder="(44) 99999-0000" autocomplete="tel" />
                 <div class="row">
                     <x-campo class="col-sm-6" name="password" label="Senha" type="password" obrigatorio dica="Mínimo de 8 caracteres" autocomplete="new-password" />
@@ -26,7 +28,7 @@
             {{-- Coluna 2: endereço de entrega (ViaCEP preenche ao sair do campo CEP) --}}
             <div class="col-lg-7">
                 <h2 class="h6 fw-semibold mb-3">Endereço de entrega</h2>
-                @include('partials.endereco-campos', ['usuario' => null])
+                @include('partials.endereco-campos', ['dono' => null])
                 <p class="text-muted small mb-0">Se a ViaCEP não responder, preencha os campos manualmente.</p>
             </div>
         </div>
@@ -40,5 +42,6 @@
 @endsection
 
 @push('scripts')
+    <script src="{{ asset('js/documento.js') }}"></script>
     <script src="{{ asset('js/viacep.js') }}"></script>
 @endpush

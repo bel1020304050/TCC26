@@ -18,6 +18,7 @@ class CriarContaTest extends TestCase
         return array_merge([
             'name' => 'Ana Souza',
             'email' => 'ana@email.com',
+            'cpf' => '123.456.789-09',
             'telefone' => '(44) 99999-0000',
             'password' => 'segredo123',
             'password_confirmation' => 'segredo123',
@@ -51,6 +52,7 @@ class CriarContaTest extends TestCase
         $this->assertSame('87501-000', $usuario->cep); // CEP formatado
         $this->assertSame('PR', $usuario->uf);         // UF em maiúsculas
         $this->assertSame('Apto 32', $usuario->complemento);
+        $this->assertSame('12345678909', $usuario->cpf); // CPF salvo só com números
     }
 
     // Segurança: um campo "perfil" enviado pelo navegador é ignorado
@@ -81,7 +83,46 @@ class CriarContaTest extends TestCase
     public function test_cep_invalido_e_recusado(): void
     {
         $this->post('/criar-conta', $this->dadosValidos(['cep' => '1234']))
-            ->assertSessionHasErrors(['cep' => 'Informe o CEP no formato 00000-000.']);
+            ->assertSessionHasErrors(['cep' => 'O CEP deve ter 8 números (ex.: 87501-000).']);
+    }
+
+    // Regra: CEP com 7 números é recusado; o sistema não completa com zero
+    public function test_cep_com_sete_numeros_e_recusado_sem_completar(): void
+    {
+        $this->post('/criar-conta', $this->dadosValidos(['cep' => '8750100']))
+            ->assertSessionHasErrors(['cep' => 'O CEP deve ter 8 números (ex.: 87501-000).']);
+        $this->post('/criar-conta', $this->dadosValidos(['cep' => '87501-00']))
+            ->assertSessionHasErrors('cep');
+
+        $this->assertSame(0, User::count());
+    }
+
+    public function test_cpf_e_obrigatorio_e_validado(): void
+    {
+        $this->post('/criar-conta', $this->dadosValidos(['cpf' => '']))
+            ->assertSessionHasErrors(['cpf' => 'O campo CPF é obrigatório.']);
+        $this->post('/criar-conta', $this->dadosValidos(['cpf' => '123.456.789-00']))
+            ->assertSessionHasErrors(['cpf' => 'Informe um CPF válido.']);
+        $this->post('/criar-conta', $this->dadosValidos(['cpf' => '111.111.111-11']))
+            ->assertSessionHasErrors('cpf');
+        // CNPJ não serve como CPF de cliente
+        $this->post('/criar-conta', $this->dadosValidos(['cpf' => '12.345.678/0001-95']))
+            ->assertSessionHasErrors('cpf');
+
+        $this->assertSame(0, User::count());
+    }
+
+    public function test_cpf_duplicado_e_recusado_mesmo_com_outra_pontuacao(): void
+    {
+        User::factory()->create(['cpf' => '12345678909']);
+
+        $this->post('/criar-conta', $this->dadosValidos(['email' => 'outra@email.com', 'cpf' => '12345678909']))
+            ->assertSessionHasErrors(['cpf' => 'Este CPF já está cadastrado em outra conta.']);
+    }
+
+    public function test_tela_tem_campo_cpf_com_mascara(): void
+    {
+        $this->get('/criar-conta')->assertSee('name="cpf"', false)->assertSee('data-mascara-documento="cpf"', false);
     }
 
     public function test_campos_obrigatorios_do_endereco(): void

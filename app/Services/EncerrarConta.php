@@ -39,6 +39,7 @@ class EncerrarConta
                 // E-mail único e impossível de usar: o original fica livre para uma conta nova
                 'email' => "removido-{$cliente->id}@conta-encerrada.invalid",
                 'telefone' => null,
+                'cpf' => null, // LGPD: o CPF sai junto; o mesmo CPF pode abrir uma conta nova depois
                 'cep' => null, 'rua' => null, 'numero' => null, 'complemento' => null,
                 'bairro' => null, 'cidade' => null, 'uf' => null,
                 'password' => Hash::make(Str::random(40)), // ninguém sabe a senha
