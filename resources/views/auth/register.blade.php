@@ -3,7 +3,7 @@
 @section('titulo', 'Criar conta')
 
 @section('conteudo')
-{{-- Story 3.9 – Criar Conta (Figura 10) --}}
+{{-- Cadastro público de clientes ("Criar conta") --}}
 <div class="mm-card p-4 mx-auto" style="max-width: 980px;">
     <h1 class="h4 mb-1">Criar conta</h1>
     <p class="text-muted small mb-4">Crie sua conta para comprar e acompanhar seus pedidos.</p>

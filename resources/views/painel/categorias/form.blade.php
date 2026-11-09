@@ -6,7 +6,7 @@
 @section('trilha', 'Painel › Categorias › '.($editando ? $categoria->nome.' › Editar' : 'Nova categoria'))
 
 @section('conteudo')
-{{-- Story 3.14 – Cadastrar (Figura 15) e 3.16 – Editar Categoria (Figura 17) --}}
+{{-- Formulário de categoria (o mesmo para cadastrar e editar) --}}
 <div class="mm-card p-4" style="max-width: 680px;">
     <form method="POST" action="{{ $editando ? route('painel.categorias.update', $categoria) : route('painel.categorias.store') }}" novalidate>
         @csrf

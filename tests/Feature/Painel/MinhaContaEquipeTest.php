@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
- * "Minha conta" da equipe: nome, telefone e senha (seção 2.2).
+ * "Minha conta" da equipe: nome, telefone e senha.
  */
 class MinhaContaEquipeTest extends TestCase
 {

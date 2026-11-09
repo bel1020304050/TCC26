@@ -11,7 +11,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
 /**
- * Pedidos e carrinho de exemplo da cliente Ana (mesmos dados dos wireframes 3.19 e 3.30).
+ * Pedidos e carrinho de exemplo da cliente Ana, para testar as telas de pedidos e carrinho.
  * Só roda com APP_ENV=local. Os pedidos antigos são "históricos": servem para ver as telas
  * de consulta; o estoque dos produtos não é alterado por este seeder.
  */
@@ -84,7 +84,7 @@ class PedidosTesteSeeder extends Seeder
             ]);
         }
 
-        // Pedido que chegou a ser pago tem a tentativa de pagamento aprovada registrada (3.31)
+        // Pedido que chegou a ser pago precisa ter a tentativa de pagamento aprovada registrada
         if ($forma) {
             $pagamento = new Pagamento;
             $pagamento->pedido_id = $pedido->id;

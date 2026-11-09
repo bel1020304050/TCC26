@@ -6,7 +6,7 @@ use App\Models\Promocao;
 use App\Models\User;
 
 /**
- * Permissões de Promoção (seção 2.2 e stories 3.22 a 3.25):
+ * Permissões de Promoção:
  * - Administrador: cadastra, edita, inativa e reativa.
  * - Funcionário: só consulta (para tirar dúvidas dos clientes).
  */

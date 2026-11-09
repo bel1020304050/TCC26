@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * Painel: confirmação manual da compensação do boleto (simulação do retorno do banco — 3.31).
+ * Painel: o Administrador confirma que o boleto foi pago (faz o papel do aviso que o banco mandaria).
  */
 class PagamentoController extends Controller
 {

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
- * Testes do CRUD de Usuários internos — stories 3.5 a 3.8.
+ * Cadastro da equipe (usuários do painel).
  */
 class UsuarioTest extends TestCase
 {

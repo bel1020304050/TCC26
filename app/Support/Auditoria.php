@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Atalho para registrar ações na auditoria (seção 2.3).
+ * Atalho para registrar ações na tabela de auditoria (quem fez, o quê, em qual registro e quando).
  * Uso: Auditoria::registrar('inativou', $categoria);
  */
 final class Auditoria

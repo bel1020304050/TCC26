@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Pedidos do cliente — stories 3.18 (criar) e 3.19 (consultar e acompanhar).
+ * Pedidos do cliente: criar, consultar e acompanhar.
  */
 class PedidoTest extends TestCase
 {
@@ -57,7 +57,7 @@ class PedidoTest extends TestCase
         $resposta = $this->actingAs($this->cliente)->post('/pedidos');
 
         $pedido = Pedido::sole();
-        $resposta->assertRedirect(route('loja.pagamento.create', $pedido)); // segue direto para o pagamento (3.31)
+        $resposta->assertRedirect(route('loja.pagamento.create', $pedido)); // segue direto para o pagamento
 
         $this->assertSame(Pedido::AGUARDANDO_PAGAMENTO, $pedido->status);
         $this->assertSame('219.80', $pedido->subtotal);
@@ -72,13 +72,13 @@ class PedidoTest extends TestCase
         ]);
         $this->assertDatabaseHas('pedido_historicos', ['pedido_id' => $pedido->id, 'status' => 'aguardando_pagamento', 'user_id' => $this->cliente->id]);
 
-        // Carrinho bloqueado e estoque intacto (a baixa só acontece no pagamento, 3.31)
+        // Carrinho bloqueado e estoque intacto (a baixa só acontece quando o pagamento é aprovado)
         $this->assertSame(Carrinho::EM_PAGAMENTO, $carrinho->fresh()->status);
         $this->assertSame(8, $this->vestido->fresh()->estoque);
         $this->assertSame(12, $this->blusa->fresh()->estoque);
     }
 
-    // RNF.01 da 3.18: cliques repetidos geram um único pedido
+    // Cliques repetidos no botão não podem gerar dois pedidos
     public function test_cliques_repetidos_geram_um_so_pedido(): void
     {
         $this->encherCarrinho();
@@ -142,7 +142,7 @@ class PedidoTest extends TestCase
         $this->actingAs(User::factory()->admin()->create())->post('/pedidos')->assertForbidden();
     }
 
-    // 3.19 – lista só os próprios pedidos, do mais recente ao mais antigo
+    // Lista só os próprios pedidos, do mais recente ao mais antigo
     public function test_meus_pedidos_lista_so_os_do_cliente(): void
     {
         $this->encherCarrinho();

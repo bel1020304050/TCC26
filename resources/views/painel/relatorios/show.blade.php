@@ -4,7 +4,7 @@
 @section('trilha', 'Painel › Relatórios › '.str($relatorio->titulo())->after('Relatório de ')->ucfirst())
 
 @section('conteudo')
-{{-- Tela comum dos relatórios (Figuras 33, 34 e 35): filtros, indicadores, tabela e exportação --}}
+{{-- Tela comum a todos os relatórios: filtros, indicadores, tabela e exportação --}}
 <form method="GET" class="mm-card p-3 mb-3" role="search">
     <div class="row g-2 align-items-end">
         @include($filtrosView)

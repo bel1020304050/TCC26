@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Testes da story 3.9 – Criar Conta.
+ * Cadastro de cliente ("Criar conta").
  */
 class CriarContaTest extends TestCase
 {
@@ -53,7 +53,7 @@ class CriarContaTest extends TestCase
         $this->assertSame('Apto 32', $usuario->complemento);
     }
 
-    // RNF.01 da 3.9: "perfil" enviado pelo navegador é ignorado
+    // Segurança: um campo "perfil" enviado pelo navegador é ignorado
     public function test_nao_e_possivel_se_cadastrar_como_administrador(): void
     {
         $this->post('/criar-conta', $this->dadosValidos(['perfil' => 'admin', 'status' => 'ativo']));

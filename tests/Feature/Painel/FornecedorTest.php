@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Testes do CRUD de Fornecedores — stories 3.26 a 3.29.
+ * Cadastro de Fornecedores no painel.
  */
 class FornecedorTest extends TestCase
 {

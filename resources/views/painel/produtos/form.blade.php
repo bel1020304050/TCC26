@@ -6,7 +6,7 @@
 @section('trilha', 'Painel › Produtos › '.($editando ? $produto->nome.' ('.$produto->variacao().') › Editar' : 'Novo produto'))
 
 @section('conteudo')
-{{-- Story 3.1 – Cadastrar (Figura 2) e 3.3 – Editar Produto (Figura 4) --}}
+{{-- Formulário de produto (o mesmo para cadastrar e editar), com envio de imagem --}}
 <div class="mm-card p-4">
     <form method="POST" enctype="multipart/form-data" novalidate
           action="{{ $editando ? route('painel.produtos.update', $produto) : route('painel.produtos.store') }}">

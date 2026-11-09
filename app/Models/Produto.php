@@ -11,7 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Produto — stories 3.1 a 3.4. No MVP, cada combinação de tamanho e cor é um produto.
+ * Produto da loja. Cada combinação de tamanho e cor é um registro próprio
+ * (ex.: "Saia Midi M Bege" e "Saia Midi G Bege" são dois produtos), com estoque próprio.
  */
 class Produto extends Model
 {
@@ -43,7 +44,7 @@ class Produto extends Model
     }
 
     /**
-     * Produtos que podem aparecer na vitrine (regra da 3.2):
+     * Regra: produtos que podem aparecer na vitrine são os
      * ativos, com estoque maior que zero e de categoria ativa.
      */
     public function scopeNaVitrine(Builder $query): Builder
@@ -53,7 +54,7 @@ class Produto extends Model
             ->whereHas('categoria', fn (Builder $q) => $q->ativos());
     }
 
-    // URL da imagem; sem imagem, usa a imagem padrão (regra da 3.1)
+    // URL da imagem; sem imagem cadastrada, usa a imagem padrão "Sem imagem"
     public function imagemUrl(): string
     {
         return $this->imagem

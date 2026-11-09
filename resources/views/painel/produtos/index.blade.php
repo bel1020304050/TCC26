@@ -4,7 +4,7 @@
 @section('trilha', 'Painel › Produtos')
 
 @section('conteudo')
-{{-- Story 3.4 – Inativar Produto (Figura 5) e listagem administrativa --}}
+{{-- Lista de produtos do painel, com filtros e inativar/reativar --}}
 @php
     $usuario = auth()->user();
     $podeCadastrar = $usuario->can('create', \App\Models\Produto::class);
@@ -61,7 +61,7 @@
                         <td class="text-nowrap">{{ $produto->variacao() }}</td>
                         <td class="text-end text-nowrap">{{ $produto->precoFormatado() }}</td>
                         <td class="text-center">
-                            {{-- Destaque de estoque baixo (10 ou menos), igual ao relatório 3.33 --}}
+                            {{-- Destaque de estoque baixo (10 ou menos), o mesmo limite do Relatório de Estoque --}}
                             <span class="{{ $produto->estoque <= 10 ? 'fw-semibold text-warning-emphasis' : '' }}">{{ $produto->estoque }}</span>
                         </td>
                         <td><x-status-badge :status="$produto->status" /></td>

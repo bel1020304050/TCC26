@@ -4,7 +4,7 @@
 @section('trilha', 'Painel › Promoções')
 
 @section('conteudo')
-{{-- Story 3.23 – Consultar Promoções (Figura 24) e 3.25 – Inativar (Figura 26) --}}
+{{-- Lista de promoções com pesquisa, filtro de situação e inativar/reativar --}}
 @php $podeEditar = auth()->user()->can('create', \App\Models\Promocao::class); @endphp
 
 <form method="GET" action="{{ route('painel.promocoes.index') }}" class="d-flex flex-wrap gap-2 mb-3" role="search">

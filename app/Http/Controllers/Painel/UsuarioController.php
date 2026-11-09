@@ -14,14 +14,14 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * CRUD de Usuários internos (equipe) — stories 3.5 (cadastrar), 3.6 (consultar),
- * 3.7 (editar) e 3.8 (inativar). Só o Administrador acessa.
+ * Cadastro da equipe (usuários do painel): listar, cadastrar, editar, inativar e reativar.
+ * Segurança: só o Administrador acessa (UserPolicy).
  */
 class UsuarioController extends Controller
 {
     private const PERFIS = [User::PERFIL_FUNCIONARIO, User::PERFIL_ADMIN];
 
-    // 3.6 – Consultar: só equipe (clientes ficam no Relatório de Clientes)
+    // Lista só a equipe; clientes não aparecem aqui (eles ficam no Relatório de Clientes)
     public function index(Request $request): View
     {
         Gate::authorize('viewAny', User::class);
@@ -44,7 +44,7 @@ class UsuarioController extends Controller
         return view('painel.usuarios.index', compact('usuarios', 'busca', 'perfil', 'status'));
     }
 
-    // 3.5 – Cadastrar
+    // Formulário de cadastro
     public function create(): View
     {
         Gate::authorize('create', User::class);
@@ -65,7 +65,7 @@ class UsuarioController extends Controller
             ->with('sucesso', "Usuário \"{$usuario->name}\" cadastrado como {$usuario->perfilLabel()}.");
     }
 
-    // 3.7 – Editar
+    // Formulário de edição
     public function edit(User $usuario): View
     {
         Gate::authorize('update', $usuario);
@@ -93,7 +93,7 @@ class UsuarioController extends Controller
         }
         $usuario->save();
 
-        // RNF.01 da 3.7: mudança de perfil registrada com perfil anterior e novo (a senha nunca vai para a auditoria)
+        // Auditoria: registra o perfil anterior e o novo. Segurança: a senha nunca vai para a auditoria
         Auditoria::registrar('editou', $usuario, [
             'antes' => $antes,
             'depois' => $usuario->only([...$campos, 'perfil']),
@@ -104,7 +104,7 @@ class UsuarioController extends Controller
             ->with('sucesso', "Usuário \"{$usuario->name}\" atualizado.");
     }
 
-    // 3.8 – Inativar: bloqueia o login e encerra as sessões abertas
+    // Inativar: bloqueia o login e derruba as sessões que a pessoa tiver abertas
     public function inativar(User $usuario): RedirectResponse
     {
         Gate::authorize('alterarStatus', $usuario);

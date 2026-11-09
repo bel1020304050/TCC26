@@ -3,7 +3,7 @@
 @section('titulo', 'Compra concluída')
 
 @section('conteudo')
-{{-- Processo 3.31 – etapa 6: resultado do pagamento aprovado --}}
+{{-- Tela de compra concluída (pagamento aprovado) --}}
 <x-etapas-compra :atual="4" />
 
 <div class="mm-card p-5 text-center mx-auto" style="max-width: 640px;">

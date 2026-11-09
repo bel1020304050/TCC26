@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 /**
- * CRUD de Produtos — stories 3.1 (cadastrar), 3.3 (editar) e 3.4 (inativar).
- * A consulta pública é a vitrine (3.2), em Loja\VitrineController.
+ * Cadastro de Produtos no painel: listar, cadastrar (com imagem), editar e inativar.
+ * A lista que o cliente vê é a vitrine, em Loja\VitrineController.
  */
 class ProdutoController extends Controller
 {
@@ -97,7 +97,7 @@ class ProdutoController extends Controller
             ->with('sucesso', "Produto \"{$produto->nome} – {$produto->variacao()}\" atualizado.");
     }
 
-    // 3.4 – Inativar: sai da vitrine, mas continua no banco e no histórico
+    // Inativar: o produto sai da vitrine, mas continua no banco e nos pedidos antigos
     public function inativar(Produto $produto): RedirectResponse
     {
         Gate::authorize('alterarStatus', $produto);

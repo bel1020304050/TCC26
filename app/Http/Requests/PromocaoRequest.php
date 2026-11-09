@@ -9,7 +9,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 /**
- * Validação de Promoção — regras das stories 3.22 (cadastrar) e 3.24 (editar).
+ * Validação do formulário de Promoção (cadastrar e editar).
  */
 class PromocaoRequest extends FormRequest
 {
@@ -26,7 +26,8 @@ class PromocaoRequest extends FormRequest
     {
         $promocao = $this->route('promocao');
 
-        // 3.24: promoção já usada em pedido não muda modo nem código (mantém os atuais)
+        // Regra: se a promoção já foi usada em algum pedido, modo e código ficam travados.
+        // Por quê: o pedido guarda o código do cupom; mudar aqui faria o histórico apontar para outro cupom.
         if ($promocao?->foiUsada()) {
             $this->merge(['modo' => $promocao->modo, 'codigo' => $promocao->codigo]);
         }

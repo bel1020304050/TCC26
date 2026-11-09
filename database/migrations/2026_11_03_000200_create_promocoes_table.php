@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Promoções e cupons — stories 3.22 a 3.25.
+ * Promoções automáticas e cupons de desconto.
  * "status" guarda só o manual (Ativa/Inativa). Agendada, Vigente e Expirada são calculadas pelas datas.
  */
 return new class extends Migration

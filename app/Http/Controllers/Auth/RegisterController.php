@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
- * Story 3.9 – Criar Conta (Create do CRUD de Clientes).
+ * Cadastro público de clientes ("Criar conta").
+ * Sempre cria o perfil Cliente; já deixa a pessoa logada no fim.
  */
 class RegisterController extends Controller
 {

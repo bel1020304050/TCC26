@@ -3,7 +3,7 @@
 @section('titulo', 'Pedido '.$pedido->numero())
 
 @section('conteudo')
-{{-- Story 3.19 – Detalhes do pedido --}}
+{{-- Detalhes de um pedido do cliente --}}
 @if ($pedido->status === \App\Models\Pedido::AGUARDANDO_PAGAMENTO)
     <x-etapas-compra :atual="3" />
 @endif

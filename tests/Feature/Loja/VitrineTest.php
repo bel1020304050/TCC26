@@ -8,7 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Testes da story 3.2 – Visualizar e Pesquisar Produtos.
+ * Vitrine: pesquisa, filtros, ordenação e paginação.
  */
 class VitrineTest extends TestCase
 {
@@ -22,7 +22,7 @@ class VitrineTest extends TestCase
         $this->saias = Categoria::factory()->create(['nome' => 'Saias']);
     }
 
-    public function test_vitrine_abre_sem_login(): void // RNF.02 da 3.2
+    public function test_vitrine_abre_sem_login(): void // a vitrine é pública
     {
         $this->get('/')->assertOk()->assertSee('Pesquisar produtos');
     }
@@ -84,7 +84,7 @@ class VitrineTest extends TestCase
         $this->get('/?ordem=maior_preco')->assertSeeInOrder(['Saia Cara', 'Saia Barata']);
     }
 
-    public function test_pagina_com_no_maximo_20_produtos(): void // RNF.01 da 3.2
+    public function test_pagina_com_no_maximo_20_produtos(): void // paginação de 20 em 20
     {
         Produto::factory()->count(25)->create(['categoria_id' => $this->saias->id, 'estoque' => 1]);
 

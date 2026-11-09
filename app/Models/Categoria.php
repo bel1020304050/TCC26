@@ -13,7 +13,7 @@ class Categoria extends Model
 {
     use HasFactory, TemStatus;
 
-    // "status" fica de fora: só muda pelas ações Inativar/Reativar (story 3.16)
+    // Segurança: "status" fica de fora; ele só muda pelos botões Inativar/Reativar
     protected $fillable = ['nome', 'descricao'];
 
     protected $attributes = ['status' => Status::ATIVO];
@@ -23,7 +23,7 @@ class Categoria extends Model
         return $this->hasMany(Produto::class);
     }
 
-    // Regra da 3.17: categoria com produtos ativos não pode ser inativada
+    // Regra: categoria com produtos ativos não pode ser inativada (os produtos sumiriam da vitrine sem aviso)
     public function possuiProdutosAtivos(): bool
     {
         return $this->produtos()->ativos()->exists();

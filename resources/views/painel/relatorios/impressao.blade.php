@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>{{ $relatorio->titulo() }} · Mary Modas</title>
     {{-- Versão para impressão: no diálogo do navegador, escolha "Salvar como PDF".
-         Mostra exatamente as mesmas colunas da tela (RNF.01 da 3.34). --}}
+         Mostra exatamente as mesmas colunas da tela. --}}
     <style>
         @page { size: A4 landscape; margin: 12mm; }
         body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #222; margin: 0; }

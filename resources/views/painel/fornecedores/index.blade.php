@@ -4,7 +4,7 @@
 @section('trilha', 'Painel › Fornecedores')
 
 @section('conteudo')
-{{-- Story 3.27 – Consultar Fornecedores (Figura 28) e 3.29 – Inativar (Figura 30) --}}
+{{-- Lista de fornecedores com pesquisa, filtro de status e inativar/reativar --}}
 @php $podeAlterar = auth()->user()->can('create', \App\Models\Fornecedor::class); @endphp
 
 <x-filtro-lista :acao="route('painel.fornecedores.index')" :busca="$busca" :status="$status"

@@ -15,14 +15,14 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Provedor de pagamento (processo 3.31). No MVP é simulado.
-        // Integração futura: trocar por \App\Pagamentos\MercadoPagoProvedor (seção 4.1 da documentação).
+        // Provedor de pagamento: hoje é o simulado. Para usar um provedor real,
+        // basta ligar aqui outra classe que implemente ProvedorPagamento.
         $this->app->bind(ProvedorPagamento::class, PagamentoSimulado::class);
     }
 
     public function boot(): void
     {
-        // Relatórios (3.32–3.34): Vendas e Clientes só o Administrador; Estoque também o Funcionário
+        // Segurança: Vendas e Clientes só o Administrador; Estoque também o Funcionário
         Gate::define('relatorio-vendas', fn (User $user) => $user->isAdmin());
         Gate::define('relatorio-clientes', fn (User $user) => $user->isAdmin());
         Gate::define('relatorio-estoque', fn (User $user) => $user->isEquipe());

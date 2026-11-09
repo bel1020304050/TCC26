@@ -1,4 +1,4 @@
-{{-- Detalhes do pedido (3.19): itens, valores, endereço, pagamento e histórico de status.
+{{-- Detalhes do pedido: itens, valores, endereço, pagamentos e histórico de status.
      Usado na área do cliente e no painel. $comResponsavel = mostra quem fez cada mudança (painel). --}}
 @php $comResponsavel = $comResponsavel ?? false; @endphp
 <div class="row g-3">

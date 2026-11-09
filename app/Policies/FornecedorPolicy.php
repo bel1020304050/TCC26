@@ -6,7 +6,7 @@ use App\Models\Fornecedor;
 use App\Models\User;
 
 /**
- * Permissões de Fornecedor (tabela da seção 2.2):
+ * Permissões de Fornecedor:
  * - Administrador: CRUD completo.
  * - Funcionário: só consulta.
  * - Cliente: sem acesso.

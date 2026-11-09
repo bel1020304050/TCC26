@@ -9,7 +9,7 @@
 @section('trilha', 'Painel › Usuários › '.($editando ? $usuario->name.' › Editar' : 'Novo usuário'))
 
 @section('conteudo')
-{{-- Story 3.5 – Cadastrar (Figura 6) e 3.7 – Editar Usuário (Figura 8) --}}
+{{-- Formulário de usuário da equipe (o mesmo para cadastrar e editar) --}}
 <div class="mm-card p-4" style="max-width: 820px;">
     <form method="POST" novalidate
           action="{{ $editando ? route('painel.usuarios.update', $usuario) : route('painel.usuarios.store') }}">
@@ -27,7 +27,7 @@
             <div class="col-md-6 mb-3">
                 <label for="perfil" class="form-label">Perfil <span class="obrigatorio">*</span></label>
                 @if ($souEu)
-                    {{-- Regra da 3.7: não pode alterar o próprio perfil --}}
+                    {{-- Regra: ninguém altera o próprio perfil (o campo fica travado) --}}
                     <select id="perfil" class="form-select" disabled>
                         <option>{{ $usuario->perfilLabel() }}</option>
                     </select>

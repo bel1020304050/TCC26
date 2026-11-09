@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * RNF.01 da 3.20: toda mudança de status registra o status ANTERIOR e o novo, com data, hora e responsável.
+ * Histórico do pedido: guarda também o status ANTERIOR de cada mudança.
  */
 return new class extends Migration
 {

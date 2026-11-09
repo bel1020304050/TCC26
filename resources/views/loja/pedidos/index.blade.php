@@ -3,7 +3,7 @@
 @section('titulo', 'Meus pedidos')
 
 @section('conteudo')
-{{-- Story 3.19 – Consultar e Acompanhar Pedidos (Figura 20) --}}
+{{-- "Meus pedidos": lista dos pedidos do cliente, do mais recente ao mais antigo --}}
 <h1 class="h3 mb-3">Meus pedidos</h1>
 
 <div class="row g-3">

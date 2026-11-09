@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Testes do CRUD de Categorias — stories 3.14 a 3.17.
+ * Cadastro de Categorias no painel.
  */
 class CategoriaTest extends TestCase
 {
@@ -180,7 +180,7 @@ class CategoriaTest extends TestCase
         $this->assertStringContainsString('2 produto(s) ativo(s)', session('erro'));
     }
 
-    // Melhoria da Fase 3: com produtos ativos, o modal mostra só o aviso e "Entendi"
+    // Com produtos ativos, a janela de inativar mostra só o aviso e o botão "Entendi"
     public function test_modal_de_categoria_com_produtos_ativos_nao_tem_botao_de_confirmar(): void
     {
         $vestidos = Categoria::factory()->create(['nome' => 'Vestidos']);

@@ -6,7 +6,7 @@ use App\Models\Categoria;
 use App\Models\User;
 
 /**
- * Permissões de Categoria (tabela da seção 2.2):
+ * Permissões de Categoria:
  * - Administrador: CRUD completo.
  * - Funcionário: só consulta.
  * - Cliente: sem acesso.

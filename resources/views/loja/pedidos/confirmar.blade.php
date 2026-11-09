@@ -3,7 +3,7 @@
 @section('titulo', 'Confirmar pedido')
 
 @section('conteudo')
-{{-- Story 3.18 – Criar Pedido (Figura 19) --}}
+{{-- "Confirmar pedido": resumo do carrinho, endereço de entrega e botão de confirmar --}}
 <x-etapas-compra :atual="2" />
 <h1 class="h3 mb-3">Confirmar pedido</h1>
 
@@ -46,7 +46,7 @@
         </div>
         <p class="text-muted small mb-2">Frete: não calculado nesta versão.</p>
 
-        {{-- O botão se desativa após o 1º clique; mesmo assim o servidor garante 1 só pedido (RNF.01) --}}
+        {{-- O botão se desativa no 1º clique. Isso é só conforto: quem garante 1 pedido só é o servidor (lockForUpdate) --}}
         <form method="POST" action="{{ route('loja.pedidos.store') }}" onsubmit="this.querySelector('button').disabled = true;">
             @csrf
             <button type="submit" class="btn btn-mm w-100 py-2" @disabled($problemas)>Confirmar pedido e ir para o pagamento</button>

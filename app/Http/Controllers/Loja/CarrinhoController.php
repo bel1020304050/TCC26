@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Carrinho — story 3.30 (funcionalidade de apoio).
+ * Carrinho do cliente: adicionar, alterar quantidade, remover itens e aplicar cupom.
  * Toda conta (preço, subtotal, total) e toda checagem de estoque é feita aqui no servidor.
  */
 class CarrinhoController extends Controller
@@ -21,7 +21,7 @@ class CarrinhoController extends Controller
     {
         $carrinho = Carrinho::doCliente($request->user())->load('itens.produto.categoria', 'pedido');
 
-        // Revalida o cupom: se foi inativado ou expirou, sai do carrinho com aviso (regra da 3.25)
+        // Regra: o cupom é conferido de novo a cada visita. Se foi inativado ou expirou, sai do carrinho com aviso
         if ($carrinho->isAberto() && $carrinho->cupom && ! Promocao::cupomValido($carrinho->cupom)) {
             $codigo = $carrinho->cupom;
             $carrinho->cupom = null;
@@ -98,7 +98,7 @@ class CarrinhoController extends Controller
         return back()->with('sucesso', "{$item->produto->nome} ({$item->produto->variacao()}) removido do carrinho.");
     }
 
-    // Aplicar cupom (3.30): só vale se estiver Ativo e Vigente
+    // Validação: o cupom só é aceito se estiver Ativo e dentro do período (Vigente)
     public function aplicarCupom(Request $request): RedirectResponse
     {
         $dados = $request->validate(['cupom' => ['required', 'string', 'max:30']], [], ['cupom' => 'cupom']);
@@ -147,7 +147,7 @@ class CarrinhoController extends Controller
         return $item->carrinho;
     }
 
-    // Carrinho "Em Pagamento" fica bloqueado para alterações (3.18)
+    // Regra: depois de virar pedido, o carrinho fica "Em Pagamento" e não pode ser alterado
     private function bloqueado(Carrinho $carrinho): ?RedirectResponse
     {
         if ($carrinho->isAberto()) {

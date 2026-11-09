@@ -13,11 +13,11 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * CRUD de Categorias — stories 3.14 (cadastrar), 3.15 (consultar), 3.16 (editar) e 3.17 (inativar).
+ * Cadastro de Categorias no painel: listar, cadastrar, editar, inativar e reativar.
  */
 class CategoriaController extends Controller
 {
-    // 3.15 – Consultar: lista ativas e inativas, com pesquisa por nome
+    // Lista ativas e inativas, com pesquisa por nome e filtro de status
     public function index(Request $request): View
     {
         Gate::authorize('viewAny', Categoria::class);
@@ -39,7 +39,7 @@ class CategoriaController extends Controller
         return view('painel.categorias.index', compact('categorias', 'busca', 'status'));
     }
 
-    // 3.14 – Cadastrar
+    // Formulário de cadastro
     public function create(): View
     {
         Gate::authorize('create', Categoria::class);
@@ -59,7 +59,7 @@ class CategoriaController extends Controller
             ->with('sucesso', "Categoria \"{$categoria->nome}\" cadastrada com sucesso.");
     }
 
-    // 3.16 – Editar
+    // Formulário de edição
     public function edit(Categoria $categoria): View
     {
         Gate::authorize('update', $categoria);
@@ -80,7 +80,7 @@ class CategoriaController extends Controller
             ->with('sucesso', "Categoria \"{$categoria->nome}\" atualizada.");
     }
 
-    // 3.17 – Inativar (exclusão lógica)
+    // Inativar = exclusão lógica: o registro só muda de status, nunca é apagado do banco
     public function inativar(Categoria $categoria): RedirectResponse
     {
         Gate::authorize('alterarStatus', $categoria);

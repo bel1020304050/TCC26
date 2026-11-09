@@ -4,7 +4,7 @@
 @section('trilha', 'Painel › Pedidos')
 
 @section('conteudo')
-{{-- Story 3.19 – Consulta de pedidos na área administrativa (Figura 21) --}}
+{{-- Lista de pedidos do painel com pesquisa, período e status --}}
 <form method="GET" action="{{ route('painel.pedidos.index') }}" class="d-flex flex-wrap gap-2 mb-3 align-items-center" role="search">
     <input type="search" name="busca" value="{{ $busca }}" class="form-control" style="flex: 1 1 240px;"
            placeholder="Pesquisar por nº do pedido ou cliente" aria-label="Pesquisar por número do pedido ou cliente">

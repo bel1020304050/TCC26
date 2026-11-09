@@ -1,4 +1,4 @@
-{{-- Menu lateral de "Minha conta" do cliente (Figura 11) --}}
+{{-- Menu lateral de "Minha conta" do cliente (Meus dados, Meus pedidos, Sair) --}}
 <div class="mm-card py-2 mm-menu-conta">
     <nav class="nav flex-column">
         <a class="nav-link {{ request()->routeIs('loja.conta*') ? 'active' : '' }}" href="{{ route('loja.conta') }}"><i class="bi bi-person me-2"></i>Meus dados</a>

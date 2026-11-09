@@ -8,7 +8,7 @@ use App\Support\Status;
 use Illuminate\Database\Seeder;
 
 /**
- * Promoções de exemplo (as mesmas da Figura 24), com datas relativas a hoje para a situação
+ * Promoções de exemplo, com datas relativas a hoje para a situação
  * aparecer certa em qualquer dia: Vigente, Agendada, Inativa e Expirada. Só com APP_ENV=local.
  */
 class PromocoesTesteSeeder extends Seeder

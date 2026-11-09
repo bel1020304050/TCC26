@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * Pedidos do cliente — stories 3.18 (criar), 3.19 (consultar e acompanhar) e 3.21 (cancelar).
+ * Pedidos do lado do cliente: confirmar o carrinho, criar o pedido, acompanhar e cancelar.
  */
 class PedidoController extends Controller
 {
-    // 3.18 – Tela "Confirmar pedido": resumo do carrinho + endereço de entrega
+    // Tela "Confirmar pedido": resumo do carrinho e endereço de entrega
     public function confirmar(Request $request): View|RedirectResponse
     {
         Gate::authorize('create', Pedido::class);
@@ -41,14 +41,16 @@ class PedidoController extends Controller
         ]);
     }
 
-    // 3.18 – Criar o pedido. Tudo numa transação: ou cria tudo, ou nada.
+    // Cria o pedido. Banco: tudo numa transação; se algo falhar no meio, nada é gravado.
     public function store(Request $request): RedirectResponse
     {
         Gate::authorize('create', Pedido::class);
         $cliente = $request->user();
 
         return DB::transaction(function () use ($cliente) {
-            // "Trava" o carrinho: um segundo clique espera o primeiro terminar (RNF.01 — só 1 pedido)
+            // Banco: lockForUpdate() trava a linha do carrinho até o fim da transação.
+            // Se o cliente clicar duas vezes em "Confirmar", o segundo clique espera o primeiro
+            // terminar, encontra o carrinho já fechado e não cria um pedido repetido.
             $carrinho = Carrinho::where('user_id', $cliente->id)
                 ->where('status', '!=', Carrinho::FINALIZADO)
                 ->latest('id')->lockForUpdate()->first();
@@ -104,17 +106,17 @@ class PedidoController extends Controller
 
             $pedido->registrarStatus(Pedido::AGUARDANDO_PAGAMENTO, $cliente);
 
-            // Carrinho vai para "Em Pagamento" e fica bloqueado. O estoque NÃO é baixado aqui (só no pagamento, 3.31).
+            // Regra: o carrinho fica "Em Pagamento" (bloqueado). O estoque NÃO baixa aqui, só quando o pagamento for aprovado.
             $carrinho->status = Carrinho::EM_PAGAMENTO;
             $carrinho->save();
 
-            // 3.18: encaminha para a tela de pagamento do mesmo pedido (3.31)
+            // Leva o cliente direto para a tela de pagamento deste pedido
             return redirect()->route('loja.pagamento.create', $pedido)
                 ->with('sucesso', "Pedido {$pedido->numero()} criado! Escolha a forma de pagamento.");
         });
     }
 
-    // 3.19 – Meus pedidos (do mais recente ao mais antigo)
+    // "Meus pedidos", do mais recente ao mais antigo
     public function index(Request $request): View
     {
         $pedidos = Pedido::where('user_id', $request->user()->id)
@@ -124,7 +126,7 @@ class PedidoController extends Controller
         return view('loja.pedidos.index', compact('pedidos'));
     }
 
-    // 3.19 – Detalhes: só o dono vê (verificação no servidor — RNF.01)
+    // Detalhes do pedido. Segurança: a Policy confere no servidor se o pedido é de quem está logado
     public function show(Pedido $pedido): View
     {
         Gate::authorize('view', $pedido);
@@ -134,7 +136,7 @@ class PedidoController extends Controller
         return view('loja.pedidos.show', compact('pedido'));
     }
 
-    // 3.21 – O cliente cancela o próprio pedido enquanto Aguardando Pagamento (motivo opcional)
+    // Regra: o cliente só cancela o próprio pedido enquanto ele estiver Aguardando Pagamento (motivo opcional)
     public function cancelar(Request $request, Pedido $pedido, AndamentoPedido $andamento): RedirectResponse
     {
         Gate::authorize('view', $pedido); // pedido de outro cliente: acesso negado

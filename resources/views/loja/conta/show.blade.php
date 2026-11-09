@@ -3,7 +3,7 @@
 @section('titulo', 'Minha conta')
 
 @section('conteudo')
-{{-- Story 3.10 – Consultar Meus Dados (Figura 11) e 3.12 – Encerrar Minha Conta (Figura 13) --}}
+{{-- "Meus dados" do cliente e a janela de "Encerrar minha conta" --}}
 <h1 class="h3 mb-3">Minha conta</h1>
 
 <div class="row g-3">
@@ -45,7 +45,7 @@
     </div>
 </div>
 
-{{-- 3.12 – Janela de confirmação: aviso de ação irreversível + senha atual --}}
+{{-- Janela de encerrar a conta: aviso de que não pode ser desfeito + senha atual para confirmar --}}
 <div class="modal fade" id="modal-encerrar" tabindex="-1" aria-labelledby="modal-encerrar-titulo" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form method="POST" action="{{ route('loja.conta.destroy') }}" class="modal-content" novalidate>

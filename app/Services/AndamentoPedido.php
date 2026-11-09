@@ -12,13 +12,13 @@ use App\Support\Auditoria;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Andamento do pedido — stories 3.20 (atualizar status) e 3.21 (cancelar).
+ * Andamento do pedido: atualizar status e cancelar.
  * As permissões (quem pode) ficam na PedidoPolicy; aqui ficam as regras do fluxo.
  */
 class AndamentoPedido
 {
     /**
-     * 3.20 — Avança para o próximo status. Só aceita exatamente o próximo passo (sem saltos nem retornos).
+     * Avança para o próximo status. Regra: só aceita exatamente o próximo passo (sem pular nem voltar).
      *
      * @throws PagamentoException com a mensagem para a tela
      */
@@ -45,7 +45,7 @@ class AndamentoPedido
     }
 
     /**
-     * 3.21 — Cancela o pedido (exclusão lógica). Tudo numa transação (RNF.01):
+     * Cancela o pedido (exclusão lógica). Banco: tudo numa transação:
      * status Cancelado + estorno do pagamento aprovado + devolução ao estoque.
      *
      * @throws PagamentoException
@@ -67,7 +67,7 @@ class AndamentoPedido
                     'mensagem' => 'Cobrança cancelada junto com o pedido.',
                 ]);
 
-                // O carrinho volta a ficar editável (3.21 e 3.30)
+                // Regra: o carrinho volta a ficar editável
                 if ($pedido->carrinho && $pedido->carrinho->status === Carrinho::EM_PAGAMENTO) {
                     $pedido->carrinho->status = Carrinho::ABERTO;
                     $pedido->carrinho->save();

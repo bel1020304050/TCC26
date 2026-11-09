@@ -8,9 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 /**
- * Base dos 3 relatórios (3.32 a 3.34). Cada relatório diz:
+ * Base dos relatórios (classe abstrata). Cada relatório diz:
  * quais filtros aceita, qual consulta faz, quais colunas mostra e quais indicadores calcula.
- * A tela, o CSV e o PDF usam exatamente as mesmas colunas (RNF.01 da 3.34).
+ * Assim a tela, o CSV e o PDF usam exatamente as mesmas colunas.
  */
 abstract class Relatorio
 {

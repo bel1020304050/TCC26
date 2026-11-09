@@ -4,7 +4,7 @@
 @section('trilha', 'Painel › Minha conta')
 
 @section('conteudo')
-{{-- Minha conta da equipe (seção 2.2): só nome, telefone e senha --}}
+{{-- "Minha conta" da equipe: só nome, telefone e senha --}}
 <div class="row g-4" style="max-width: 980px;">
     <div class="col-lg-6">
         <div class="mm-card p-4 h-100">

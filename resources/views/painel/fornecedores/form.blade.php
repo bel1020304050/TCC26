@@ -6,7 +6,7 @@
 @section('trilha', 'Painel › Fornecedores › '.($editando ? $fornecedor->nome.' › Editar' : 'Novo fornecedor'))
 
 @section('conteudo')
-{{-- Story 3.26 – Cadastrar (Figura 27) e 3.28 – Editar Fornecedor (Figura 29) --}}
+{{-- Formulário de fornecedor (o mesmo para cadastrar e editar) --}}
 <div class="mm-card p-4" style="max-width: 780px;">
     <form method="POST" action="{{ $editando ? route('painel.fornecedores.update', $fornecedor) : route('painel.fornecedores.store') }}" novalidate>
         @csrf

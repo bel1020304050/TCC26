@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Carrinho — story 3.30 (apoio).
+ * Carrinho do cliente.
  */
 class CarrinhoTest extends TestCase
 {
@@ -40,7 +40,7 @@ class CarrinhoTest extends TestCase
         $this->actingAs(User::factory()->funcionario()->create())->get('/carrinho')->assertForbidden();
     }
 
-    // CT-3-30-01 (parte do carrinho; o cupom chega na Fase 8)
+    // CT-3-30-01 (parte do carrinho; o cupom é testado em PromocaoLojaTest)
     public function test_adiciona_produto_com_quantidade_1_e_mostra_totais(): void
     {
         $vestido = $this->produto();

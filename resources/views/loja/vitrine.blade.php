@@ -3,7 +3,7 @@
 @section('titulo', $filtros['busca'] !== '' ? 'Busca: '.$filtros['busca'] : 'Início')
 
 @section('conteudo')
-{{-- Story 3.2 – Visualizar e Pesquisar Produtos (Figura 3) --}}
+{{-- Vitrine: pesquisa, filtros, ordenação e cards dos produtos --}}
 @guest
     <div class="mm-card p-4 mb-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div>
@@ -96,7 +96,7 @@
                                 @if ($promo) <div class="small text-muted">{{ $promo->descontoLabel() }} de desconto no carrinho</div> @endif
                             @endif
                         </div>
-                        {{-- Story 3.30: só cliente logado adiciona; visitante vai para o login --}}
+                        {{-- Só cliente logado adiciona ao carrinho; o visitante vai para o login --}}
                         @auth
                             @if (auth()->user()->isCliente())
                                 <form method="POST" action="{{ route('loja.carrinho.adicionar') }}">

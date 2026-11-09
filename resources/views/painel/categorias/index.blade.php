@@ -4,7 +4,7 @@
 @section('trilha', 'Painel › Categorias')
 
 @section('conteudo')
-{{-- Story 3.15 – Consultar Categorias (Figura 16) e 3.17 – Inativar (Figura 18) --}}
+{{-- Lista de categorias com pesquisa, filtro de status e inativar/reativar --}}
 @php $podeAlterar = auth()->user()->can('create', \App\Models\Categoria::class); @endphp
 
 <x-filtro-lista :acao="route('painel.categorias.index')" :busca="$busca" :status="$status"

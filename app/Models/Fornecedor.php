@@ -40,7 +40,7 @@ class Fornecedor extends Model
         return $this->hasMany(Produto::class);
     }
 
-    // Regra da 3.29: fornecedor com produtos ativos não pode ser inativado
+    // Regra: fornecedor com produtos ativos não pode ser inativado
     public function possuiProdutosAtivos(): bool
     {
         return $this->produtos()->ativos()->exists();

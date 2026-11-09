@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Uma tentativa de pagamento de um pedido (processo 3.31).
+ * Uma tentativa de pagamento de um pedido. Um pedido pode ter várias (ex.: cartão recusado e depois PIX).
  */
 class Pagamento extends Model
 {

@@ -3,7 +3,7 @@
 @section('titulo', 'Pagamento do pedido '.$pedido->numero())
 
 @section('conteudo')
-{{-- Processo 3.31 – Finalizar Compra / Pagamento (Figura 32) --}}
+{{-- Tela de pagamento: escolher PIX, cartão ou boleto --}}
 <x-etapas-compra :atual="3" />
 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
     <h1 class="h3 mb-0">Pagamento do pedido {{ $pedido->numero() }}</h1>

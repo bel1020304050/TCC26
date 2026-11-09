@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Se a conta for inativada (ou encerrada) enquanto o usuário está logado,
- * a sessão é encerrada na próxima requisição (RNF.01 da story 3.8).
+ * a sessão é encerrada na próxima página que ele abrir.
  */
 class EncerraSessaoInativa
 {

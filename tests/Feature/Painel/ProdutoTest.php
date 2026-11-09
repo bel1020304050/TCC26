@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
- * Testes do CRUD de Produtos — stories 3.1, 3.3 e 3.4.
+ * Cadastro de Produtos no painel.
  */
 class ProdutoTest extends TestCase
 {

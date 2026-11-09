@@ -12,14 +12,14 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="menuLoja">
-                {{-- Pesquisa rápida: leva para a vitrine filtrada (story 3.2) --}}
+                {{-- Pesquisa rápida: leva para a vitrine já filtrada --}}
                 <form class="d-flex flex-grow-1 my-2 my-md-0 mx-md-4" role="search" method="GET" action="{{ route('loja.inicio') }}">
                     <input class="form-control form-control-sm mm-busca" type="search" name="busca" value="{{ request('busca') }}"
                            placeholder="Pesquisar produtos..." aria-label="Pesquisar produtos">
                 </form>
                 <ul class="navbar-nav ms-auto align-items-md-center">
                     <li class="nav-item"><a class="nav-link" href="{{ route('loja.inicio') }}">Início</a></li>
-                    {{-- Carrinho: só clientes têm (3.30). Visitante é levado ao login. Equipe não compra pelo painel. --}}
+                    {{-- Carrinho: só clientes têm. O visitante é levado ao login; a equipe não compra pela loja. --}}
                     @if (! auth()->check() || auth()->user()->isCliente())
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('loja.carrinho') ? 'fw-semibold' : '' }}" href="{{ route('loja.carrinho') }}">

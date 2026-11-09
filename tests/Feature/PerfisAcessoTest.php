@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Controle de acesso por perfil (seção 2.2 da documentação).
+ * Controle de acesso por perfil.
  */
 class PerfisAcessoTest extends TestCase
 {
@@ -56,7 +56,7 @@ class PerfisAcessoTest extends TestCase
         $this->actingAs($admin)->get('/painel/usuarios')->assertOk();
     }
 
-    // RNF.01 da 3.8: quem é inativado perde a sessão na próxima requisição
+    // Quem é inativado perde a sessão na próxima página que abrir
     public function test_usuario_inativado_durante_a_sessao_e_desconectado(): void
     {
         $func = User::factory()->funcionario()->create();

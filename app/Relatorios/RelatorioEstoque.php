@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 /**
- * Story 3.33 – Relatório de Produtos / Estoque (Administrador e Funcionário).
+ * Relatório de Produtos / Estoque (Administrador e Funcionário).
  * Estoque baixo = 10 unidades ou menos.
  */
 class RelatorioEstoque extends Relatorio

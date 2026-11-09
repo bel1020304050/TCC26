@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * CRUD de Promoções — stories 3.22 (cadastrar), 3.23 (consultar), 3.24 (editar) e 3.25 (inativar).
+ * Cadastro de Promoções e cupons no painel: listar, cadastrar, editar, inativar e reativar.
  */
 class PromocaoController extends Controller
 {
@@ -73,13 +73,13 @@ class PromocaoController extends Controller
         $promocao->fill($request->safe()->only(self::CAMPOS));
         $promocao->save(); // pedidos antigos guardaram o próprio desconto: não mudam
 
-        // RNF.01 da 3.24: valores anteriores e novos
+        // Auditoria: guarda os valores de antes e de depois da edição
         Auditoria::registrar('editou', $promocao, ['antes' => $antes, 'depois' => $this->valores($promocao)]);
 
         return redirect()->route('painel.promocoes.index')->with('sucesso', "Promoção \"{$promocao->nome}\" atualizada.");
     }
 
-    // 3.25 – Deixa de valer para novos carrinhos; pedidos já feitos mantêm o desconto
+    // Regra: a promoção inativada deixa de valer em novos carrinhos; pedidos já feitos mantêm o desconto
     public function inativar(Promocao $promocao): RedirectResponse
     {
         Gate::authorize('alterarStatus', $promocao);

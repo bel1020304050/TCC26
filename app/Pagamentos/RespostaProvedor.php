@@ -3,7 +3,7 @@
 namespace App\Pagamentos;
 
 /**
- * Resposta do provedor: Aprovado, Recusado ou Pendente (etapa 4 do processo 3.31),
+ * Resposta do provedor: Aprovado, Recusado ou Pendente,
  * mais os dados que podem ser guardados (código PIX, linha do boleto, bandeira e final do cartão).
  */
 final class RespostaProvedor

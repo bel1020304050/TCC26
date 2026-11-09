@@ -15,12 +15,12 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    // Perfis de acesso (seção 2.2 da documentação)
+    // Perfis de acesso: definem o que cada pessoa pode fazer no sistema
     public const PERFIL_CLIENTE = 'cliente';
     public const PERFIL_FUNCIONARIO = 'funcionario';
     public const PERFIL_ADMIN = 'admin';
 
-    // Status (exclusão lógica — seção 2.3)
+    // Status (exclusão lógica: a conta nunca é apagada, só muda de status)
     public const STATUS_ATIVO = 'ativo';
     public const STATUS_INATIVO = 'inativo';     // equipe interna desligada
     public const STATUS_ENCERRADO = 'encerrado'; // conta de cliente encerrada por ele mesmo
@@ -33,7 +33,7 @@ class User extends Authenticatable
     /**
      * Campos liberados para preenchimento em massa.
      * "perfil" e "status" NÃO estão aqui de propósito: só o servidor define esses valores
-     * (RNF.01 da story 3.9 — um campo "perfil" enviado pelo navegador é ignorado).
+     * Segurança: se alguém enviar um campo "perfil=admin" pelo navegador, ele é ignorado.
      */
     protected $fillable = [
         'name', 'email', 'password', 'telefone', 'cargo',
@@ -108,7 +108,7 @@ class User extends Authenticatable
         return $this->status === self::STATUS_ENCERRADO;
     }
 
-    // Contato mostrado à equipe: conta encerrada não exibe o e-mail técnico de anonimização (RNF.02 da 3.12)
+    // Contato mostrado à equipe. LGPD: conta encerrada não mostra nenhum dado de contato
     public function contatoPainel(): string
     {
         if ($this->isEncerrado()) {

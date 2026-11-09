@@ -4,7 +4,7 @@
 @section('trilha', 'Painel › Usuários')
 
 @section('conteudo')
-{{-- Story 3.6 – Consultar Usuários (Figura 7) e 3.8 – Inativar Usuário (Figura 9) --}}
+{{-- Lista da equipe com pesquisa, filtros e inativar/reativar --}}
 <form method="GET" action="{{ route('painel.usuarios.index') }}" class="d-flex flex-wrap gap-2 mb-3" role="search">
     <input type="search" name="busca" value="{{ $busca }}" class="form-control" style="flex: 1 1 240px;"
            placeholder="Pesquisar por nome ou e-mail" aria-label="Pesquisar por nome ou e-mail">
@@ -53,7 +53,7 @@
                         <td class="text-end text-nowrap">
                             <a href="{{ route('painel.usuarios.edit', $usuario) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
                             @if ($souEu)
-                                {{-- Regra da 3.8: o Administrador não pode inativar a própria conta --}}
+                                {{-- Regra: o Administrador não pode inativar a própria conta --}}
                                 <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Você não pode inativar a sua própria conta">Inativar</button>
                             @else
                                 <x-modal-status :id="'usuario-'.$usuario->id" :ativo="$usuario->isAtivo()" tipo="usuário"

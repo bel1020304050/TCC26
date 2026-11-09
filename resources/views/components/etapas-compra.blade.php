@@ -1,4 +1,5 @@
-{{-- Etapas da compra (Figuras 19, 31 e 32): Carrinho → Pedido → Pagamento → Concluído --}}
+{{-- Indicador de etapas da compra: Carrinho → Pedido → Pagamento → Concluído.
+     $atual = número da etapa em que o cliente está (1 a 4). --}}
 @props(['atual' => 1])
 @php $etapas = ['Carrinho', 'Pedido', 'Pagamento', 'Concluído']; @endphp
 <ol class="mm-etapas list-unstyled d-flex flex-wrap align-items-center gap-2 mb-3" aria-label="Etapas da compra">

@@ -3,7 +3,7 @@
 namespace App\Support;
 
 /**
- * Status padronizados dos cadastros com exclusão lógica (seção 2.3).
+ * Status padronizados dos cadastros com exclusão lógica (Ativo/Inativo).
  */
 final class Status
 {

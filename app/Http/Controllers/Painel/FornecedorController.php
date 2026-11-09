@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * CRUD de Fornecedores — stories 3.26 (cadastrar), 3.27 (consultar), 3.28 (editar) e 3.29 (inativar).
+ * Cadastro de Fornecedores no painel: listar, cadastrar, editar, inativar e reativar.
  */
 class FornecedorController extends Controller
 {
-    // 3.27 – Consultar: pesquisa por nome ou CPF/CNPJ (com ou sem pontuação)
+    // Lista com pesquisa por nome ou CPF/CNPJ (aceita o documento com ou sem pontuação)
     public function index(Request $request): View
     {
         Gate::authorize('viewAny', Fornecedor::class);
@@ -45,7 +45,7 @@ class FornecedorController extends Controller
         return view('painel.fornecedores.index', compact('fornecedores', 'busca', 'status'));
     }
 
-    // 3.26 – Cadastrar
+    // Formulário de cadastro
     public function create(): View
     {
         Gate::authorize('create', Fornecedor::class);
@@ -65,7 +65,7 @@ class FornecedorController extends Controller
             ->with('sucesso', "Fornecedor \"{$fornecedor->nome}\" cadastrado com sucesso.");
     }
 
-    // 3.28 – Editar
+    // Formulário de edição
     public function edit(Fornecedor $fornecedor): View
     {
         Gate::authorize('update', $fornecedor);
@@ -87,7 +87,7 @@ class FornecedorController extends Controller
             ->with('sucesso', "Fornecedor \"{$fornecedor->nome}\" atualizado.");
     }
 
-    // 3.29 – Inativar (exclusão lógica). Mesma regra das categorias.
+    // Inativar = exclusão lógica. Regra: fornecedor com produtos ativos não pode ser inativado.
     public function inativar(Fornecedor $fornecedor): RedirectResponse
     {
         Gate::authorize('alterarStatus', $fornecedor);

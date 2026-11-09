@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 /**
- * CRUD de Clientes (lado do cliente) — stories 3.10, 3.11 e 3.12.
+ * "Minha conta" do cliente: consultar, editar e encerrar.
  */
 class ContaClienteTest extends TestCase
 {
@@ -208,7 +208,7 @@ class ContaClienteTest extends TestCase
         $this->assertTrue($this->ana->fresh()->isAtivo());
     }
 
-    // RNF.02 da 3.12: os dados antigos não aparecem mais em lugar nenhum da equipe
+    // LGPD: depois de encerrada, os dados antigos não aparecem em nenhuma tela da equipe
     public function test_painel_mostra_cliente_removido_no_pedido(): void
     {
         $pedido = $this->pedido(Pedido::ENTREGUE);

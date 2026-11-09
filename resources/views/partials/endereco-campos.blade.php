@@ -1,4 +1,5 @@
-{{-- Campos de endereço com ViaCEP (stories 3.9 e 3.11). $usuario = dados atuais (null no cadastro). --}}
+{{-- Campos de endereço com preenchimento pelo CEP (ViaCEP). Usado em "Criar conta" e "Editar meus dados".
+     $usuario = dados atuais para preencher o formulário (null no cadastro). --}}
                 <div class="row align-items-start">
                     <div class="col-sm-6 mb-3">
                         <label for="cep" class="form-label">CEP <span class="obrigatorio">*</span></label>
