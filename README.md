@@ -243,7 +243,7 @@ e depois **Acessórios** (sem produtos → inativa).
 - **Venda paga** = Pago, Em Separação, Enviado ou Entregue. Aguardando Pagamento, Cancelado e estornos aparecem na lista, mas não entram no faturamento.
 - O período padrão é dos **últimos 30 dias**.
 - **Exportar CSV**: abre direto no Excel, com `;` e acentos certos.
-- **Exportar PDF**: abre uma versão para impressão e o diálogo do navegador. Basta escolher **"Salvar como PDF"**.
+- **Exportar PDF**: o arquivo é gerado no servidor (dompdf, desde a Fase 15) e baixado direto, como o CSV.
   A tela, o CSV e o PDF têm exatamente as mesmas colunas.
 - Relatório de clientes sem telefone e endereço (LGPD). Conta encerrada aparece como "Cliente removido", sem e-mail.
 - As rotas e as exportações recusam quem não tem permissão (Cliente, ou Funcionário em Vendas e Clientes).
@@ -329,6 +329,18 @@ Problemas encontrados e corrigidos:
 | Duplo clique em "Criar conta" dava erro 500 | O e-mail repetido vira a mensagem "já está cadastrado" |
 | Limites de tentativas de rotas diferentes somavam juntos | Um limite com nome para cada rota (`AppServiceProvider`) |
 
+### Fase 15 — PDF com dompdf (stories 3.32–3.34)
+- O PDF dos relatórios agora é **gerado no servidor** com a biblioteca [dompdf](https://github.com/dompdf/dompdf) e
+  **baixado direto**, igual ao CSV (antes abria a página de impressão do navegador).
+- O arquivo traz **todos os registros do filtro**, não só os 50 da página da tela. Com muitos registros, ele quebra em várias
+  folhas A4 (deitadas), **repetindo o cabeçalho da tabela** em cada uma, com rodapé "gerado em … por …" e **"Página X de Y"**.
+- Modelo do PDF: `resources/views/painel/relatorios/pdf.blade.php` (HTML com CSS simples, sem `flex`, que o dompdf entende).
+  Quem gera: `app/Support/Pdf.php`, que pode ser reaproveitado em outros relatórios (ex.: Auditoria, na Fase 16).
+- Segurança: o dompdf não busca nada na internet (`isRemoteEnabled = false`) e só lê arquivos de dentro do projeto.
+- Teste de volume: 300 pedidos geram 10 páginas em ~1,3 s (61 KB).
+- **Nova dependência:** depois de puxar esta fase, rode `composer install` (ou `composer require dompdf/dompdf:"^3.1"`
+  na primeira vez, para atualizar o `composer.lock`).
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -347,7 +359,7 @@ Problemas encontrados e corrigidos:
 | 12 | Perfis (Administrador, Gerente, Atendente/Vendedor) | 2.2, 3.5–3.8 | ✅ Pronta |
 | 13 | Documentos e endereços (fornecedor PF/PJ, CPF do cliente, CEP) | 3.9–3.12, 3.26–3.29 | ✅ Pronta |
 | 14 | Contas e senhas (verificação de e-mail, recuperação e senha provisória) | 3.5–3.13 | ✅ Pronta |
-| 15 | PDF com dompdf | 3.32–3.34 | A fazer |
+| 15 | PDF com dompdf | 3.32–3.34 | ✅ Pronta |
 | 16 | Auditoria (motivo obrigatório e relatório) | 3.35 | A fazer |
 | 17 | Melhorias na loja (página do produto, cupons visíveis, rastreio) | 3.2, 3.20, 3.30 | A fazer |
 | 18 | Pagamento no sandbox do Asaas | 3.31 | A fazer |
@@ -427,7 +439,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (330 testes: 262 das fases + 68 de quebra) |
+| `php artisan test` | Roda os testes automatizados (332 testes: 264 das fases + 68 de quebra) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

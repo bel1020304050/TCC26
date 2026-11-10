@@ -124,16 +124,50 @@ class RelatorioTest extends TestCase
         $this->assertStringContainsString('"Carlos Lima";Pago;PIX;"R$ 259,80";Sim', $linhas[2]);
     }
 
-    public function test_exporta_em_pdf_pela_pagina_de_impressao(): void
+    // O PDF é gerado no servidor (dompdf) e baixado direto, como o CSV
+    public function test_exporta_em_pdf_para_download(): void
     {
         $this->vendasOutubro();
 
-        $this->actingAs($this->admin)->get('/painel/relatorios/vendas?de=2026-10-01&ate=2026-10-31&exportar=pdf')
+        $resposta = $this->actingAs($this->admin)->get('/painel/relatorios/vendas?de=2026-10-01&ate=2026-10-31&exportar=pdf')
             ->assertOk()
-            ->assertSee('Relatório de vendas')
-            ->assertSee('Período: 01/10/2026 a 31/10/2026')
-            ->assertSee('window.print()', false)
-            ->assertSee('Carlos Lima');
+            ->assertHeader('Content-Type', 'application/pdf')
+            ->assertHeader('Content-Disposition', 'attachment; filename="relatorio-vendas-'.now()->format('Y-m-d').'.pdf"');
+
+        $this->assertStringStartsWith('%PDF-', $resposta->getContent());
+        $this->assertSame(1, self::paginasDoPdf($resposta->getContent()));
+    }
+
+    // O conteúdo do PDF vem do modelo Blade: mesmas colunas, filtros e indicadores da tela
+    public function test_modelo_do_pdf_tem_filtros_indicadores_e_linhas(): void
+    {
+        $this->vendasOutubro();
+        $relatorio = new \App\Relatorios\RelatorioVendas(request()->merge(['de' => '2026-10-01', 'ate' => '2026-10-31']));
+        $this->actingAs($this->admin);
+
+        $html = view('painel.relatorios.pdf', ['relatorio' => $relatorio, 'registros' => $relatorio->registros()])->render();
+
+        $this->assertStringContainsString('Relatório de vendas', $html);
+        $this->assertStringContainsString('Período: 01/10/2026 a 31/10/2026', $html);
+        $this->assertStringContainsString('Carlos Lima', $html);
+        $this->assertStringContainsString('5 registro(s)', $html);
+        $this->assertStringNotContainsString('window.print', $html);
+    }
+
+    // Com muitos registros, o PDF quebra em várias folhas (todos os registros, não só a página da tela)
+    public function test_pdf_com_muitos_registros_tem_varias_paginas(): void
+    {
+        Produto::factory()->count(120)->create();
+
+        $pdf = $this->actingAs($this->admin)->get('/painel/relatorios/estoque?exportar=pdf')->assertOk()->getContent();
+
+        $this->assertGreaterThan(2, self::paginasDoPdf($pdf));
+    }
+
+    // Conta as folhas pelo dicionário "/Type /Page" de cada página do arquivo
+    private static function paginasDoPdf(string $pdf): int
+    {
+        return preg_match_all('#/Type\s*/Page[^s]#', $pdf);
     }
 
     // CT-3-33-01
