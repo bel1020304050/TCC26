@@ -28,10 +28,11 @@ class FornecedorRequest extends FormRequest
             : $this->user()->can('create', Fornecedor::class);
     }
 
-    // Padroniza antes de validar: CEP "87501000" vira "87501-000" e UF em maiúsculas
+    // Padroniza antes de validar: CEP "87501000" vira "87501-000", UF em maiúsculas e e-mail em minúsculas
     protected function prepareForValidation(): void
     {
         $this->merge([
+            'email' => filled($this->input('email')) ? mb_strtolower(trim($this->input('email'))) : null,
             'cep' => Cep::formatar($this->input('cep')),
             'uf' => mb_strtoupper(trim((string) $this->input('uf'))),
         ]);

@@ -16,7 +16,7 @@
             ['titulo' => 'Pedidos', 'icone' => 'receipt', 'rota' => 'painel.pedidos.index', 'ativo' => 'painel.pedidos.*', 'perfis' => ['admin', 'gerente', 'atendente']],
             ['titulo' => 'Promoções', 'icone' => 'percent', 'rota' => 'painel.promocoes.index', 'ativo' => 'painel.promocoes.*', 'perfis' => ['admin', 'gerente', 'atendente']],
             ['titulo' => 'Fornecedores', 'icone' => 'truck', 'rota' => 'painel.fornecedores.index', 'ativo' => 'painel.fornecedores.*', 'perfis' => ['admin', 'gerente', 'atendente']],
-            ['titulo' => 'Usuários', 'icone' => 'people', 'rota' => 'painel.usuarios.index', 'ativo' => 'painel.usuarios.*', 'perfis' => ['admin']],
+            ['titulo' => 'Usuários', 'icone' => 'people', 'rota' => 'painel.usuarios.index', 'ativo' => 'painel.usuarios.*', 'perfis' => ['admin', 'gerente']],
             ['titulo' => 'Relatórios', 'icone' => 'bar-chart', 'rota' => 'painel.relatorios.index', 'ativo' => 'painel.relatorios.*', 'perfis' => ['admin', 'gerente', 'atendente']],
         ];
     @endphp
@@ -64,6 +64,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('js/email.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

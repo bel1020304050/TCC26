@@ -116,6 +116,17 @@
                     @if ($problemas)
                         <div class="small text-danger mt-2">Ajuste os itens destacados para continuar.</div>
                     @endif
+                    @unless (auth()->user()->hasVerifiedEmail())
+                        {{-- Regra: sem e-mail confirmado o cliente monta o carrinho, mas não finaliza a compra --}}
+                        <div class="alert alert-warning small mt-3 mb-0">
+                            <i class="bi bi-envelope-exclamation me-1"></i>
+                            Confirme seu e-mail para finalizar a compra. Enviamos o link para <strong>{{ auth()->user()->email }}</strong>.
+                            <form method="POST" action="{{ route('verification.send') }}" class="mt-2">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Reenviar e-mail</button>
+                            </form>
+                        </div>
+                    @endunless
                 @endif
             </div>
         </div>

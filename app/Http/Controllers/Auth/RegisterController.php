@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 /**
  * Cadastro público de clientes ("Criar conta").
- * Sempre cria o perfil Cliente; já deixa a pessoa logada no fim.
+ * Sempre cria o perfil Cliente; já deixa a pessoa logada no fim e envia o e-mail de confirmação.
  */
 class RegisterController extends Controller
 {
@@ -28,10 +28,13 @@ class RegisterController extends Controller
         $usuario->status = User::STATUS_ATIVO;
         $usuario->save();
 
+        // Regra: o cliente já pode navegar e montar o carrinho; para comprar, confirma o e-mail pelo link
+        $usuario->sendEmailVerificationNotification();
+
         Auth::login($usuario);
         $request->session()->regenerate();
 
         return redirect()->route('loja.inicio')
-            ->with('sucesso', 'Conta criada com sucesso! Bem-vinda(o) à Mary Modas.');
+            ->with('sucesso', "Conta criada com sucesso! Enviamos um link de confirmação para {$usuario->email}: confirme o e-mail para poder finalizar compras.");
     }
 }

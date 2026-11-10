@@ -14,8 +14,11 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * Cadastro da equipe (usuários do painel): listar, cadastrar, editar, inativar e reativar.
- * Segurança: só o Administrador acessa (UserPolicy).
+ * Cadastro da equipe (usuários do painel): listar, cadastrar, editar, inativar, reativar e redefinir senha.
+ * Segurança: o Administrador faz tudo; o Gerente só vê a lista e redefine a senha dos Atendentes (UserPolicy).
+ *
+ * Regra: ninguém digita a senha de outra pessoa. No cadastro e no "Redefinir senha" o sistema gera uma
+ * senha provisória, mostrada uma única vez, e a pessoa cria a própria senha no primeiro login.
  */
 class UsuarioController extends Controller
 {
@@ -53,15 +56,21 @@ class UsuarioController extends Controller
 
     public function store(UsuarioRequest $request): RedirectResponse
     {
-        $usuario = new User($request->safe()->only(['name', 'email', 'telefone', 'password']));
+        $senha = self::gerarSenhaProvisoria();
+
+        $usuario = new User($request->safe()->only(['name', 'email', 'telefone']));
+        $usuario->password = $senha;
+        $usuario->senha_provisoria = true;
         $usuario->perfil = $request->validated('perfil');   // definido no servidor, nunca em massa
         $usuario->status = $request->validated('status');
+        $usuario->email_verified_at = now();                // e-mail da loja: não precisa confirmar
         $usuario->save();
 
         Auditoria::registrar('criou', $usuario, ['perfil' => $usuario->perfil]);
 
         return redirect()->route('painel.usuarios.index')
-            ->with('sucesso', "Usuário \"{$usuario->name}\" cadastrado como {$usuario->perfilLabel()}.");
+            ->with('sucesso', "Usuário \"{$usuario->name}\" cadastrado como {$usuario->perfilLabel()}.")
+            ->with('senha_gerada', ['nome' => $usuario->name, 'email' => $usuario->email, 'senha' => $senha]);
     }
 
     // Formulário de edição
@@ -86,17 +95,12 @@ class UsuarioController extends Controller
 
         $usuario->fill($request->safe()->only($campos));
         $usuario->perfil = $novoPerfil;
-        $senhaAlterada = filled($request->validated('password'));
-        if ($senhaAlterada) {
-            $usuario->password = $request->validated('password');
-        }
         $usuario->save();
 
-        // Auditoria: registra o perfil anterior e o novo. Segurança: a senha nunca vai para a auditoria
+        // Auditoria: registra o perfil anterior e o novo
         Auditoria::registrar('editou', $usuario, [
             'antes' => $antes,
             'depois' => $usuario->only([...$campos, 'perfil']),
-            'senha_alterada' => $senhaAlterada,
         ]);
 
         return redirect()->route('painel.usuarios.index')
@@ -132,6 +136,39 @@ class UsuarioController extends Controller
         Auditoria::registrar('reativou', $usuario);
 
         return back()->with('sucesso', "Usuário \"{$usuario->name}\" reativado.");
+    }
+
+    /**
+     * Redefinir senha de quem esqueceu: gera uma senha provisória e mostra uma vez só na tela.
+     * Segurança: as sessões abertas da pessoa são encerradas, e a senha nunca vai para a auditoria.
+     */
+    public function redefinirSenha(User $usuario): RedirectResponse
+    {
+        Gate::authorize('redefinirSenha', $usuario);
+
+        $senha = self::gerarSenhaProvisoria();
+        $usuario->password = $senha;
+        $usuario->senha_provisoria = true;
+        $usuario->save();
+
+        DB::table('sessions')->where('user_id', $usuario->id)->delete();
+        Auditoria::registrar('redefiniu_senha', $usuario);
+
+        return back()
+            ->with('sucesso', "Senha de \"{$usuario->name}\" redefinida. Passe a senha provisória para a pessoa.")
+            ->with('senha_gerada', ['nome' => $usuario->name, 'email' => $usuario->email, 'senha' => $senha]);
+    }
+
+    // 10 letras e números sorteados, sem os que se confundem (0/O, 1/l/I), para ditar ou digitar sem erro
+    private static function gerarSenhaProvisoria(): string
+    {
+        $caracteres = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+        $senha = '';
+        for ($i = 0; $i < 10; $i++) {
+            $senha .= $caracteres[random_int(0, strlen($caracteres) - 1)]; // random_int: sorteio seguro
+        }
+
+        return $senha;
     }
 
     private function existeOutroAdminAtivo(User $usuario): bool

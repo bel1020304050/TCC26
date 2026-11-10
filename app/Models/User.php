@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
+use App\Notifications\RecuperarSenha;
+use App\Notifications\VerificarEmail;
 use App\Support\Documento;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -37,7 +40,7 @@ class User extends Authenticatable
 
     /**
      * Campos liberados para preenchimento em massa.
-     * "perfil" e "status" NÃO estão aqui de propósito: só o servidor define esses valores
+     * "perfil", "status" e "senha_provisoria" NÃO estão aqui de propósito: só o servidor define esses valores.
      * Segurança: se alguém enviar um campo "perfil=admin" pelo navegador, ele é ignorado.
      */
     protected $fillable = [
@@ -61,6 +64,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'encerrada_em' => 'datetime',
             'password' => 'hashed',
+            'senha_provisoria' => 'boolean',
         ];
     }
 
@@ -85,6 +89,24 @@ class User extends Authenticatable
     protected function uf(): Attribute
     {
         return Attribute::make(set: fn (?string $value) => $value === null ? null : mb_strtoupper(trim($value)));
+    }
+
+    // ---------- E-mail e senha ----------
+
+    // Regra: só o cliente precisa confirmar o e-mail (para comprar). A equipe usa o e-mail da loja e não confirma.
+    public function hasVerifiedEmail(): bool
+    {
+        return ! $this->isCliente() || $this->email_verified_at !== null;
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerificarEmail);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new RecuperarSenha($token));
     }
 
     // ---------- Perguntas sobre o perfil ----------

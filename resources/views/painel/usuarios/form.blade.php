@@ -19,7 +19,7 @@
         <div class="row">
             <x-campo class="col-md-6" name="name" label="Nome" obrigatorio maxlength="120" :valor="$usuario->name" />
             <x-campo class="col-md-6" name="email" label="E-mail" type="email" obrigatorio maxlength="150" :valor="$usuario->email"
-                     dica="Deve ser único no sistema" />
+                     placeholder="nome@marymodas.com.br" dica="Use o e-mail da loja: nome@marymodas.com.br" />
             <x-campo class="col-md-6" name="telefone" label="Telefone" opcional maxlength="20" :valor="$usuario->telefone" placeholder="(44) 99999-0000" />
 
             <div class="col-md-6 mb-3">
@@ -64,20 +64,18 @@
                 @endif
             </div>
 
-            @if ($editando)
-                <x-campo class="col-md-6" name="password" label="Nova senha" type="password" opcional autocomplete="new-password"
-                         dica="Deixe em branco para manter a senha atual" />
-                <x-campo class="col-md-6" name="password_confirmation" label="Confirmar nova senha" type="password" opcional autocomplete="new-password" />
-            @else
-                <x-campo class="col-md-6" name="password" label="Senha inicial" type="password" obrigatorio autocomplete="new-password"
-                         dica="Mínimo de 8 caracteres. A pessoa pode trocá-la em “Minha conta”." />
-                <x-campo class="col-md-6" name="password_confirmation" label="Confirmar senha" type="password" obrigatorio autocomplete="new-password" />
-            @endif
         </div>
 
-        @unless ($editando)
-            <p class="text-muted small mb-0">Clientes não são cadastrados aqui: eles criam a própria conta pela loja.</p>
-        @endunless
+        {{-- Regra: ninguém digita a senha de outra pessoa; o sistema gera uma senha provisória --}}
+        <div class="alert alert-light border small mb-0">
+            <i class="bi bi-key me-1"></i>
+            @if ($editando)
+                A senha não é alterada aqui. Se a pessoa esqueceu a senha, use <strong>Redefinir senha</strong> na lista de usuários.
+            @else
+                Ao cadastrar, o sistema gera uma <strong>senha provisória</strong> e mostra uma única vez.
+                No primeiro login, a pessoa cria a própria senha. Clientes não são cadastrados aqui: eles criam a própria conta pela loja.
+            @endif
+        </div>
 
         <div class="d-flex justify-content-end gap-2 mt-4">
             <a href="{{ route('painel.usuarios.index') }}" class="btn btn-outline-secondary">Cancelar</a>

@@ -35,7 +35,8 @@ class CriarContaRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')],
+            // Segurança: o domínio da loja é só da equipe, para ninguém criar conta se passando pela loja
+            'email' => ['required', 'email', 'max:150', 'doesnt_end_with:'.UsuarioRequest::DOMINIO, Rule::unique('users', 'email')],
             'cpf' => $this->regrasCpf(),
             'telefone' => ['nullable', 'string', 'max:20'],
             'password' => ['required', 'confirmed', Password::min(8)],
@@ -72,6 +73,7 @@ class CriarContaRequest extends FormRequest
     {
         return [
             'email.unique' => 'Este e-mail já está em uso.',
+            'email.doesnt_end_with' => 'Esse domínio é reservado à equipe da loja. Use o seu e-mail pessoal.',
             'cep.regex' => Cep::MENSAGEM,
             'uf.in' => 'Selecione uma UF válida.',
         ];
