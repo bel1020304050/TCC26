@@ -58,7 +58,7 @@
     <span class="text-muted small">Exibindo {{ $registros->count() }} de {{ $registros->total() }} · {{ $relatorio->rodape() }}</span>
     <span class="small fw-semibold">
         Exportar
-        <a href="{{ request()->fullUrlWithQuery(['exportar' => 'pdf', 'page' => null]) }}" target="_blank" class="text-decoration-none mm-laranja">PDF</a> ·
+        <a href="{{ request()->fullUrlWithQuery(['exportar' => 'pdf', 'page' => null]) }}" class="text-decoration-none mm-laranja">PDF</a> ·
         <a href="{{ request()->fullUrlWithQuery(['exportar' => 'csv', 'page' => null]) }}" class="text-decoration-none mm-laranja">CSV</a>
     </span>
 </div>
