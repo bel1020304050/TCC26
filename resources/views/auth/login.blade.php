@@ -14,6 +14,9 @@
                 @csrf
                 <x-campo name="email" label="E-mail" type="email" obrigatorio autofocus autocomplete="email" />
                 <x-campo name="password" label="Senha" type="password" obrigatorio autocomplete="current-password" />
+                <div class="text-end small" style="margin-top: -.5rem;">
+                    <a href="{{ route('password.request') }}">Esqueci minha senha</a>
+                </div>
 
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <a href="{{ route('register') }}" class="btn btn-outline-secondary">Criar conta</a>
@@ -23,6 +26,7 @@
 
             <p class="text-muted small mt-4 mb-0">
                 Login único para clientes e para a equipe da loja: após entrar, cada perfil é levado à sua área.
+                Equipe: se esquecer a senha, peça uma senha provisória ao Administrador ou ao Gerente.
             </p>
         </div>
     </div>

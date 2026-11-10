@@ -31,27 +31,34 @@ class UsuarioTest extends TestCase
             'telefone' => '(44) 99876-1020',
             'perfil' => 'atendente',
             'status' => 'ativo',
-            'password' => 'senha1234',
-            'password_confirmation' => 'senha1234',
         ], $troca);
     }
 
-    // CT-3-5-01
+    // CT-3-5-01: o sistema gera a senha provisória, mostrada uma vez, e a pessoa cria a própria no primeiro login
     public function test_admin_cadastra_atendente_que_consegue_entrar(): void
     {
-        $this->actingAs($this->admin)->post('/painel/usuarios', $this->dados())
+        $resposta = $this->actingAs($this->admin)->post('/painel/usuarios', $this->dados())
             ->assertRedirect(route('painel.usuarios.index'))
             ->assertSessionHas('sucesso');
 
+        $senha = $resposta->getSession()->get('senha_gerada')['senha'];
+        $this->assertSame(10, strlen($senha));
+
         $rafael = User::where('email', 'rafael@marymodas.com.br')->sole();
         $this->assertTrue($rafael->isAtendente());
-        $this->assertTrue(Hash::check('senha1234', $rafael->password));
+        $this->assertTrue($rafael->senha_provisoria);
+        $this->assertTrue(Hash::check($senha, $rafael->password));
         $this->assertDatabaseHas('auditorias', ['acao' => 'criou', 'entidade' => 'users', 'entidade_id' => $rafael->id]);
 
-        // Consegue fazer login
+        // A senha aparece na lista logo depois do cadastro, e só dessa vez
+        $this->actingAs($this->admin)->withSession(['senha_gerada' => $resposta->getSession()->get('senha_gerada')])
+            ->get('/painel/usuarios')->assertSee($senha)->assertSee('não será mostrada de novo');
+        $this->actingAs($this->admin)->get('/painel/usuarios')->assertDontSee($senha);
+
+        // Entra com a senha provisória e é levado para criar a própria senha
         auth()->logout();
-        $this->post('/entrar', ['email' => 'rafael@marymodas.com.br', 'password' => 'senha1234'])
-            ->assertRedirect(route('painel.inicio'));
+        $this->post('/entrar', ['email' => 'rafael@marymodas.com.br', 'password' => $senha]);
+        $this->get('/painel')->assertRedirect(route('senha-provisoria.edit'));
     }
 
     // CT-3-5-02: e-mail único em todo o sistema (inclusive clientes)
@@ -69,12 +76,30 @@ class UsuarioTest extends TestCase
             ->assertSessionHasErrors('perfil');
     }
 
-    public function test_senha_curta_ou_sem_confirmacao(): void
+    // Regra: a equipe usa o e-mail da loja (o servidor passa para minúsculas antes de conferir)
+    public function test_email_da_equipe_precisa_ser_da_loja(): void
     {
-        $this->actingAs($this->admin)->post('/painel/usuarios', $this->dados(['password' => '123', 'password_confirmation' => '123']))
-            ->assertSessionHasErrors('password');
-        $this->actingAs($this->admin)->post('/painel/usuarios', $this->dados(['password_confirmation' => 'outra1234']))
-            ->assertSessionHasErrors('password');
+        $this->actingAs($this->admin)->post('/painel/usuarios', $this->dados(['email' => 'rafael@gmail.com']))
+            ->assertSessionHasErrors(['email' => 'Use o e-mail da loja (terminado em @marymodas.com.br).']);
+
+        $this->actingAs($this->admin)->post('/painel/usuarios', $this->dados(['email' => ' Rafael@MaryModas.com.br ']))
+            ->assertSessionHasNoErrors();
+        $this->assertTrue(User::where('email', 'rafael@marymodas.com.br')->exists());
+    }
+
+    // Ninguém digita a senha de outra pessoa: o formulário não tem campo de senha
+    public function test_formulario_nao_tem_campo_de_senha(): void
+    {
+        $this->actingAs($this->admin)->get('/painel/usuarios/novo')
+            ->assertDontSee('name="password"', false)->assertSee('senha provisória');
+
+        $func = User::factory()->atendente()->create(['password' => 'antiga1234']);
+        $this->actingAs($this->admin)->get("/painel/usuarios/{$func->id}/editar")
+            ->assertDontSee('name="password"', false)->assertSee('Redefinir senha');
+
+        // Mesmo se alguém enviar uma senha pelo navegador, ela é ignorada
+        $this->actingAs($this->admin)->put("/painel/usuarios/{$func->id}", $this->dados(['name' => $func->name, 'email' => $func->email, 'password' => 'invasor123', 'password_confirmation' => 'invasor123']));
+        $this->assertTrue(Hash::check('antiga1234', $func->fresh()->password));
     }
 
     // CT-3-6-01: pesquisa
@@ -126,37 +151,25 @@ class UsuarioTest extends TestCase
         $func = User::factory()->atendente()->create();
 
         $this->actingAs($this->admin)
-            ->put("/painel/usuarios/{$func->id}", $this->dados(['name' => $func->name, 'email' => $func->email, 'perfil' => 'admin', 'password' => '', 'password_confirmation' => '']))
+            ->put("/painel/usuarios/{$func->id}", $this->dados(['name' => $func->name, 'email' => $func->email, 'perfil' => 'admin']))
             ->assertRedirect(route('painel.usuarios.index'));
 
         $this->assertTrue($func->fresh()->isAdmin());
         $detalhes = Auditoria::where('acao', 'editou')->sole()->detalhes;
         $this->assertSame('atendente', $detalhes['antes']['perfil']);
         $this->assertSame('admin', $detalhes['depois']['perfil']);
-        $this->assertFalse($detalhes['senha_alterada']);
     }
 
     // CT-3-7-02
     public function test_admin_nao_altera_o_proprio_perfil(): void
     {
         $this->actingAs($this->admin)
-            ->put("/painel/usuarios/{$this->admin->id}", $this->dados(['name' => $this->admin->name, 'email' => $this->admin->email, 'perfil' => 'atendente', 'password' => '', 'password_confirmation' => '']))
+            ->put("/painel/usuarios/{$this->admin->id}", $this->dados(['name' => $this->admin->name, 'email' => $this->admin->email, 'perfil' => 'atendente']))
             ->assertSessionHasErrors(['perfil' => 'Você não pode alterar o seu próprio perfil.']);
 
         $this->assertTrue($this->admin->fresh()->isAdmin());
     }
 
-    public function test_senha_em_branco_mantem_a_atual_e_nova_senha_troca(): void
-    {
-        $func = User::factory()->atendente()->create(['password' => 'antiga1234']);
-        $base = ['name' => $func->name, 'email' => $func->email];
-
-        $this->actingAs($this->admin)->put("/painel/usuarios/{$func->id}", $this->dados($base + ['password' => '', 'password_confirmation' => '']));
-        $this->assertTrue(Hash::check('antiga1234', $func->fresh()->password));
-
-        $this->actingAs($this->admin)->put("/painel/usuarios/{$func->id}", $this->dados($base + ['password' => 'nova12345', 'password_confirmation' => 'nova12345']));
-        $this->assertTrue(Hash::check('nova12345', $func->fresh()->password));
-    }
 
     public function test_nao_edita_cliente_pelo_painel(): void
     {

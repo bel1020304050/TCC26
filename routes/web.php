@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RecuperarSenhaController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\SenhaProvisoriaController;
+use App\Http\Controllers\Auth\VerificacaoEmailController;
 use App\Http\Controllers\Loja\CarrinhoController;
 use App\Http\Controllers\Loja\ContaController;
 use App\Http\Controllers\Loja\PagamentoController;
@@ -43,8 +46,11 @@ Route::name('loja.')->middleware(['auth', 'perfil:cliente'])->group(function () 
     Route::post('/carrinho/cupom', [CarrinhoController::class, 'aplicarCupom'])->name('carrinho.cupom');
     Route::delete('/carrinho/cupom', [CarrinhoController::class, 'removerCupom'])->name('carrinho.cupom.remover');
 
-    Route::get('/pedido/confirmar', [PedidoController::class, 'confirmar'])->name('pedidos.confirmar');
-    Route::post('/pedidos', [PedidoController::class, 'store'])->name('pedidos.store');
+    // Regra: finalizar a compra exige e-mail confirmado ("verified" manda para a tela "Confirme seu e-mail")
+    Route::middleware('verified')->group(function () {
+        Route::get('/pedido/confirmar', [PedidoController::class, 'confirmar'])->name('pedidos.confirmar');
+        Route::post('/pedidos', [PedidoController::class, 'store'])->name('pedidos.store');
+    });
     Route::get('/meus-pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
     Route::get('/meus-pedidos/{pedido}', [PedidoController::class, 'show'])->name('pedidos.show');
     Route::patch('/meus-pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
@@ -69,6 +75,29 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/sair', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
+
+// Esqueci minha senha (cliente). Segurança: no máximo 5 pedidos por minuto, contra envio em massa.
+Route::middleware('guest')->group(function () {
+    Route::get('/esqueci-senha', [RecuperarSenhaController::class, 'create'])->name('password.request');
+    Route::post('/esqueci-senha', [RecuperarSenhaController::class, 'store'])->middleware('throttle:5,1')->name('password.email');
+    Route::get('/redefinir-senha/{token}', [RecuperarSenhaController::class, 'edit'])->name('password.reset');
+    Route::post('/redefinir-senha', [RecuperarSenhaController::class, 'update'])->middleware('throttle:5,1')->name('password.update');
+});
+
+// Confirmação do e-mail do cliente. Segurança: o link é assinado ("signed") e vale só para a conta logada.
+Route::middleware(['auth', 'perfil:cliente'])->group(function () {
+    Route::get('/confirmar-email', [VerificacaoEmailController::class, 'aviso'])->name('verification.notice');
+    Route::get('/confirmar-email/{id}/{hash}', [VerificacaoEmailController::class, 'verificar'])
+        ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+    Route::post('/confirmar-email/reenviar', [VerificacaoEmailController::class, 'reenviar'])
+        ->middleware('throttle:3,1')->name('verification.send');
+});
+
+// Troca obrigatória da senha provisória (equipe)
+Route::middleware('auth')->group(function () {
+    Route::get('/criar-nova-senha', [SenhaProvisoriaController::class, 'edit'])->name('senha-provisoria.edit');
+    Route::put('/criar-nova-senha', [SenhaProvisoriaController::class, 'update'])->name('senha-provisoria.update');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -126,10 +155,11 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,gere
     Route::put('minha-conta', [MinhaContaController::class, 'update'])->name('minha-conta.update');
     Route::put('minha-conta/senha', [MinhaContaController::class, 'senha'])->name('minha-conta.senha');
 
-    // Usuários da equipe: só o Administrador (UserPolicy)
+    // Usuários da equipe: o Administrador gerencia tudo; o Gerente só vê a lista e redefine a senha dos Atendentes (UserPolicy)
     Route::resource('usuarios', UsuarioController::class)
         ->except(['show', 'destroy'])
         ->parameters(['usuarios' => 'usuario']);
     Route::patch('usuarios/{usuario}/inativar', [UsuarioController::class, 'inativar'])->name('usuarios.inativar');
     Route::patch('usuarios/{usuario}/reativar', [UsuarioController::class, 'reativar'])->name('usuarios.reativar');
+    Route::post('usuarios/{usuario}/redefinir-senha', [UsuarioController::class, 'redefinirSenha'])->name('usuarios.redefinir-senha');
 });

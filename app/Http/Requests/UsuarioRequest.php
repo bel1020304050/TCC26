@@ -7,13 +7,16 @@ use App\Support\Status;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 /**
  * Validação do formulário de usuário da equipe (cadastrar e editar).
+ * A senha não é digitada aqui: o sistema gera uma senha provisória (ver UsuarioController).
  */
 class UsuarioRequest extends FormRequest
 {
+    // Regra: a equipe usa o e-mail da loja
+    public const DOMINIO = '@marymodas.com.br';
+
     public function authorize(): bool
     {
         $usuario = $this->route('usuario');
@@ -23,6 +26,7 @@ class UsuarioRequest extends FormRequest
             : $this->user()->can('create', User::class);
     }
 
+    // E-mail em minúsculas antes de validar: "Ana@MaryModas.com.br" vira "ana@marymodas.com.br"
     protected function prepareForValidation(): void
     {
         $this->merge(['email' => mb_strtolower(trim((string) $this->input('email')))]);
@@ -36,7 +40,7 @@ class UsuarioRequest extends FormRequest
         $regras = [
             'name' => ['required', 'string', 'max:120'],
             // Único em todo o sistema, incluindo contas de clientes
-            'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($usuario?->id)],
+            'email' => ['required', 'email', 'max:150', 'ends_with:'.self::DOMINIO, Rule::unique('users', 'email')->ignore($usuario?->id)],
             'telefone' => ['nullable', 'string', 'max:20'],
             'perfil' => [
                 'required',
@@ -45,20 +49,21 @@ class UsuarioRequest extends FormRequest
             ],
         ];
 
-        if ($usuario) {
-            // Na edição a senha é opcional: em branco mantém a atual
-            $regras['password'] = ['nullable', 'confirmed', Password::min(8)];
-        } else {
-            $regras['password'] = ['required', 'confirmed', Password::min(8)];
+        if (! $usuario) {
             $regras['status'] = ['required', Rule::in(Status::OPCOES)];
         }
 
         return $regras;
     }
 
+    public function messages(): array
+    {
+        return ['email.ends_with' => 'Use o e-mail da loja (terminado em '.self::DOMINIO.').'];
+    }
+
     public function attributes(): array
     {
-        return ['password' => 'senha', 'status' => 'status inicial'];
+        return ['status' => 'status inicial'];
     }
 
     // Regra: o Administrador não pode alterar o próprio perfil (evita perder o acesso por engano)

@@ -50,12 +50,17 @@ class PerfisEquipeTest extends TestCase
         $this->actingAs($this->atendente)->get('/painel')->assertOk()->assertSee('Atendente/Vendedor');
     }
 
+    // O Gerente vê a lista da equipe (para redefinir senhas), mas só o Administrador cadastra, edita e inativa
     public function test_so_o_admin_gerencia_a_equipe(): void
     {
-        foreach ([$this->gerente, $this->atendente] as $usuario) {
-            $this->actingAs($usuario)->get('/painel/usuarios')->assertForbidden();
-            $this->actingAs($usuario)->get('/painel')->assertDontSee(route('painel.usuarios.index'));
-        }
+        $this->actingAs($this->atendente)->get('/painel/usuarios')->assertForbidden();
+        $this->actingAs($this->atendente)->get('/painel')->assertDontSee(route('painel.usuarios.index'));
+
+        $this->actingAs($this->gerente)->get('/painel/usuarios')->assertOk()->assertDontSee('Novo usuário');
+        $this->actingAs($this->gerente)->get('/painel/usuarios/novo')->assertForbidden();
+        $this->actingAs($this->gerente)->get("/painel/usuarios/{$this->atendente->id}/editar")->assertForbidden();
+        $this->actingAs($this->gerente)->patch("/painel/usuarios/{$this->atendente->id}/inativar")->assertForbidden();
+
         $this->actingAs($this->admin)->get('/painel')->assertSee(route('painel.usuarios.index'));
     }
 

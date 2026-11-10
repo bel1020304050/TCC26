@@ -81,6 +81,20 @@ O **PHP já vem no XAMPP** e o **Laravel não se instala no computador**: o Comp
    ```
    **Esperado:** `Server running on [http://127.0.0.1:8000]`. Abra esse endereço no navegador.
 
+8. **E-mails (opcional, para ver a confirmação de e-mail e o "Esqueci minha senha")**
+   Sem configurar, os e-mails vão para o arquivo `storage/logs/laravel.log` (`MAIL_MAILER=log`).
+   Para vê-los numa caixa de entrada de teste, crie uma conta grátis no [Mailtrap](https://mailtrap.io), abra
+   **Sandbox › My Sandbox › Integration › SMTP** e troque no `.env`:
+   ```
+   MAIL_MAILER=smtp
+   MAIL_HOST=sandbox.smtp.mailtrap.io
+   MAIL_PORT=2525
+   MAIL_USERNAME=usuario_smtp_da_caixa
+   MAIL_PASSWORD=senha_smtp_da_caixa
+   ```
+   Depois rode `php artisan config:clear`. **Esperado:** todo e-mail do sistema, para qualquer endereço, aparece em
+   **My Sandbox**. Nada é entregue a ninguém de verdade. O usuário e a senha SMTP **não** são o seu login do Mailtrap.
+
 > Prefere usar o Apache do XAMPP em vez do `artisan serve`? Aponte o navegador para
 > `http://localhost/TCC26/public` (com o projeto dentro de `C:\xampp\htdocs`) e ajuste `APP_URL` no `.env`.
 
@@ -243,6 +257,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | Ação | Administrador | Gerente | Atendente/Vendedor |
 |---|:---:|:---:|:---:|
 | Usuários da equipe (cadastrar, editar, inativar) | ✅ | — | — |
+| Redefinir senha (senha provisória) | Toda a equipe, menos a própria | Só dos Atendentes | — |
 | Categorias, Fornecedores e Promoções: cadastrar e editar | ✅ | ✅ | Só consulta |
 | Inativar/Reativar categoria, fornecedor, produto e promoção | ✅ | ✅ | — |
 | Produtos: cadastrar, editar e repor estoque | ✅ | ✅ | ✅ |
@@ -271,6 +286,23 @@ e depois **Acessórios** (sem produtos → inativa).
   e o servidor recusa com *"O CEP deve ter 8 números (ex.: 87501-000)."*. O sistema **não completa com zero**,
   porque não dá para saber qual número faltou.
 
+### Fase 14 — Contas e senhas (stories 3.5–3.13)
+- **Confirmação de e-mail do cliente**: ao criar a conta (ou trocar o e-mail), o cliente recebe o link "Confirmar e-mail".
+  Sem confirmar, ele **navega e monta o carrinho**, mas **não finaliza a compra**: o carrinho mostra o aviso com
+  **Reenviar e-mail**, e "Finalizar compra" leva à tela *Confirme seu e-mail*. O link é assinado e vence em 60 minutos.
+- **Esqueci minha senha (cliente)**: link na tela de login. O e-mail traz um link de **uso único** que vence em **60 minutos**.
+  A resposta é sempre a mesma (*"Se o e-mail estiver cadastrado…"*), para não revelar quem tem conta. Ao trocar a senha,
+  as sessões abertas em outros aparelhos são encerradas.
+- **Senha provisória (equipe)**: ninguém digita a senha de outra pessoa.
+  - No **cadastro** e no botão **Redefinir senha**, o sistema gera uma senha provisória de 10 caracteres
+    (sem 0/O e 1/l/I, para não confundir) e mostra **uma única vez**, com botão Copiar.
+  - O **Administrador** redefine a senha de qualquer pessoa da equipe; o **Gerente**, só a dos **Atendentes**.
+    Por isso o Gerente passa a ver a lista de Usuários (só com esse botão).
+  - No próximo login, a pessoa só consegue abrir a tela **Crie a sua senha** (ou sair). A nova senha não pode ser igual à provisória.
+- **E-mail da equipe** precisa terminar em `@marymodas.com.br`, e esse domínio é **recusado** no cadastro de cliente.
+- **E-mail sempre em minúsculas**: o servidor padroniza em todos os formulários e no login, e a tela converte ao sair do campo.
+- Os e-mails são em português (`app/Notifications` e `lang/pt_BR.json`). Configuração do Mailtrap: seção 3, passo 8.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -288,7 +320,7 @@ e depois **Acessórios** (sem produtos → inativa).
 | 11 | Revisão de comentários e tela inicial do painel | — | ✅ Pronta |
 | 12 | Perfis (Administrador, Gerente, Atendente/Vendedor) | 2.2, 3.5–3.8 | ✅ Pronta |
 | 13 | Documentos e endereços (fornecedor PF/PJ, CPF do cliente, CEP) | 3.9–3.12, 3.26–3.29 | ✅ Pronta |
-| 14 | Contas e senhas (verificação de e-mail, recuperação e senha provisória) | 3.5–3.13 | A fazer |
+| 14 | Contas e senhas (verificação de e-mail, recuperação e senha provisória) | 3.5–3.13 | ✅ Pronta |
 | 15 | PDF com dompdf | 3.32–3.34 | A fazer |
 | 16 | Auditoria (motivo obrigatório e relatório) | 3.35 | A fazer |
 | 17 | Melhorias na loja (página do produto, cupons visíveis, rastreio) | 3.2, 3.20, 3.30 | A fazer |
@@ -315,6 +347,8 @@ e depois **Acessórios** (sem produtos → inativa).
 | 3.10, 3.11 | Consultar e editar meus dados | `Loja/ContaController`, `Requests/EditarContaRequest`, `views/loja/conta` |
 | 3.12 | Encerrar minha conta (LGPD) | `Services/EncerrarConta`, `Loja/ContaController@destroy` |
 | 3.13 | Login e logout | `Auth/LoginController`, `Middleware/VerificaPerfil` |
+| 3.5, 3.13 | Senha provisória e troca obrigatória | `Painel/UsuarioController@redefinirSenha`, `Auth/SenhaProvisoriaController`, `Middleware/ExigeTrocaDeSenha` |
+| 3.9, 3.13 | Confirmação de e-mail e "Esqueci minha senha" | `Auth/VerificacaoEmailController`, `Auth/RecuperarSenhaController`, `Notifications` |
 | 3.14–3.17 | Categorias | `Painel/CategoriaController`, `Requests/CategoriaRequest`, `Policies/CategoriaPolicy` |
 | 3.18 | Criar pedido | `Loja/PedidoController@confirmar` e `@store`, `Models/Pedido`, `Models/PedidoItem` |
 | 3.19 | Consultar pedidos | `Loja/PedidoController@index`/`@show`, `Painel/PedidoController`, `Policies/PedidoPolicy` |
@@ -352,6 +386,8 @@ lang/pt_BR/                     Mensagens em português
 public/css/mary.css             Cores e estilo da Mary Modas
 public/js/viacep.js             CEP: máscara, aviso de incompleto e preenchimento do endereço
 public/js/documento.js          Máscara de CPF e CNPJ (inclusive alfanumérico)
+public/js/email.js              E-mail em minúsculas ao sair do campo
+app/Notifications/              E-mails em português (confirmar e-mail e redefinir senha)
 public/img/                     Imagem padrão de produto
 storage/app/public/produtos/    Imagens enviadas no cadastro (não vão para o Git)
 resources/views/                Telas (Blade)
@@ -365,7 +401,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (239 testes até a Fase 13) |
+| `php artisan test` | Roda os testes automatizados (261 testes até a Fase 14) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

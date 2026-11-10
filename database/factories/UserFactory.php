@@ -39,7 +39,7 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn () => [
-            'perfil' => User::PERFIL_ADMIN, 'cpf' => null,
+            'perfil' => User::PERFIL_ADMIN, 'cpf' => null, 'email' => fake()->unique()->userName().'@marymodas.com.br',
             'cep' => null, 'rua' => null, 'numero' => null, 'bairro' => null, 'cidade' => null, 'uf' => null,
         ]);
     }
@@ -47,7 +47,7 @@ class UserFactory extends Factory
     public function gerente(): static
     {
         return $this->state(fn () => [
-            'perfil' => User::PERFIL_GERENTE, 'cpf' => null,
+            'perfil' => User::PERFIL_GERENTE, 'cpf' => null, 'email' => fake()->unique()->userName().'@marymodas.com.br',
             'cep' => null, 'rua' => null, 'numero' => null, 'bairro' => null, 'cidade' => null, 'uf' => null,
         ]);
     }
@@ -55,7 +55,7 @@ class UserFactory extends Factory
     public function atendente(): static
     {
         return $this->state(fn () => [
-            'perfil' => User::PERFIL_ATENDENTE, 'cpf' => null,
+            'perfil' => User::PERFIL_ATENDENTE, 'cpf' => null, 'email' => fake()->unique()->userName().'@marymodas.com.br',
             'cep' => null, 'rua' => null, 'numero' => null, 'bairro' => null, 'cidade' => null, 'uf' => null,
         ]);
     }
@@ -73,6 +73,17 @@ class UserFactory extends Factory
         }
 
         return $base;
+    }
+
+    // Cliente que ainda não clicou no link de confirmação do e-mail
+    public function naoVerificado(): static
+    {
+        return $this->state(fn () => ['email_verified_at' => null]);
+    }
+
+    public function comSenhaProvisoria(): static
+    {
+        return $this->state(fn () => ['senha_provisoria' => true]);
     }
 
     public function inativo(): static

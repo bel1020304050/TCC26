@@ -4,7 +4,20 @@
 @section('trilha', 'Painel › Usuários')
 
 @section('conteudo')
-{{-- Lista da equipe com pesquisa, filtros e inativar/reativar --}}
+{{-- Lista da equipe com pesquisa, filtros, inativar/reativar e redefinir senha --}}
+@if ($gerada = session('senha_gerada'))
+    {{-- Segurança: a senha provisória aparece só nesta tela, uma única vez. Ela não fica salva em lugar nenhum legível. --}}
+    <div class="alert alert-warning d-flex flex-wrap align-items-center gap-3" role="alert">
+        <i class="bi bi-key fs-4"></i>
+        <div class="flex-grow-1">
+            <div class="fw-semibold">Senha provisória de {{ $gerada['nome'] }} ({{ $gerada['email'] }})</div>
+            <div class="small">Anote e passe para a pessoa agora: ela não será mostrada de novo. No primeiro login, a pessoa vai criar a própria senha.</div>
+        </div>
+        <code id="senha-gerada" class="fs-5 px-3 py-1 bg-white border rounded user-select-all">{{ $gerada['senha'] }}</code>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-copiar="#senha-gerada"><i class="bi bi-clipboard"></i> Copiar</button>
+    </div>
+@endif
+
 <form method="GET" action="{{ route('painel.usuarios.index') }}" class="d-flex flex-wrap gap-2 mb-3" role="search">
     <input type="search" name="busca" value="{{ $busca }}" class="form-control" style="flex: 1 1 240px;"
            placeholder="Pesquisar por nome ou e-mail" aria-label="Pesquisar por nome ou e-mail">
@@ -23,7 +36,9 @@
     @if ($busca !== '' || $perfil || $status)
         <a href="{{ route('painel.usuarios.index') }}" class="btn btn-link text-decoration-none">Limpar</a>
     @endif
-    <a href="{{ route('painel.usuarios.create') }}" class="btn btn-mm ms-auto"><i class="bi bi-plus-lg"></i> Novo usuário</a>
+    @can('create', \App\Models\User::class)
+        <a href="{{ route('painel.usuarios.create') }}" class="btn btn-mm ms-auto"><i class="bi bi-plus-lg"></i> Novo usuário</a>
+    @endcan
 </form>
 
 <div class="mm-card overflow-hidden">
@@ -50,8 +65,15 @@
                         <td>{{ $usuario->perfilLabel() }}</td>
                         <td><x-status-badge :status="$usuario->status" /></td>
                         <td class="text-end text-nowrap">
-                            <a href="{{ route('painel.usuarios.edit', $usuario) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
-                            @if ($souEu)
+                            @can('redefinirSenha', $usuario)
+                                <x-modal-redefinir-senha :usuario="$usuario" />
+                            @endcan
+                            @can('update', $usuario)
+                                <a href="{{ route('painel.usuarios.edit', $usuario) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+                            @endcan
+                            @if (! auth()->user()->isAdmin())
+                                {{-- O Gerente só redefine senhas; editar e inativar são do Administrador --}}
+                            @elseif ($souEu)
                                 {{-- Regra: o Administrador não pode inativar a própria conta --}}
                                 <button type="button" class="btn btn-sm btn-outline-secondary" disabled title="Você não pode inativar a sua própria conta">Inativar</button>
                             @else
@@ -84,3 +106,15 @@
     {{ $usuarios->links() }}
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    // Botão "Copiar" da senha provisória
+    document.querySelectorAll('[data-copiar]').forEach(function (botao) {
+        botao.addEventListener('click', function () {
+            const texto = document.querySelector(botao.dataset.copiar).textContent.trim();
+            navigator.clipboard.writeText(texto).then(function () { botao.innerHTML = '<i class="bi bi-check2"></i> Copiada'; });
+        });
+    });
+</script>
+@endpush

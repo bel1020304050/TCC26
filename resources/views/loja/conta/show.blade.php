@@ -17,7 +17,19 @@
             </div>
             <div class="row g-3">
                 <div class="col-md-4"><div class="text-muted small">Nome</div>{{ $cliente->name }}</div>
-                <div class="col-md-4"><div class="text-muted small">E-mail</div>{{ $cliente->email }}</div>
+                <div class="col-md-4">
+                    <div class="text-muted small">E-mail</div>
+                    {{ $cliente->email }}
+                    @if ($cliente->hasVerifiedEmail())
+                        <div class="small text-success"><i class="bi bi-patch-check"></i> Confirmado</div>
+                    @else
+                        <form method="POST" action="{{ route('verification.send') }}" class="small">
+                            @csrf
+                            <span class="text-danger">Não confirmado</span> ·
+                            <button type="submit" class="btn btn-link btn-sm p-0 align-baseline">Reenviar link</button>
+                        </form>
+                    @endif
+                </div>
                 <div class="col-md-4"><div class="text-muted small">Telefone</div>{{ $cliente->telefone ?: '—' }}</div>
                 <div class="col-md-4">
                     <div class="text-muted small">CPF</div>

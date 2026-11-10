@@ -47,11 +47,24 @@ class ContaController extends Controller
         $antes = $cliente->only(self::CAMPOS_AUDITORIA);
 
         $cliente->fill($request->safe()->only(self::CAMPOS)); // perfil/status nunca vêm do formulário
+        $trocouEmail = $cliente->isDirty('email');
+        if ($trocouEmail) {
+            // Regra: e-mail novo precisa ser confirmado de novo antes da próxima compra
+            $cliente->email_verified_at = null;
+        }
         $cliente->save();
+        if ($trocouEmail) {
+            $cliente->sendEmailVerificationNotification();
+        }
         Auditoria::registrar('editou', $cliente, ['antes' => $antes, 'depois' => $cliente->only(self::CAMPOS_AUDITORIA)]);
 
         // Pedidos já criados guardam a própria cópia do endereço: não mudam
-        return redirect()->route('loja.conta')->with('sucesso', 'Seus dados foram atualizados. Os próximos pedidos usarão este endereço.');
+        $mensagem = 'Seus dados foram atualizados. Os próximos pedidos usarão este endereço.';
+        if ($trocouEmail) {
+            $mensagem .= " Enviamos um link para confirmar o novo e-mail ({$cliente->email}).";
+        }
+
+        return redirect()->route('loja.conta')->with('sucesso', $mensagem);
     }
 
     public function senha(Request $request): RedirectResponse

@@ -43,6 +43,7 @@ class UsuariosTesteSeeder extends Seeder
             $usuario->status = $u['status'];
             if (! $usuario->exists) {
                 $usuario->password = $u['senha'];
+                $usuario->email_verified_at = now(); // contas de teste já entram com o e-mail confirmado
             }
             $usuario->save();
         }

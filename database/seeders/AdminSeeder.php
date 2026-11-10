@@ -23,6 +23,7 @@ class AdminSeeder extends Seeder
 
         if (! $admin->exists) {
             $admin->password = config('mary.admin_password'); // vira hash automaticamente (cast "hashed")
+            $admin->email_verified_at = now();
         }
 
         $admin->save();

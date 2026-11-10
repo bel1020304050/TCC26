@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EncerraSessaoInativa;
+use App\Http\Middleware\ExigeTrocaDeSenha;
 use App\Http\Middleware\VerificaPerfil;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,13 +15,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Apelido usado nas rotas: ->middleware('perfil:admin,funcionario')
+        // Apelido usado nas rotas: ->middleware('perfil:admin,gerente')
         $middleware->alias([
             'perfil' => VerificaPerfil::class,
         ]);
 
         // Roda em todas as páginas: derruba a sessão de quem foi inativado
         $middleware->appendToGroup('web', EncerraSessaoInativa::class);
+
+        // Roda em todas as páginas: quem está com senha provisória precisa criar a própria senha antes de continuar
+        $middleware->appendToGroup('web', ExigeTrocaDeSenha::class);
 
         // Visitante tentando abrir página restrita vai para o login
         $middleware->redirectGuestsTo(fn () => route('login'));
@@ -30,5 +34,5 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Se a validação falhar, estes campos NÃO voltam preenchidos na tela (nem ficam na sessão)
-        $exceptions->dontFlash(['password', 'password_confirmation', 'senha_atual', 'cartao_numero', 'cartao_cvv', 'cartao_validade']);
+        $exceptions->dontFlash(['password', 'password_confirmation', 'senha_atual', 'senha_encerrar', 'cartao_numero', 'cartao_cvv', 'cartao_validade']);
     })->create();
