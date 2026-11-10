@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Support\Auditoria;
+use App\Support\Email;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,7 +47,9 @@ class VerificacaoEmailController extends Controller
             return redirect()->route('loja.carrinho');
         }
 
-        $request->user()->sendEmailVerificationNotification();
+        if (! Email::enviar(fn () => $request->user()->sendEmailVerificationNotification())) {
+            return back()->with('erro', Email::AVISO_FALHA);
+        }
 
         return back()->with('sucesso', "Enviamos um novo link de confirmação para {$request->user()->email}.");
     }

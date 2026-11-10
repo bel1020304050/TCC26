@@ -11,6 +11,10 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <!-- Testes de "tentar quebrar o site": acessos indevidos, dados malucos, regras no limite -->
+        <testsuite name="Quebra">
+            <directory>tests/Quebra</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

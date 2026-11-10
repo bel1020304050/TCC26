@@ -109,6 +109,27 @@ class VerificacaoEmailTest extends TestCase
         $this->actingAs($cliente->fresh())->get('/minha-conta')->assertSee('Não confirmado');
     }
 
+    // Se o servidor de e-mail estiver fora (ou com usuário/senha errados), a tela não quebra
+    public function test_falha_no_envio_do_email_nao_quebra_o_cadastro(): void
+    {
+        // Simula um servidor SMTP que não responde (porta fechada)
+        config(['mail.default' => 'smtp', 'mail.mailers.smtp.host' => '127.0.0.1', 'mail.mailers.smtp.port' => 1]);
+
+        $this->post('/criar-conta', [
+            'name' => 'Bia Lima', 'email' => 'bia@email.com', 'cpf' => '123.456.789-09', 'telefone' => '',
+            'password' => 'segredo123', 'password_confirmation' => 'segredo123',
+            'cep' => '87501-000', 'rua' => 'Avenida Brasil', 'numero' => '10', 'complemento' => '',
+            'bairro' => 'Centro', 'cidade' => 'Umuarama', 'uf' => 'PR',
+        ])->assertRedirect(route('loja.inicio'))->assertSessionHas('sucesso', fn ($m) => str_contains($m, 'Não conseguimos enviar o e-mail'));
+
+        $bia = User::where('email', 'bia@email.com')->sole();
+        $this->assertAuthenticatedAs($bia); // a conta foi criada e a pessoa já está logada
+
+        $this->actingAs($bia)->from('/carrinho')->post('/confirmar-email/reenviar')->assertSessionHas('erro');
+        auth()->logout();
+        $this->post('/esqueci-senha', ['email' => 'bia@email.com'])->assertSessionHas('erro');
+    }
+
     // A equipe usa o e-mail da loja e não passa por confirmação
     public function test_equipe_nao_precisa_confirmar(): void
     {

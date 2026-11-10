@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Painel;
 
 use App\Http\Controllers\Controller;
 use App\Support\Auditoria;
+use App\Support\Sessoes;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
@@ -48,9 +49,10 @@ class MinhaContaController extends Controller
         $usuario = $request->user();
         $usuario->password = $request->input('password');
         $usuario->save();
+        Sessoes::encerrarOutras($usuario, $request);
 
         Auditoria::registrar('alterou_senha', $usuario);
 
-        return back()->with('sucesso', 'Senha alterada com sucesso.');
+        return back()->with('sucesso', 'Senha alterada com sucesso. Os outros aparelhos conectados foram desconectados.');
     }
 }

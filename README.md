@@ -302,6 +302,32 @@ e depois **Acessórios** (sem produtos → inativa).
 - **E-mail da equipe** precisa terminar em `@marymodas.com.br`, e esse domínio é **recusado** no cadastro de cliente.
 - **E-mail sempre em minúsculas**: o servidor padroniza em todos os formulários e no login, e a tela converte ao sair do campo.
 - Os e-mails são em português (`app/Notifications` e `lang/pt_BR.json`). Configuração do Mailtrap: seção 3, passo 8.
+- Se o envio do e-mail falhar (sem internet ou Mailtrap mal configurado), a tela não quebra: a conta é criada,
+  aparece o aviso *"Não conseguimos enviar o e-mail agora"* e o erro fica em `storage/logs/laravel.log`.
+
+### Testes de quebra e correções (depois da Fase 14)
+Uma bateria de testes tentou **quebrar o site** (pasta `tests/Quebra`, roda junto com `php artisan test`):
+- **Varredura**: todas as rotas abertas por 7 tipos de usuário (visitante, cliente, cliente sem e-mail confirmado,
+  atendente, gerente, admin e senha provisória). Nenhum erro 500 e ninguém entra onde não deve.
+- **Segurança**: pedido/pagamento/carrinho de outro cliente pela URL, ações de Gerente chamadas pelo Atendente,
+  campos escondidos (`perfil=admin`, total do pedido), pagar duas vezes, último Administrador.
+- **Dados malucos** em todos os formulários e pesquisas: listas, textos de 70 mil caracteres, `<script>`, SQL injection,
+  emoji, números absurdos, datas inexistentes, IDs que não existem. Textos com `<script>` aparecem escapados em 22 telas.
+- **Regras no limite**: desconto maior que o total, cupom que vence no meio da compra, boleto confirmado duas vezes,
+  cancelar duas vezes, última peça. Também foram testados **cliques simultâneos de verdade** (8 processos no MariaDB):
+  6 clientes pagando a última peça ao mesmo tempo resultam em 1 venda e 5 estornos, sem estoque negativo.
+- **Arquivos e sessão**: PHP disfarçado de imagem, SVG com script, limite de tentativas de login, conta inativada logada.
+
+Problemas encontrados e corrigidos:
+
+| Problema | Correção |
+|---|---|
+| Campo enviado como lista (`email[]=x`) dava erro 500 em ~30 telas | `RecusaCamposEmLista`: lista vira vazio antes de chegar ao código |
+| CSV com nome `=HYPERLINK(...)` virava fórmula no Excel | Célula que começa com `= + - @` recebe um apóstrofo (recomendação da OWASP) |
+| Trocar a senha em "Minha conta" não desconectava outros aparelhos | `Sessoes::encerrarOutras` + páginas logadas com `Cache-Control: no-store` |
+| Cliques muito rápidos em "Adicionar" criavam 2 carrinhos | Fila por cliente no banco (`lockForUpdate`) ao criar carrinho e adicionar item |
+| Duplo clique em "Criar conta" dava erro 500 | O e-mail repetido vira a mensagem "já está cadastrado" |
+| Limites de tentativas de rotas diferentes somavam juntos | Um limite com nome para cada rota (`AppServiceProvider`) |
 
 ## 6. Ordem de desenvolvimento
 
@@ -401,7 +427,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (261 testes até a Fase 14) |
+| `php artisan test` | Roda os testes automatizados (330 testes: 262 das fases + 68 de quebra) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

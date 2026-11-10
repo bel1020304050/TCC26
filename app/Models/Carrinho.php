@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\Dinheiro;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -51,11 +52,21 @@ class Carrinho extends Model
      */
     public static function doCliente(User $cliente): self
     {
-        return static::where('user_id', $cliente->id)
-            ->where('status', '!=', self::FINALIZADO)
-            ->latest('id')
-            ->first()
-            ?? static::create(['user_id' => $cliente->id]);
+        $atual = fn () => static::where('user_id', $cliente->id)->where('status', '!=', self::FINALIZADO)->latest('id')->first();
+
+        return $atual() ?? DB::transaction(function () use ($cliente, $atual) {
+            // Banco: trava a linha do cliente até o fim da transação. Se dois cliques chegam juntos,
+            // o segundo espera o primeiro terminar e encontra o carrinho já criado (nunca dois carrinhos abertos).
+            static::travarCliente($cliente);
+
+            return $atual() ?? static::create(['user_id' => $cliente->id]);
+        });
+    }
+
+    // Fila por cliente: enquanto a transação atual não terminar, outro pedido do mesmo cliente espera
+    public static function travarCliente(User $cliente): void
+    {
+        User::whereKey($cliente->id)->lockForUpdate()->first();
     }
 
     /**

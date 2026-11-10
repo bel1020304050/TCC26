@@ -76,21 +76,21 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/sair', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
 
-// Esqueci minha senha (cliente). Segurança: no máximo 5 pedidos por minuto, contra envio em massa.
+// Esqueci minha senha (cliente). Segurança: no máximo 5 pedidos por minuto, contra envio em massa (limites no AppServiceProvider).
 Route::middleware('guest')->group(function () {
     Route::get('/esqueci-senha', [RecuperarSenhaController::class, 'create'])->name('password.request');
-    Route::post('/esqueci-senha', [RecuperarSenhaController::class, 'store'])->middleware('throttle:5,1')->name('password.email');
+    Route::post('/esqueci-senha', [RecuperarSenhaController::class, 'store'])->middleware('throttle:esqueci-senha')->name('password.email');
     Route::get('/redefinir-senha/{token}', [RecuperarSenhaController::class, 'edit'])->name('password.reset');
-    Route::post('/redefinir-senha', [RecuperarSenhaController::class, 'update'])->middleware('throttle:5,1')->name('password.update');
+    Route::post('/redefinir-senha', [RecuperarSenhaController::class, 'update'])->middleware('throttle:redefinir-senha')->name('password.update');
 });
 
 // Confirmação do e-mail do cliente. Segurança: o link é assinado ("signed") e vale só para a conta logada.
 Route::middleware(['auth', 'perfil:cliente'])->group(function () {
     Route::get('/confirmar-email', [VerificacaoEmailController::class, 'aviso'])->name('verification.notice');
     Route::get('/confirmar-email/{id}/{hash}', [VerificacaoEmailController::class, 'verificar'])
-        ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+        ->middleware(['signed', 'throttle:confirmar-email'])->name('verification.verify');
     Route::post('/confirmar-email/reenviar', [VerificacaoEmailController::class, 'reenviar'])
-        ->middleware('throttle:3,1')->name('verification.send');
+        ->middleware('throttle:reenviar-email')->name('verification.send');
 });
 
 // Troca obrigatória da senha provisória (equipe)

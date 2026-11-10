@@ -7,6 +7,7 @@ use App\Http\Requests\UsuarioRequest;
 use App\Models\User;
 use App\Support\Auditoria;
 use App\Support\Status;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -64,7 +65,13 @@ class UsuarioController extends Controller
         $usuario->perfil = $request->validated('perfil');   // definido no servidor, nunca em massa
         $usuario->status = $request->validated('status');
         $usuario->email_verified_at = now();                // e-mail da loja: não precisa confirmar
-        $usuario->save();
+
+        try {
+            $usuario->save();
+        } catch (UniqueConstraintViolationException) {
+            // Duplo clique em "Cadastrar": o banco recusa o e-mail repetido do segundo clique
+            return back()->withInput()->withErrors(['email' => 'Este e-mail já está cadastrado.']);
+        }
 
         Auditoria::registrar('criou', $usuario, ['perfil' => $usuario->perfil]);
 
