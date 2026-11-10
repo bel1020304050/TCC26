@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\Auditoria;
+use App\Support\Email;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,11 +35,16 @@ class RecuperarSenhaController extends Controller
 
         // O Laravel gera o código (token), guarda em password_reset_tokens e manda o e-mail.
         // Os campos extras filtram a conta: só cliente com status ativo recebe o link.
-        Password::sendResetLink([
+        $enviou = Email::enviar(fn () => Password::sendResetLink([
             'email' => Str::lower(trim($request->input('email'))),
             'perfil' => User::PERFIL_CLIENTE,
             'status' => User::STATUS_ATIVO,
-        ]);
+        ]));
+
+        // Se o servidor de e-mail falhou, avisa (sem revelar se a conta existe)
+        if (! $enviou) {
+            return back()->withInput()->with('erro', 'Não conseguimos enviar e-mails agora. Tente de novo daqui a pouco.');
+        }
 
         return back()->with('sucesso', self::MENSAGEM_ENVIO);
     }

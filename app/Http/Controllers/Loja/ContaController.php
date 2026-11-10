@@ -7,6 +7,8 @@ use App\Http\Requests\EditarContaRequest;
 use App\Pagamentos\PagamentoException;
 use App\Services\EncerrarConta;
 use App\Support\Auditoria;
+use App\Support\Email;
+use App\Support\Sessoes;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,15 +55,13 @@ class ContaController extends Controller
             $cliente->email_verified_at = null;
         }
         $cliente->save();
-        if ($trocouEmail) {
-            $cliente->sendEmailVerificationNotification();
-        }
+        $enviou = ! $trocouEmail || Email::enviar(fn () => $cliente->sendEmailVerificationNotification());
         Auditoria::registrar('editou', $cliente, ['antes' => $antes, 'depois' => $cliente->only(self::CAMPOS_AUDITORIA)]);
 
         // Pedidos já criados guardam a própria cópia do endereço: não mudam
         $mensagem = 'Seus dados foram atualizados. Os próximos pedidos usarão este endereço.';
         if ($trocouEmail) {
-            $mensagem .= " Enviamos um link para confirmar o novo e-mail ({$cliente->email}).";
+            $mensagem .= $enviou ? " Enviamos um link para confirmar o novo e-mail ({$cliente->email})." : ' '.Email::AVISO_FALHA;
         }
 
         return redirect()->route('loja.conta')->with('sucesso', $mensagem);
@@ -79,9 +79,10 @@ class ContaController extends Controller
         ]);
 
         $request->user()->update(['password' => $request->input('password')]);
+        Sessoes::encerrarOutras($request->user(), $request);
         Auditoria::registrar('alterou_senha', $request->user());
 
-        return redirect()->route('loja.conta')->with('sucesso', 'Senha alterada com sucesso.');
+        return redirect()->route('loja.conta')->with('sucesso', 'Senha alterada com sucesso. Os outros aparelhos conectados foram desconectados.');
     }
 
     // Encerrar a conta. Segurança: exige a senha atual, para ninguém encerrar a conta de outra pessoa num computador aberto

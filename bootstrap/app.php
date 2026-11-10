@@ -2,6 +2,8 @@
 
 use App\Http\Middleware\EncerraSessaoInativa;
 use App\Http\Middleware\ExigeTrocaDeSenha;
+use App\Http\Middleware\RecusaCamposEmLista;
+use App\Http\Middleware\SemCacheParaLogado;
 use App\Http\Middleware\VerificaPerfil;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,7 +23,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // Roda em todas as páginas: derruba a sessão de quem foi inativado
+        // Segurança: campo enviado como lista (email[]=x) vira vazio, em vez de causar erro 500
+        $middleware->prependToGroup('web', RecusaCamposEmLista::class);
+
         $middleware->appendToGroup('web', EncerraSessaoInativa::class);
+
+        // Páginas de quem está logado não ficam em cache no navegador (botão Voltar depois de sair)
+        $middleware->appendToGroup('web', SemCacheParaLogado::class);
 
         // Roda em todas as páginas: quem está com senha provisória precisa criar a própria senha antes de continuar
         $middleware->appendToGroup('web', ExigeTrocaDeSenha::class);

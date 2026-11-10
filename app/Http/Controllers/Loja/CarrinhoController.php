@@ -9,6 +9,7 @@ use App\Models\Produto;
 use App\Models\Promocao;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -41,13 +42,24 @@ class CarrinhoController extends Controller
     {
         $dados = $request->validate(['produto_id' => ['required', 'integer']]);
 
+        // Banco: cliques repetidos no "Adicionar" entram em fila, para não somar além do estoque
+        // nem criar o mesmo item duas vezes
+        return DB::transaction(function () use ($request, $dados) {
+            Carrinho::travarCliente($request->user());
+
+            return $this->adicionarNoCarrinho($request, $dados['produto_id']);
+        });
+    }
+
+    private function adicionarNoCarrinho(Request $request, int $produtoId): RedirectResponse
+    {
         $carrinho = Carrinho::doCliente($request->user());
         if ($bloqueio = $this->bloqueado($carrinho)) {
             return $bloqueio;
         }
 
         // Só produtos que estão na vitrine: ativos, com estoque e de categoria ativa
-        $produto = Produto::naVitrine()->find($dados['produto_id']);
+        $produto = Produto::naVitrine()->find($produtoId);
         if (! $produto) {
             return back()->with('erro', 'Este produto não está disponível para compra.');
         }

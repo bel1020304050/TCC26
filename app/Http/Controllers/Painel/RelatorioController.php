@@ -78,9 +78,24 @@ class RelatorioController extends Controller
             fwrite($saida, "\xEF\xBB\xBF");
             fputcsv($saida, $relatorio->colunas(), ';');
             foreach ($relatorio->registros() as $registro) {
-                fputcsv($saida, $relatorio->linha($registro), ';');
+                fputcsv($saida, array_map([self::class, 'celulaSegura'], $relatorio->linha($registro)), ';');
             }
             fclose($saida);
         }, $relatorio->nomeArquivo('csv'), ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * Segurança (CSV injection): o Excel trata como fórmula toda célula que começa com = + - @ (ou tab/enter).
+     * Um cliente poderia se cadastrar com o nome "=HYPERLINK(...)" e a fórmula rodaria no computador da loja.
+     * Um apóstrofo na frente faz o Excel mostrar o texto como texto (recomendação da OWASP).
+     * Números negativos ("-10,50") continuam números.
+     */
+    private static function celulaSegura(mixed $valor): mixed
+    {
+        if (! is_string($valor) || $valor === '' || is_numeric(str_replace(['.', ','], ['', '.'], $valor))) {
+            return $valor;
+        }
+
+        return in_array($valor[0], ['=', '+', '-', '@', "\t", "\r"], true) ? "'".$valor : $valor;
     }
 }
