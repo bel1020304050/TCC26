@@ -95,6 +95,21 @@ O **PHP já vem no XAMPP** e o **Laravel não se instala no computador**: o Comp
    Depois rode `php artisan config:clear`. **Esperado:** todo e-mail do sistema, para qualquer endereço, aparece em
    **My Sandbox**. Nada é entregue a ninguém de verdade. O usuário e a senha SMTP **não** são o seu login do Mailtrap.
 
+9. **Pagamento pelo Asaas (opcional; sem isto, o pagamento é simulado)**
+   Crie uma conta no [sandbox do Asaas](https://sandbox.asaas.com), cadastre uma **chave PIX** (sem ela o QR Code
+   não é gerado) e copie a chave da API em **Integrações › Chaves de API**. No `.env`:
+   ```
+   PAGAMENTO_PROVEDOR=asaas
+   ASAAS_URL=https://api-sandbox.asaas.com/v3
+   ASAAS_API_KEY='$aact_cole_a_sua_chave_aqui'
+   ```
+   A chave começa com `$`, por isso fica entre **aspas simples**. Depois rode `php artisan config:clear` e teste:
+   ```
+   php artisan asaas:testar
+   ```
+   **Esperado:** passos com `[OK]` e a mensagem `Tudo certo!`. Detalhes na Fase 18 (seção 5).
+   Para voltar ao modo sem internet, troque para `PAGAMENTO_PROVEDOR=simulado` e rode `php artisan config:clear`.
+
 > Prefere usar o Apache do XAMPP em vez do `artisan serve`? Aponte o navegador para
 > `http://localhost/TCC26/public` (com o projeto dentro de `C:\xampp\htdocs`) e ajuste `APP_URL` no `.env`.
 
@@ -380,6 +395,32 @@ Problemas encontrados e corrigidos:
   Correios (padrão S10: `MM` + 8 números + dígito verificador + `BR`, ex.: `MM116046056BR`). Ele aparece para o cliente
   e para a equipe, com o selo "simulado", fica no histórico do pedido e na auditoria. O rastreio real fica para o futuro.
 
+### Fase 18 — Pagamento no sandbox do Asaas (processo 3.31)
+O processo de pagamento continua o mesmo; muda **quem responde**. O `.env` escolhe o provedor (padrão Strategy):
+`PAGAMENTO_PROVEDOR=simulado` (sem internet, como até a Fase 17) ou `PAGAMENTO_PROVEDOR=asaas` (cobranças de teste
+reais no [sandbox do Asaas](https://docs.asaas.com)). Nenhum dinheiro é movimentado no sandbox.
+- **PIX**: a cobrança é criada no Asaas e a tela mostra o **QR Code e o copia e cola reais**.
+- **Boleto**: **linha digitável real** e o link do **PDF**. O Gerente/Administrador ainda pode "Confirmar compensação"
+  no painel: no Asaas, isso manda a confirmação ao sandbox.
+- **Cartão**: o cliente digita o cartão na **página segura do Asaas** (abre em nova aba). A loja nunca vê o número
+  do cartão; depois do pagamento guarda só a bandeira e o final. Cartão de teste: `4444 4444 4444 4444`, CVV `123`.
+- **Consulta automática**: enquanto a cobrança está pendente, a tela de pagamento pergunta ao Asaas a cada
+  5 segundos (por até 15 minutos) se ela foi paga e vai sozinha para "Concluído". Existe porque o aviso automático
+  (webhook) precisa alcançar o site pela internet, e o `localhost` não é alcançável.
+- **Simular pagamento (sandbox)**: no PIX, pede ao sandbox para marcar como pago. Fora do sandbox é bloqueado.
+- **Aviso automático (webhook)** em `POST /webhooks/asaas`: só aceita com o token do cabeçalho `asaas-access-token`
+  igual ao `ASAAS_WEBHOOK_TOKEN`; não confia no conteúdo (consulta o Asaas de novo) e é idempotente (aviso repetido
+  não baixa o estoque duas vezes). Funciona quando o site estiver publicado.
+- **Cliente no Asaas**: criado no primeiro pagamento com nome, CPF e e-mail (o Asaas exige CPF) e reaproveitado
+  depois. Cliente sem CPF recebe a mensagem para informar o CPF em Minha conta.
+- **Cancelamentos**: nova tentativa de pagamento cancela a cobrança antiga no Asaas; cancelar um pedido pago pede o
+  **estorno** no Asaas.
+- **Falhas**: Asaas fora do ar ou chave errada mostram mensagem na tela; o pedido continua aguardando pagamento.
+- **`php artisan asaas:testar`**: confere a chave, cria um cliente e cobranças de teste (PIX, boleto e cartão),
+  simula o pagamento do PIX e apaga tudo no final. Use `--manter` para ver as cobranças no painel do sandbox e pagar
+  a do cartão pela fatura.
+- Nos testes automatizados o Asaas é **imitado** (`tests/Support/AsaasFalso.php`): nenhuma chamada sai para a internet.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -401,7 +442,7 @@ Problemas encontrados e corrigidos:
 | 15 | PDF com dompdf | 3.32–3.34 | ✅ Pronta |
 | 16 | Auditoria (motivo obrigatório e relatório) | 3.35 | ✅ Pronta |
 | 17 | Melhorias na loja (página do produto, cupons visíveis, rastreio) | 3.2, 3.20, 3.30 | ✅ Pronta |
-| 18 | Pagamento no sandbox do Asaas | 3.31 | A fazer |
+| 18 | Pagamento no sandbox do Asaas | 3.31 | ✅ Pronta |
 | 19 | Fechamento (documentação e apresentação) | — | A fazer |
 
 ### Fase 11 — Revisão de comentários
@@ -433,7 +474,7 @@ Problemas encontrados e corrigidos:
 | 3.22–3.25 | Promoções e cupons | `Painel/PromocaoController`, `Requests/PromocaoRequest`, `Models/Promocao` |
 | 3.26–3.29 | Fornecedores | `Painel/FornecedorController`, `Requests/FornecedorRequest`, `Rules/CpfCnpj`, `Support/Documento` |
 | 3.30 | Carrinho e cupom | `Loja/CarrinhoController`, `Models/Carrinho` (`totais()`) |
-| 3.31 ⭐ | Processo de pagamento | `Services/FinalizarCompra`, `Loja/PagamentoController`, `Pagamentos/` |
+| 3.31 ⭐ | Processo de pagamento | `Services/FinalizarCompra`, `Loja/PagamentoController`, `Pagamentos/`, `Pagamentos/Asaas`, `Webhook/AsaasWebhookController`, `Console/Commands/AsaasTestar` |
 | 3.32–3.34 | Relatórios | `Painel/RelatorioController`, `Relatorios/RelatorioVendas`, `RelatorioEstoque`, `RelatorioClientes`, `Support/Pdf` |
 | 3.2, 3.20, 3.30 | Página do produto, rastreio e cupons | `Loja/ProdutoController`, `Support/Rastreio`, `Promocao::cuponsDisponiveis` |
 | 3.35 | Auditoria | `Support/Auditoria`, `Models/Auditoria`, `Relatorios/RelatorioAuditoria`, `Support/TextoAuditoria`, `public/js/motivo.js` |
@@ -450,7 +491,8 @@ app/Http/Middleware/            VerificaPerfil (perfil:admin,...) e EncerraSessa
 app/Http/Requests/              Validações (Form Requests)
 app/Models/                     User, Categoria, Fornecedor, Produto, Auditoria, Carrinho, Pedido
 app/Models/Concerns/TemStatus   Comportamento comum de Ativo/Inativo (exclusão lógica)
-app/Pagamentos/                 Provedor de pagamento (interface + simulado)
+app/Pagamentos/                 Provedor de pagamento (interface + simulado + Asaas)
+app/Console/Commands/           Comando php artisan asaas:testar
 app/Policies/                   Quem pode fazer o quê em cada cadastro (Administrador, Gerente e Atendente)
 app/Relatorios/                 Os 3 relatórios (consulta, colunas, indicadores)
 app/Services/FinalizarCompra    Processo de pagamento (pagar, aprovar, baixar estoque, finalizar carrinho)
@@ -480,7 +522,8 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (363 testes: 295 das fases + 68 de quebra) |
+| `php artisan test` | Roda os testes automatizados (391 testes: 323 das fases + 68 de quebra) |
+| `php artisan asaas:testar` | Testa a integração com o sandbox do Asaas (precisa da chave no `.env`) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 
@@ -495,6 +538,9 @@ tests/Feature/                  Testes automatizados
 | `SQLSTATE[HY000] [2002] Connection refused` | MySQL do XAMPP parado | Clique em **Start** no MySQL |
 | `No application encryption key has been specified` | Falta a chave | `php artisan key:generate` |
 | Imagem do produto não aparece (ícone quebrado) | Falta o link da pasta de imagens | `php artisan storage:link` |
+| `asaas:testar` mostra `Asaas respondeu 401` | Chave errada, de produção ou sem aspas simples | Copie a chave do sandbox, coloque entre `'...'` e rode `php artisan config:clear` |
+| PIX sem QR Code ("disponível na fatura") | Conta sandbox sem chave PIX | No sandbox: **Pix › Minhas chaves › Cadastrar chave** (aleatória serve) |
+| `Para pagar, informe o seu CPF` | Cliente antigo sem CPF | Informe o CPF em **Minha conta** |
 | Testes falham com `GD extension is not installed` | Extensão `gd` desligada | Tire o `;` de `extension=gd` no `php.ini` |
 
 ## 10. Padrão de branches e commits

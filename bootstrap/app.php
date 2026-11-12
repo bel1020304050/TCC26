@@ -34,6 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Roda em todas as páginas: quem está com senha provisória precisa criar a própria senha antes de continuar
         $middleware->appendToGroup('web', ExigeTrocaDeSenha::class);
 
+        // O aviso (webhook) do Asaas vem do servidor deles, sem o token CSRF do formulário: é protegido pelo token próprio
+        $middleware->validateCsrfTokens(except: ['webhooks/asaas']);
+
         // Visitante tentando abrir página restrita vai para o login
         $middleware->redirectGuestsTo(fn () => route('login'));
 

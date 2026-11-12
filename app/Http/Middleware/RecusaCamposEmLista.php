@@ -17,6 +17,11 @@ class RecusaCamposEmLista
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // Exceção: os avisos (webhooks) chegam em JSON com objetos ({"payment": {...}}), não de um formulário
+        if ($request->is('webhooks/*')) {
+            return $next($request);
+        }
+
         foreach ([$request->query, $request->request] as $origem) {
             foreach ($origem->all() as $campo => $valor) {
                 if (is_array($valor)) {

@@ -7,6 +7,7 @@ use App\Models\Pedido;
 use App\Models\Produto;
 use App\Models\User;
 use App\Pagamentos\PagamentoException;
+use App\Pagamentos\ProvedorPagamento;
 use App\Support\Auditoria;
 use App\Support\Rastreio;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\DB;
  */
 class AndamentoPedido
 {
+    public function __construct(private readonly ProvedorPagamento $provedor) {}
+
     /**
      * Avança para o próximo status. Regra: só aceita exatamente o próximo passo (sem pular nem voltar).
      *
@@ -61,7 +64,10 @@ class AndamentoPedido
      */
     public function cancelar(Pedido $pedido, User $responsavel, ?string $motivo): void
     {
-        DB::transaction(function () use ($pedido, $responsavel, $motivo) {
+        // Cobranças afetadas: depois de gravar, o provedor é avisado (cancela a pendente / estorna a paga)
+        $afetados = collect();
+
+        DB::transaction(function () use ($pedido, $responsavel, $motivo, $afetados) {
             $pedido = Pedido::whereKey($pedido->id)->lockForUpdate()->firstOrFail();
             $anterior = $pedido->status;
 
@@ -71,6 +77,7 @@ class AndamentoPedido
 
             if ($anterior === Pedido::AGUARDANDO_PAGAMENTO) {
                 // PIX ou boleto em aberto deixam de valer; nada foi cobrado nem baixado do estoque
+                $pedido->pagamentos()->where('status', Pagamento::PENDENTE)->get()->each(fn ($p) => $afetados->push($p));
                 $pedido->pagamentos()->where('status', Pagamento::PENDENTE)->update([
                     'status' => Pagamento::RECUSADO,
                     'mensagem' => 'Cobrança cancelada junto com o pedido.',
@@ -80,10 +87,11 @@ class AndamentoPedido
                 $pedido->carrinho?->devolverItensAoCliente();
             } else {
                 // Pago ou Em Separação: estorna o pagamento aprovado e devolve as peças ao estoque
-                $pedido->pagamentos()->where('status', Pagamento::APROVADO)->get()->each(function (Pagamento $pagamento) use ($pedido, $responsavel) {
+                $pedido->pagamentos()->where('status', Pagamento::APROVADO)->get()->each(function (Pagamento $pagamento) use ($pedido, $responsavel, $afetados) {
                     $pagamento->status = Pagamento::ESTORNADO;
                     $pagamento->mensagem = 'Estornado no cancelamento do pedido.';
                     $pagamento->save();
+                    $afetados->push($pagamento);
                     FinalizarCompra::auditarPagamento('pagamento_estornado', $pagamento, $pedido, $responsavel);
                 });
 
@@ -97,5 +105,8 @@ class AndamentoPedido
             $pedido->registrarStatus(Pedido::CANCELADO, $responsavel, $motivo ? 'Motivo: '.$motivo : null);
             Auditoria::registrar('cancelou', $pedido, ['de' => $anterior], $motivo, $responsavel);
         });
+
+        // Fora da transação: uma chamada de internet lenta não segura as travas do banco
+        $afetados->each(fn (Pagamento $pagamento) => $this->provedor->cancelar($pagamento));
     }
 }

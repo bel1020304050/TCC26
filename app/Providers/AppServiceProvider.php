@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Pagamentos\Asaas\AsaasProvedor;
+use App\Pagamentos\Asaas\ClienteAsaas;
 use App\Pagamentos\PagamentoSimulado;
 use App\Pagamentos\ProvedorPagamento;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -18,9 +20,12 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Provedor de pagamento: hoje é o simulado. Para usar um provedor real,
-        // basta ligar aqui outra classe que implemente ProvedorPagamento.
-        $this->app->bind(ProvedorPagamento::class, PagamentoSimulado::class);
+        // Provedor de pagamento (Strategy): o .env decide qual classe responde.
+        // PAGAMENTO_PROVEDOR=asaas -> sandbox do Asaas; qualquer outro valor -> simulado
+        $this->app->bind(ClienteAsaas::class, fn () => ClienteAsaas::daConfiguracao());
+        $this->app->bind(ProvedorPagamento::class, fn ($app) => config('mary.pagamento.provedor') === 'asaas'
+            ? $app->make(AsaasProvedor::class)
+            : $app->make(PagamentoSimulado::class));
     }
 
     public function boot(): void

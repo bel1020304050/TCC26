@@ -31,6 +31,11 @@
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
+        <!-- Os testes nunca chamam o Asaas de verdade: o provedor padrão é o simulado e as chamadas são imitadas (Http::fake) -->
+        <env name="PAGAMENTO_PROVEDOR" value="simulado"/>
+        <env name="ASAAS_URL" value="https://api-sandbox.asaas.com/v3"/>
+        <env name="ASAAS_API_KEY" value="chave-de-teste"/>
+        <env name="ASAAS_WEBHOOK_TOKEN" value="token-webhook-teste"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>

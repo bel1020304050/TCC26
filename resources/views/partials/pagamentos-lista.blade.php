@@ -13,6 +13,13 @@
                     @if ($pagamento->confirmadoPor) · confirmado por {{ $pagamento->confirmadoPor->name }} @endif
                 </div>
             @endif
+            @if ($pagamento->isPendente() && $pagamento->link_pagamento)
+                <div class="w-100 small">
+                    <a href="{{ $pagamento->link_pagamento }}" target="_blank" rel="noopener">
+                        {{ $pagamento->forma === 'boleto' ? 'Abrir boleto (PDF)' : 'Abrir fatura no Asaas' }} <i class="bi bi-box-arrow-up-right"></i>
+                    </a>
+                </div>
+            @endif
             @if ($podeConfirmar && auth()->user()->can('confirmarBoleto', $pagamento))
                 <form method="POST" action="{{ route('painel.pagamentos.confirmar-boleto', $pagamento) }}" class="w-100"
                       onsubmit="return confirm('Confirmar a compensação deste boleto? O pedido ficará Pago e o estoque será baixado.');">

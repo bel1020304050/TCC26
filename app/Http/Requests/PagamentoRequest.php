@@ -26,7 +26,8 @@ class PagamentoRequest extends FormRequest
 
     public function rules(): array
     {
-        $cartao = Rule::requiredIf($this->input('forma') === 'cartao');
+        // No Asaas o cartão é digitado na página deles: aqui só o simulado pede os dados do cartão
+        $cartao = Rule::requiredIf($this->input('forma') === 'cartao' && config('mary.pagamento.provedor') !== 'asaas');
 
         return [
             'forma' => ['required', Rule::in(['pix', 'cartao', 'boleto'])],
