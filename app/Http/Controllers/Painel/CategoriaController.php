@@ -81,9 +81,10 @@ class CategoriaController extends Controller
     }
 
     // Inativar = exclusão lógica: o registro só muda de status, nunca é apagado do banco
-    public function inativar(Categoria $categoria): RedirectResponse
+    public function inativar(Request $request, Categoria $categoria): RedirectResponse
     {
         Gate::authorize('alterarStatus', $categoria);
+        $motivo = $this->motivo($request);
 
         // Regra: bloqueia se houver produtos ativos (verificado no servidor, no momento da confirmação)
         if ($categoria->possuiProdutosAtivos()) {
@@ -94,18 +95,19 @@ class CategoriaController extends Controller
 
         $categoria->status = Status::INATIVO; // status não é "fillable": muda só por aqui
         $categoria->save();
-        Auditoria::registrar('inativou', $categoria);
+        Auditoria::registrar('inativou', $categoria, motivo: $motivo);
 
         return back()->with('sucesso', "Categoria \"{$categoria->nome}\" inativada. Ela não aparece mais na vitrine nem no cadastro de produtos.");
     }
 
-    public function reativar(Categoria $categoria): RedirectResponse
+    public function reativar(Request $request, Categoria $categoria): RedirectResponse
     {
         Gate::authorize('alterarStatus', $categoria);
+        $motivo = $this->motivo($request);
 
         $categoria->status = Status::ATIVO; // status não é "fillable": muda só por aqui
         $categoria->save();
-        Auditoria::registrar('reativou', $categoria);
+        Auditoria::registrar('reativou', $categoria, motivo: $motivo);
 
         return back()->with('sucesso', "Categoria \"{$categoria->nome}\" reativada.");
     }

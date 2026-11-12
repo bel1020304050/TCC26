@@ -7,11 +7,14 @@ use App\Models\Categoria;
 use App\Models\Fornecedor;
 use App\Models\Pedido;
 use App\Models\Produto;
+use App\Models\User;
 use App\Relatorios\Relatorio;
+use App\Relatorios\RelatorioAuditoria;
 use App\Relatorios\RelatorioClientes;
 use App\Relatorios\RelatorioEstoque;
 use App\Relatorios\RelatorioVendas;
 use App\Support\Pdf;
+use App\Support\TextoAuditoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -53,6 +56,15 @@ class RelatorioController extends Controller
     public function clientes(Request $request): Response|View
     {
         return $this->gerar($request, new RelatorioClientes($request), 'painel.relatorios.filtros-clientes');
+    }
+
+    public function auditoria(Request $request): Response|View
+    {
+        return $this->gerar($request, new RelatorioAuditoria($request), 'painel.relatorios.filtros-auditoria', [
+            'equipe' => User::equipe()->orderBy('name')->get(['id', 'name', 'perfil']),
+            'acoes' => TextoAuditoria::ACOES,
+            'areas' => array_unique(TextoAuditoria::AREAS),
+        ]);
     }
 
     private function gerar(Request $request, Relatorio $relatorio, string $filtros, array $opcoes = []): Response|View

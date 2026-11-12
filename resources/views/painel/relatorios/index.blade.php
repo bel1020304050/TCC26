@@ -10,6 +10,7 @@
         ['relatorio-vendas', 'painel.relatorios.vendas', 'graph-up', 'Vendas', 'Faturamento, vendas pagas e ticket médio por período, status e forma de pagamento.'],
         ['relatorio-estoque', 'painel.relatorios.estoque', 'box-seam', 'Produtos / Estoque', 'Disponibilidade por categoria, fornecedor, tamanho e cor, com destaque para estoque baixo.'],
         ['relatorio-clientes', 'painel.relatorios.clientes', 'people', 'Clientes', 'Clientes cadastrados no período, pedidos pagos e total comprado.'],
+        ['relatorio-auditoria', 'painel.relatorios.auditoria', 'shield-check', 'Auditoria', 'Quem mudou o quê na loja, quando e por quê. Só o Administrador vê.'],
     ];
 @endphp
 <div class="row g-3">

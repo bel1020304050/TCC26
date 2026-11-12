@@ -88,9 +88,10 @@ class FornecedorController extends Controller
     }
 
     // Inativar = exclusão lógica. Regra: fornecedor com produtos ativos não pode ser inativado.
-    public function inativar(Fornecedor $fornecedor): RedirectResponse
+    public function inativar(Request $request, Fornecedor $fornecedor): RedirectResponse
     {
         Gate::authorize('alterarStatus', $fornecedor);
+        $motivo = $this->motivo($request);
 
         if ($fornecedor->possuiProdutosAtivos()) {
             $qtd = $fornecedor->produtos()->ativos()->count();
@@ -100,18 +101,19 @@ class FornecedorController extends Controller
 
         $fornecedor->status = Status::INATIVO; // status não é "fillable": muda só por aqui
         $fornecedor->save();
-        Auditoria::registrar('inativou', $fornecedor);
+        Auditoria::registrar('inativou', $fornecedor, motivo: $motivo);
 
         return back()->with('sucesso', "Fornecedor \"{$fornecedor->nome}\" inativado. Ele não aparece mais como opção em novos produtos.");
     }
 
-    public function reativar(Fornecedor $fornecedor): RedirectResponse
+    public function reativar(Request $request, Fornecedor $fornecedor): RedirectResponse
     {
         Gate::authorize('alterarStatus', $fornecedor);
+        $motivo = $this->motivo($request);
 
         $fornecedor->status = Status::ATIVO; // status não é "fillable": muda só por aqui
         $fornecedor->save();
-        Auditoria::registrar('reativou', $fornecedor);
+        Auditoria::registrar('reativou', $fornecedor, motivo: $motivo);
 
         return back()->with('sucesso', "Fornecedor \"{$fornecedor->nome}\" reativado.");
     }

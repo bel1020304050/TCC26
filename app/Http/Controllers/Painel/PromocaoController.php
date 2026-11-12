@@ -80,24 +80,26 @@ class PromocaoController extends Controller
     }
 
     // Regra: a promoção inativada deixa de valer em novos carrinhos; pedidos já feitos mantêm o desconto
-    public function inativar(Promocao $promocao): RedirectResponse
+    public function inativar(Request $request, Promocao $promocao): RedirectResponse
     {
         Gate::authorize('alterarStatus', $promocao);
+        $motivo = $this->motivo($request);
 
         $promocao->status = Status::INATIVO;
         $promocao->save();
-        Auditoria::registrar('inativou', $promocao);
+        Auditoria::registrar('inativou', $promocao, motivo: $motivo);
 
         return back()->with('sucesso', "Promoção \"{$promocao->nome}\" inativada. Ela não é mais aplicada em novas compras.");
     }
 
-    public function reativar(Promocao $promocao): RedirectResponse
+    public function reativar(Request $request, Promocao $promocao): RedirectResponse
     {
         Gate::authorize('alterarStatus', $promocao);
+        $motivo = $this->motivo($request);
 
         $promocao->status = Status::ATIVO;
         $promocao->save();
-        Auditoria::registrar('reativou', $promocao);
+        Auditoria::registrar('reativou', $promocao, motivo: $motivo);
 
         return back()->with('sucesso', "Promoção \"{$promocao->nome}\" reativada · situação: {$promocao->situacaoLabel()}.");
     }

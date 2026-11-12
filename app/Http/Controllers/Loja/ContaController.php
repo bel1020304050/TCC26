@@ -24,8 +24,11 @@ class ContaController extends Controller
 {
     private const CAMPOS = ['name', 'email', 'cpf', 'telefone', 'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf'];
 
-    // LGPD: o CPF não vai para a auditoria (lá fica só que a conta foi editada)
-    private const CAMPOS_AUDITORIA = ['name', 'email', 'telefone', 'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf'];
+    // LGPD: a auditoria registra só QUAIS informações o cliente mudou, nunca os valores (nome, e-mail, CPF, endereço)
+    private const ROTULOS_AUDITORIA = [
+        'name' => 'Nome', 'email' => 'E-mail', 'cpf' => 'CPF', 'telefone' => 'Telefone', 'cep' => 'Endereço', 'rua' => 'Endereço',
+        'numero' => 'Endereço', 'complemento' => 'Endereço', 'bairro' => 'Endereço', 'cidade' => 'Endereço', 'uf' => 'Endereço',
+    ];
 
     // Tela "Meus dados"
     public function show(Request $request): View
@@ -46,9 +49,8 @@ class ContaController extends Controller
     public function update(EditarContaRequest $request): RedirectResponse
     {
         $cliente = $request->user();
-        $antes = $cliente->only(self::CAMPOS_AUDITORIA);
-
         $cliente->fill($request->safe()->only(self::CAMPOS)); // perfil/status nunca vêm do formulário
+        $alterados = array_values(array_unique(array_map(fn ($campo) => self::ROTULOS_AUDITORIA[$campo], array_keys($cliente->getDirty()))));
         $trocouEmail = $cliente->isDirty('email');
         if ($trocouEmail) {
             // Regra: e-mail novo precisa ser confirmado de novo antes da próxima compra
@@ -56,7 +58,9 @@ class ContaController extends Controller
         }
         $cliente->save();
         $enviou = ! $trocouEmail || Email::enviar(fn () => $cliente->sendEmailVerificationNotification());
-        Auditoria::registrar('editou', $cliente, ['antes' => $antes, 'depois' => $cliente->only(self::CAMPOS_AUDITORIA)]);
+        if ($alterados) {
+            Auditoria::registrar('editou', $cliente, ['campos' => $alterados]);
+        }
 
         // Pedidos já criados guardam a própria cópia do endereço: não mudam
         $mensagem = 'Seus dados foram atualizados. Os próximos pedidos usarão este endereço.';

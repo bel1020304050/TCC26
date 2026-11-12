@@ -98,24 +98,26 @@ class ProdutoController extends Controller
     }
 
     // Inativar: o produto sai da vitrine, mas continua no banco e nos pedidos antigos
-    public function inativar(Produto $produto): RedirectResponse
+    public function inativar(Request $request, Produto $produto): RedirectResponse
     {
         Gate::authorize('alterarStatus', $produto);
+        $motivo = $this->motivo($request);
 
         $produto->status = Status::INATIVO;
         $produto->save();
-        Auditoria::registrar('inativou', $produto);
+        Auditoria::registrar('inativou', $produto, motivo: $motivo);
 
         return back()->with('sucesso', "Produto \"{$produto->nome} – {$produto->variacao()}\" inativado. Ele não aparece mais na vitrine.");
     }
 
-    public function reativar(Produto $produto): RedirectResponse
+    public function reativar(Request $request, Produto $produto): RedirectResponse
     {
         Gate::authorize('alterarStatus', $produto);
+        $motivo = $this->motivo($request);
 
         $produto->status = Status::ATIVO;
         $produto->save();
-        Auditoria::registrar('reativou', $produto);
+        Auditoria::registrar('reativou', $produto, motivo: $motivo);
 
         return back()->with('sucesso', "Produto \"{$produto->nome} – {$produto->variacao()}\" reativado.");
     }

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Painel;
 use App\Http\Controllers\Controller;
 use App\Models\Pagamento;
 use App\Services\FinalizarCompra;
-use App\Support\Auditoria;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -19,8 +18,8 @@ class PagamentoController extends Controller
     {
         Gate::authorize('confirmarBoleto', $pagamento);
 
+        // A auditoria ("pagamento aprovado" por quem confirmou) é registrada dentro do processo
         $pagamento = $processo->confirmarAprovacao($pagamento, $request->user());
-        Auditoria::registrar('confirmou_boleto', $pagamento, ['status' => $pagamento->status]);
 
         $pedido = $pagamento->pedido;
 

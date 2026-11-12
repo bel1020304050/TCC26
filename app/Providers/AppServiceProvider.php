@@ -32,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('relatorio-clientes', fn (User $user) => $user->isEquipe());
         Gate::define('relatorio-estoque', fn (User $user) => $user->isEquipe());
 
+        // Segurança: a auditoria (quem mudou o quê na loja) é só para o Administrador
+        Gate::define('relatorio-auditoria', fn (User $user) => $user->isAdmin());
+
         // Evita erro de tamanho de índice em versões antigas de MySQL/MariaDB (XAMPP)
         Schema::defaultStringLength(191);
 

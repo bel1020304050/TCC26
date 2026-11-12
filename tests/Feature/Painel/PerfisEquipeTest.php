@@ -59,7 +59,7 @@ class PerfisEquipeTest extends TestCase
         $this->actingAs($this->gerente)->get('/painel/usuarios')->assertOk()->assertDontSee('Novo usuário');
         $this->actingAs($this->gerente)->get('/painel/usuarios/novo')->assertForbidden();
         $this->actingAs($this->gerente)->get("/painel/usuarios/{$this->atendente->id}/editar")->assertForbidden();
-        $this->actingAs($this->gerente)->patch("/painel/usuarios/{$this->atendente->id}/inativar")->assertForbidden();
+        $this->actingAs($this->gerente)->patch("/painel/usuarios/{$this->atendente->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertForbidden();
 
         $this->actingAs($this->admin)->get('/painel')->assertSee(route('painel.usuarios.index'));
     }
@@ -68,12 +68,12 @@ class PerfisEquipeTest extends TestCase
     {
         $this->actingAs($this->gerente)->post('/painel/categorias', ['nome' => 'Shorts', 'status' => 'ativo'])->assertSessionHasNoErrors();
         $categoria = Categoria::where('nome', 'Shorts')->sole();
-        $this->actingAs($this->gerente)->patch("/painel/categorias/{$categoria->id}/inativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->gerente)->patch("/painel/categorias/{$categoria->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
         $this->assertSame('inativo', $categoria->fresh()->status);
 
         $fornecedor = Fornecedor::factory()->create();
         $this->actingAs($this->gerente)->get("/painel/fornecedores/{$fornecedor->id}/editar")->assertOk();
-        $this->actingAs($this->gerente)->patch("/painel/fornecedores/{$fornecedor->id}/inativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->gerente)->patch("/painel/fornecedores/{$fornecedor->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
     }
 
     public function test_atendente_so_consulta_categoria_fornecedor_e_promocao(): void
@@ -83,7 +83,7 @@ class PerfisEquipeTest extends TestCase
 
         $this->actingAs($this->atendente)->get('/painel/categorias')->assertOk();
         $this->actingAs($this->atendente)->get('/painel/categorias/novo')->assertForbidden();
-        $this->actingAs($this->atendente)->patch("/painel/categorias/{$categoria->id}/inativar")->assertForbidden();
+        $this->actingAs($this->atendente)->patch("/painel/categorias/{$categoria->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertForbidden();
         $this->actingAs($this->atendente)->get('/painel/fornecedores/novo')->assertForbidden();
         $this->actingAs($this->atendente)->get('/painel/promocoes')->assertOk();
         $this->actingAs($this->atendente)->get("/painel/promocoes/{$promocao->id}/editar")->assertForbidden();
@@ -92,12 +92,12 @@ class PerfisEquipeTest extends TestCase
     public function test_gerente_inativa_produto_e_gerencia_promocao(): void
     {
         $produto = Produto::factory()->create();
-        $this->actingAs($this->gerente)->patch("/painel/produtos/{$produto->id}/inativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->gerente)->patch("/painel/produtos/{$produto->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
         $this->assertSame('inativo', $produto->fresh()->status);
 
         $promocao = Promocao::factory()->create();
         $this->actingAs($this->gerente)->get("/painel/promocoes/{$promocao->id}/editar")->assertOk();
-        $this->actingAs($this->gerente)->patch("/painel/promocoes/{$promocao->id}/inativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->gerente)->patch("/painel/promocoes/{$promocao->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
     }
 
     public function test_atendente_cadastra_e_edita_produto_mas_nao_inativa(): void
@@ -105,7 +105,7 @@ class PerfisEquipeTest extends TestCase
         $produto = Produto::factory()->create();
 
         $this->actingAs($this->atendente)->get("/painel/produtos/{$produto->id}/editar")->assertOk();
-        $this->actingAs($this->atendente)->patch("/painel/produtos/{$produto->id}/inativar")->assertForbidden();
+        $this->actingAs($this->atendente)->patch("/painel/produtos/{$produto->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertForbidden();
     }
 
     public function test_gerente_cancela_pedido_pago_com_estorno_e_confirma_boleto(): void
