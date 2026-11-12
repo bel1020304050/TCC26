@@ -205,10 +205,10 @@ class ProdutoTest extends TestCase
     {
         $produto = Produto::factory()->create(['categoria_id' => $this->vestidos->id]);
 
-        $this->actingAs($this->admin)->patch("/painel/produtos/{$produto->id}/inativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->admin)->patch("/painel/produtos/{$produto->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
         $this->assertSame(Status::INATIVO, $produto->fresh()->status);
 
-        $this->actingAs($this->admin)->patch("/painel/produtos/{$produto->id}/reativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->admin)->patch("/painel/produtos/{$produto->id}/reativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
         $this->assertTrue($produto->fresh()->isAtivo());
 
         $this->assertDatabaseHas('auditorias', ['acao' => 'inativou', 'entidade' => 'produtos', 'entidade_id' => $produto->id]);
@@ -219,7 +219,7 @@ class ProdutoTest extends TestCase
     {
         $produto = Produto::factory()->create(['categoria_id' => $this->vestidos->id]);
 
-        $this->actingAs($this->atendente)->patch("/painel/produtos/{$produto->id}/inativar")->assertForbidden();
+        $this->actingAs($this->atendente)->patch("/painel/produtos/{$produto->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertForbidden();
         $this->assertTrue($produto->fresh()->isAtivo());
 
         $this->actingAs($this->atendente)->get('/painel/produtos')

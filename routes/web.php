@@ -135,6 +135,7 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,gere
     Route::get('relatorios/vendas', [RelatorioController::class, 'vendas'])->name('relatorios.vendas');
     Route::get('relatorios/estoque', [RelatorioController::class, 'estoque'])->name('relatorios.estoque');
     Route::get('relatorios/clientes', [RelatorioController::class, 'clientes'])->name('relatorios.clientes');
+    Route::get('relatorios/auditoria', [RelatorioController::class, 'auditoria'])->name('relatorios.auditoria'); // só Administrador (gate)
 
     // Categorias e Fornecedores
     // O Atendente só consulta; Administrador e Gerente cadastram, editam e inativam (Policies).

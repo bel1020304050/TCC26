@@ -107,7 +107,7 @@ class PromocaoTest extends TestCase
             ->assertDontSee('Nova promoção')->assertDontSee(route('painel.promocoes.edit', $promocao));
         $this->actingAs($func)->post('/painel/promocoes', $this->dados())->assertForbidden();
         $this->actingAs($func)->get("/painel/promocoes/{$promocao->id}/editar")->assertForbidden();
-        $this->actingAs($func)->patch("/painel/promocoes/{$promocao->id}/inativar")->assertForbidden();
+        $this->actingAs($func)->patch("/painel/promocoes/{$promocao->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertForbidden();
         $this->actingAs(User::factory()->create())->get('/painel/promocoes')->assertForbidden();
     }
 
@@ -191,11 +191,11 @@ class PromocaoTest extends TestCase
     {
         $promocao = Promocao::factory()->create();
 
-        $this->actingAs($this->admin)->patch("/painel/promocoes/{$promocao->id}/inativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->admin)->patch("/painel/promocoes/{$promocao->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
         $this->assertSame('inativa', $promocao->fresh()->situacao());
         $this->assertSame(0, Promocao::validas()->count());
 
-        $this->actingAs($this->admin)->patch("/painel/promocoes/{$promocao->id}/reativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->admin)->patch("/painel/promocoes/{$promocao->id}/reativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
         $this->assertSame('vigente', $promocao->fresh()->situacao());
         $this->assertDatabaseHas('auditorias', ['acao' => 'inativou', 'entidade' => 'promocoes']);
     }

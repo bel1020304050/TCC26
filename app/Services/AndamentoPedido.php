@@ -39,7 +39,7 @@ class AndamentoPedido
 
             $anterior = $pedido->status;
             $pedido->registrarStatus($novoStatus, $responsavel);
-            Auditoria::registrar('alterou_status', $pedido, ['de' => $anterior, 'para' => $novoStatus]);
+            Auditoria::registrar('alterou_status', $pedido, ['de' => $anterior, 'para' => $novoStatus], autor: $responsavel);
         });
     }
 
@@ -70,10 +70,11 @@ class AndamentoPedido
                 $pedido->carrinho?->devolverItensAoCliente();
             } else {
                 // Pago ou Em Separação: estorna o pagamento aprovado e devolve as peças ao estoque
-                $pedido->pagamentos()->where('status', Pagamento::APROVADO)->get()->each(function (Pagamento $pagamento) {
+                $pedido->pagamentos()->where('status', Pagamento::APROVADO)->get()->each(function (Pagamento $pagamento) use ($pedido, $responsavel) {
                     $pagamento->status = Pagamento::ESTORNADO;
                     $pagamento->mensagem = 'Estornado no cancelamento do pedido.';
                     $pagamento->save();
+                    FinalizarCompra::auditarPagamento('pagamento_estornado', $pagamento, $pedido, $responsavel);
                 });
 
                 $pedido->load('itens');
@@ -84,7 +85,7 @@ class AndamentoPedido
             }
 
             $pedido->registrarStatus(Pedido::CANCELADO, $responsavel, $motivo ? 'Motivo: '.$motivo : null);
-            Auditoria::registrar('cancelou', $pedido, ['de' => $anterior, 'motivo' => $motivo]);
+            Auditoria::registrar('cancelou', $pedido, ['de' => $anterior], $motivo, $responsavel);
         });
     }
 }

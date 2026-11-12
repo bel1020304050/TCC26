@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Pagamentos\PagamentoException;
 use App\Pagamentos\ProvedorIndisponivel;
 use App\Pagamentos\ProvedorPagamento;
+use App\Support\Auditoria;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -73,6 +74,7 @@ class FinalizarCompra
             $pagamento->status = Pagamento::RECUSADO;
             $pagamento->mensagem = 'Falha temporária de comunicação com o provedor.';
             $pagamento->save();
+            self::auditarPagamento('pagamento_recusado', $pagamento, $pedido, sistema: true);
 
             throw new PagamentoException('O serviço de pagamento está temporariamente indisponível. Tente de novo em instantes; o seu pedido continua reservado para pagamento.');
         }
@@ -84,6 +86,9 @@ class FinalizarCompra
         }
         $pagamento->status = $resposta->status === Pagamento::APROVADO ? Pagamento::PENDENTE : $resposta->status;
         $pagamento->save();
+        if ($pagamento->status === Pagamento::RECUSADO) {
+            self::auditarPagamento('pagamento_recusado', $pagamento, $pedido, sistema: true);
+        }
 
         // 5. Aprovado na hora (cartão): finaliza
         if ($resposta->status === Pagamento::APROVADO) {
@@ -120,6 +125,7 @@ class FinalizarCompra
                 $pagamento->status = Pagamento::ESTORNADO;
                 $pagamento->mensagem = 'Pedido não estava mais aguardando pagamento. Valor estornado.';
                 $pagamento->save();
+                self::auditarPagamento('pagamento_estornado', $pagamento, $pedido, sistema: true);
 
                 return $pagamento;
             }
@@ -137,9 +143,13 @@ class FinalizarCompra
                 $pagamento->mensagem = 'Estoque insuficiente no momento da aprovação. Valor estornado.';
                 $pagamento->save();
 
-                $pedido->registrarStatus(Pedido::CANCELADO, $responsavel,
-                    'Cancelado automaticamente: estoque insuficiente de '.$faltando->map->descricao()->implode(', ').'.');
+                $motivo = 'Cancelado automaticamente: estoque insuficiente de '.$faltando->map->descricao()->implode(', ').'.';
+                $pedido->registrarStatus(Pedido::CANCELADO, $responsavel, $motivo);
                 $this->reabrirCarrinho($pedido);
+
+                // Auditoria: quem cancelou foi o próprio sistema, não uma pessoa
+                self::auditarPagamento('pagamento_estornado', $pagamento, $pedido, sistema: true);
+                Auditoria::registrar('cancelou', $pedido, ['de' => Pedido::AGUARDANDO_PAGAMENTO], $motivo, sistema: true);
 
                 return $pagamento;
             }
@@ -157,6 +167,9 @@ class FinalizarCompra
             $pedido->registrarStatus(Pedido::PAGO, $responsavel,
                 $responsavel ? 'Compensação do boleto confirmada manualmente.' : null);
 
+            // Auditoria: boleto confirmado à mão aparece com o nome de quem confirmou; o resto, como "Sistema"
+            self::auditarPagamento('pagamento_aprovado', $pagamento, $pedido, $responsavel, sistema: ! $responsavel);
+
             if ($pedido->carrinho) {
                 $pedido->carrinho->itens()->delete(); // carrinho "limpo"
                 $pedido->carrinho->status = Carrinho::FINALIZADO;
@@ -165,6 +178,17 @@ class FinalizarCompra
 
             return $pagamento;
         });
+    }
+
+    // Registra na auditoria um evento de pagamento, ligado ao pedido (é o que a equipe procura no relatório)
+    public static function auditarPagamento(string $acao, Pagamento $pagamento, Pedido $pedido, ?User $autor = null, bool $sistema = false): void
+    {
+        Auditoria::registrar($acao, $pedido, [
+            'forma' => $pagamento->forma,
+            'valor' => (float) $pagamento->valor,
+            'mensagem' => $pagamento->mensagem,
+            'manual' => $autor !== null,
+        ], autor: $autor, sistema: $sistema);
     }
 
     // Itens do pedido cujo estoque atual não cobre a quantidade comprada

@@ -341,6 +341,25 @@ Problemas encontrados e corrigidos:
 - **Nova dependência:** depois de puxar esta fase, rode `composer install` (ou `composer require dompdf/dompdf:"^3.1"`
   na primeira vez, para atualizar o `composer.lock`).
 
+### Fase 16 — Auditoria (story 3.35)
+- **Motivo obrigatório para inativar e reativar** produto, categoria, fornecedor, promoção e usuário: a janela de
+  confirmação tem o campo "Motivo", o botão só libera com **10 caracteres** ou mais (contador na tela) e o servidor confere
+  de novo. Se o servidor recusar, a mesma janela volta aberta com a mensagem. Editar **não** pede motivo, mas registra
+  o "antes → depois" de cada campo. Cancelar pedido continua pedindo motivo.
+- **Novos eventos registrados**: pedido criado, pagamento aprovado/recusado/estornado, conta de cliente criada e
+  **cancelamento automático** (última peça paga por duas pessoas), que aparece como **"Sistema"**.
+  Boleto confirmado à mão aparece com o nome de quem confirmou.
+- **Clientes e LGPD**: o cliente aparece pelo **nome** (ex.: "Ana Souza (Cliente)"), mas sem os valores dos dados pessoais:
+  ao editar a conta fica só "Alterou: Telefone, Endereço". Ao **encerrar a conta**, o nome vira **"Cliente removido"**
+  também na auditoria. A migration desta fase apaga os detalhes pessoais que registros antigos guardavam.
+- **Relatório de Auditoria** (Relatórios › Auditoria), **só para o Administrador**: filtros por período, quem
+  (pessoa da equipe, Clientes ou Sistema), ação e área; colunas Data/hora, Quem, Ação, Área, Registro, O que mudou e Motivo;
+  exporta em CSV e PDF.
+- **Somente leitura**: não existe tela nem rota para alterar um registro, e o próprio modelo `Auditoria` recusa
+  alterar ou apagar (mesmo pelo código).
+- O seed cria um pequeno histórico de exemplo, explicando por que Jaquetas, Jeans Sul, Jaqueta Jeans, Desconto Blusas
+  e Juliana estão inativos, para o relatório já abrir com conteúdo.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -360,7 +379,7 @@ Problemas encontrados e corrigidos:
 | 13 | Documentos e endereços (fornecedor PF/PJ, CPF do cliente, CEP) | 3.9–3.12, 3.26–3.29 | ✅ Pronta |
 | 14 | Contas e senhas (verificação de e-mail, recuperação e senha provisória) | 3.5–3.13 | ✅ Pronta |
 | 15 | PDF com dompdf | 3.32–3.34 | ✅ Pronta |
-| 16 | Auditoria (motivo obrigatório e relatório) | 3.35 | A fazer |
+| 16 | Auditoria (motivo obrigatório e relatório) | 3.35 | ✅ Pronta |
 | 17 | Melhorias na loja (página do produto, cupons visíveis, rastreio) | 3.2, 3.20, 3.30 | A fazer |
 | 18 | Pagamento no sandbox do Asaas | 3.31 | A fazer |
 | 19 | Fechamento (documentação e apresentação) | — | A fazer |
@@ -395,7 +414,8 @@ Problemas encontrados e corrigidos:
 | 3.26–3.29 | Fornecedores | `Painel/FornecedorController`, `Requests/FornecedorRequest`, `Rules/CpfCnpj`, `Support/Documento` |
 | 3.30 | Carrinho e cupom | `Loja/CarrinhoController`, `Models/Carrinho` (`totais()`) |
 | 3.31 ⭐ | Processo de pagamento | `Services/FinalizarCompra`, `Loja/PagamentoController`, `Pagamentos/` |
-| 3.32–3.34 | Relatórios | `Painel/RelatorioController`, `Relatorios/RelatorioVendas`, `RelatorioEstoque`, `RelatorioClientes` |
+| 3.32–3.34 | Relatórios | `Painel/RelatorioController`, `Relatorios/RelatorioVendas`, `RelatorioEstoque`, `RelatorioClientes`, `Support/Pdf` |
+| 3.35 | Auditoria | `Support/Auditoria`, `Models/Auditoria`, `Relatorios/RelatorioAuditoria`, `Support/TextoAuditoria`, `public/js/motivo.js` |
 
 Os testes de cada story ficam em `tests/Feature`, e cada caso de teste do documento é marcado com o código dele (ex.: `CT-3-18-01`).
 
@@ -439,7 +459,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (332 testes: 264 das fases + 68 de quebra) |
+| `php artisan test` | Roda os testes automatizados (350 testes: 282 das fases + 68 de quebra) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Loja;
 use App\Http\Controllers\Controller;
 use App\Models\Carrinho;
 use App\Models\Pedido;
+use App\Support\Auditoria;
 use App\Pagamentos\PagamentoException;
 use App\Policies\PedidoPolicy;
 use App\Services\AndamentoPedido;
@@ -109,6 +110,8 @@ class PedidoController extends Controller
             // Regra: o carrinho fica "Em Pagamento" (bloqueado). O estoque NÃO baixa aqui, só quando o pagamento for aprovado.
             $carrinho->status = Carrinho::EM_PAGAMENTO;
             $carrinho->save();
+
+            Auditoria::registrar('criou', $pedido, ['total' => (float) $pedido->total]);
 
             // Leva o cliente direto para a tela de pagamento deste pedido
             return redirect()->route('loja.pagamento.create', $pedido)

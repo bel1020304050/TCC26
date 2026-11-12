@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CriarContaRequest;
 use App\Models\User;
+use App\Support\Auditoria;
 use App\Support\Email;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
@@ -43,6 +44,7 @@ class RegisterController extends Controller
 
         Auth::login($usuario);
         $request->session()->regenerate();
+        Auditoria::registrar('criou', $usuario);
 
         $mensagem = $enviou
             ? "Conta criada com sucesso! Enviamos um link de confirmação para {$usuario->email}: confirme o e-mail para poder finalizar compras."

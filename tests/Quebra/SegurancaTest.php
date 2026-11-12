@@ -71,8 +71,8 @@ class SegurancaTest extends TestCase
         $a = $this->u['atendente'];
         $this->actingAs($a)->patch("/painel/pedidos/{$this->m['pago']->id}/cancelar", ['motivo' => 'teste de invasão'])->assertSessionHas('erro');
         $this->actingAs($a)->post("/painel/pagamentos/{$this->m['boleto']->id}/confirmar-boleto")->assertForbidden();
-        $this->actingAs($a)->patch("/painel/categorias/{$this->m['categoria']->id}/inativar")->assertForbidden();
-        $this->actingAs($a)->patch("/painel/produtos/{$this->m['produto']->id}/inativar")->assertForbidden();
+        $this->actingAs($a)->patch("/painel/categorias/{$this->m['categoria']->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertForbidden();
+        $this->actingAs($a)->patch("/painel/produtos/{$this->m['produto']->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertForbidden();
         $this->actingAs($a)->post("/painel/usuarios/{$this->u['gerente']->id}/redefinir-senha")->assertForbidden();
         $this->actingAs($a)->post('/painel/usuarios', ['name' => 'X', 'email' => 'x@marymodas.com.br', 'perfil' => 'admin', 'status' => 'ativo'])->assertForbidden();
         $this->assertSame(Pedido::PAGO, $this->m['pago']->fresh()->status);
@@ -198,7 +198,7 @@ class SegurancaTest extends TestCase
     public function test_ultimo_admin_nao_perde_o_acesso(): void
     {
         $admin = $this->u['admin'];
-        $this->actingAs($admin)->patch("/painel/usuarios/{$admin->id}/inativar")->assertStatus(403);
+        $this->actingAs($admin)->patch("/painel/usuarios/{$admin->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertStatus(403);
         $this->actingAs($admin)->put("/painel/usuarios/{$admin->id}", ['name' => $admin->name, 'email' => $admin->email, 'telefone' => '', 'perfil' => 'gerente']);
         $this->assertTrue($admin->fresh()->isAdmin());
         $this->assertSame('ativo', $admin->fresh()->status);

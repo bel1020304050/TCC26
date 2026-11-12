@@ -218,7 +218,7 @@ class FornecedorTest extends TestCase
 
         $this->actingAs($this->atendente)->get('/painel/fornecedores/novo')->assertForbidden();
         $this->actingAs($this->atendente)->get("/painel/fornecedores/{$fornecedor->id}/editar")->assertForbidden();
-        $this->actingAs($this->atendente)->patch("/painel/fornecedores/{$fornecedor->id}/inativar")->assertForbidden();
+        $this->actingAs($this->atendente)->patch("/painel/fornecedores/{$fornecedor->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertForbidden();
         $this->actingAs(User::factory()->create())->get('/painel/fornecedores')->assertForbidden();
     }
 
@@ -253,7 +253,7 @@ class FornecedorTest extends TestCase
     {
         $fornecedor = Fornecedor::factory()->create();
 
-        $this->actingAs($this->admin)->patch("/painel/fornecedores/{$fornecedor->id}/inativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->admin)->patch("/painel/fornecedores/{$fornecedor->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
 
         $this->assertSame(Status::INATIVO, $fornecedor->fresh()->status);
         $this->assertDatabaseHas('auditorias', ['acao' => 'inativou', 'entidade' => 'fornecedores', 'entidade_id' => $fornecedor->id]);
@@ -265,7 +265,7 @@ class FornecedorTest extends TestCase
         $fornecedor = Fornecedor::factory()->create();
         Produto::factory()->count(4)->create(['fornecedor_id' => $fornecedor->id]);
 
-        $this->actingAs($this->admin)->patch("/painel/fornecedores/{$fornecedor->id}/inativar")->assertSessionHas('erro');
+        $this->actingAs($this->admin)->patch("/painel/fornecedores/{$fornecedor->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('erro');
 
         $this->assertTrue($fornecedor->fresh()->isAtivo());
     }
@@ -274,7 +274,7 @@ class FornecedorTest extends TestCase
     {
         $fornecedor = Fornecedor::factory()->inativo()->create();
 
-        $this->actingAs($this->admin)->patch("/painel/fornecedores/{$fornecedor->id}/reativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->admin)->patch("/painel/fornecedores/{$fornecedor->id}/reativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
 
         $this->assertTrue($fornecedor->fresh()->isAtivo());
     }

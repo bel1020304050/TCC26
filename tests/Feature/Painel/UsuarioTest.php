@@ -183,7 +183,7 @@ class UsuarioTest extends TestCase
     {
         $func = User::factory()->atendente()->create();
 
-        $this->actingAs($this->admin)->patch("/painel/usuarios/{$func->id}/inativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->admin)->patch("/painel/usuarios/{$func->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
 
         $this->assertSame(User::STATUS_INATIVO, $func->fresh()->status);
         $this->assertDatabaseHas('auditorias', ['acao' => 'inativou', 'entidade' => 'users', 'entidade_id' => $func->id]);
@@ -197,7 +197,7 @@ class UsuarioTest extends TestCase
     {
         $func = User::factory()->atendente()->inativo()->create();
 
-        $this->actingAs($this->admin)->patch("/painel/usuarios/{$func->id}/reativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->admin)->patch("/painel/usuarios/{$func->id}/reativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
 
         $this->assertTrue($func->fresh()->isAtivo());
     }
@@ -205,7 +205,7 @@ class UsuarioTest extends TestCase
     // CT-3-8-02
     public function test_admin_nao_inativa_a_propria_conta(): void
     {
-        $this->actingAs($this->admin)->patch("/painel/usuarios/{$this->admin->id}/inativar")->assertForbidden();
+        $this->actingAs($this->admin)->patch("/painel/usuarios/{$this->admin->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertForbidden();
 
         $this->assertTrue($this->admin->fresh()->isAtivo());
         $this->actingAs($this->admin)->get('/painel/usuarios')->assertDontSee(route('painel.usuarios.inativar', $this->admin));
@@ -215,7 +215,7 @@ class UsuarioTest extends TestCase
     {
         $bruno = User::factory()->admin()->create();
 
-        $this->actingAs($this->admin)->patch("/painel/usuarios/{$bruno->id}/inativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->admin)->patch("/painel/usuarios/{$bruno->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
 
         $this->assertSame(User::STATUS_INATIVO, $bruno->fresh()->status);
     }
@@ -228,7 +228,7 @@ class UsuarioTest extends TestCase
         $this->actingAs($this->admin->fresh()); // simulação direta do controller, ignorando o middleware de sessão
 
         $resposta = $this->withoutMiddleware(\App\Http\Middleware\EncerraSessaoInativa::class)
-            ->patch("/painel/usuarios/{$bruno->id}/inativar");
+            ->patch("/painel/usuarios/{$bruno->id}/inativar", ['motivo' => 'Motivo registrado no teste']);
 
         $resposta->assertSessionHas('erro', 'O sistema precisa de pelo menos um Administrador ativo.');
         $this->assertTrue($bruno->fresh()->isAtivo());
@@ -238,7 +238,7 @@ class UsuarioTest extends TestCase
     {
         $cliente = User::factory()->create();
 
-        $this->actingAs($this->admin)->patch("/painel/usuarios/{$cliente->id}/inativar")->assertForbidden();
+        $this->actingAs($this->admin)->patch("/painel/usuarios/{$cliente->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertForbidden();
         $this->assertTrue($cliente->fresh()->isAtivo());
     }
 }

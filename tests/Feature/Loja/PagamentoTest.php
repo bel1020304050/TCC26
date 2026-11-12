@@ -173,7 +173,7 @@ class PagamentoTest extends TestCase
 
         $this->assertSame($admin->id, $boleto->fresh()->confirmado_por);
         $this->assertPedidoPagoComEstoqueBaixado();
-        $this->assertDatabaseHas('auditorias', ['acao' => 'confirmou_boleto', 'entidade_id' => $boleto->id]);
+        $this->assertDatabaseHas('auditorias', ['acao' => 'pagamento_aprovado', 'entidade' => 'pedidos', 'entidade_id' => $boleto->pedido_id, 'user_id' => $admin->id]);
     }
 
     // Idempotência: a mesma aprovação recebida duas vezes baixa o estoque uma vez só

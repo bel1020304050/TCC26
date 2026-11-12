@@ -81,7 +81,7 @@ class CategoriaTest extends TestCase
         $this->actingAs($this->atendente)->get('/painel/categorias/novo')->assertForbidden();
         $this->actingAs($this->atendente)->post('/painel/categorias', ['nome' => 'X', 'status' => 'ativo'])->assertForbidden();
         $this->actingAs($this->atendente)->put("/painel/categorias/{$categoria->id}", ['nome' => 'Y'])->assertForbidden();
-        $this->actingAs($this->atendente)->patch("/painel/categorias/{$categoria->id}/inativar")->assertForbidden();
+        $this->actingAs($this->atendente)->patch("/painel/categorias/{$categoria->id}/inativar", ['motivo' => 'Motivo registrado no teste'])->assertForbidden();
 
         $this->assertTrue($categoria->fresh()->isAtivo());
     }
@@ -157,7 +157,7 @@ class CategoriaTest extends TestCase
         Produto::factory()->inativo()->create(['categoria_id' => $categoria->id]); // inativo não bloqueia
 
         $this->actingAs($this->admin)
-            ->patch("/painel/categorias/{$categoria->id}/inativar")
+            ->patch("/painel/categorias/{$categoria->id}/inativar", ['motivo' => 'Motivo registrado no teste'])
             ->assertSessionHas('sucesso');
 
         $this->assertSame(Status::INATIVO, $categoria->fresh()->status);
@@ -172,7 +172,7 @@ class CategoriaTest extends TestCase
 
         $this->actingAs($this->admin)
             ->from('/painel/categorias')
-            ->patch("/painel/categorias/{$categoria->id}/inativar")
+            ->patch("/painel/categorias/{$categoria->id}/inativar", ['motivo' => 'Motivo registrado no teste'])
             ->assertRedirect('/painel/categorias')
             ->assertSessionHas('erro');
 
@@ -198,7 +198,7 @@ class CategoriaTest extends TestCase
     {
         $categoria = Categoria::factory()->inativa()->create();
 
-        $this->actingAs($this->admin)->patch("/painel/categorias/{$categoria->id}/reativar")->assertSessionHas('sucesso');
+        $this->actingAs($this->admin)->patch("/painel/categorias/{$categoria->id}/reativar", ['motivo' => 'Motivo registrado no teste'])->assertSessionHas('sucesso');
 
         $this->assertTrue($categoria->fresh()->isAtivo());
         $this->assertDatabaseHas('auditorias', ['acao' => 'reativou', 'entidade_id' => $categoria->id]);

@@ -115,9 +115,10 @@ class UsuarioController extends Controller
     }
 
     // Inativar: bloqueia o login e derruba as sessões que a pessoa tiver abertas
-    public function inativar(User $usuario): RedirectResponse
+    public function inativar(Request $request, User $usuario): RedirectResponse
     {
         Gate::authorize('alterarStatus', $usuario);
+        $motivo = $this->motivo($request);
 
         if ($usuario->isAdmin() && ! $this->existeOutroAdminAtivo($usuario)) {
             return back()->with('erro', 'O sistema precisa de pelo menos um Administrador ativo.');
@@ -129,18 +130,19 @@ class UsuarioController extends Controller
         // Derruba as sessões salvas no banco: o usuário sai na próxima página que abrir
         DB::table('sessions')->where('user_id', $usuario->id)->delete();
 
-        Auditoria::registrar('inativou', $usuario);
+        Auditoria::registrar('inativou', $usuario, motivo: $motivo);
 
         return back()->with('sucesso', "Usuário \"{$usuario->name}\" inativado. Ele não consegue mais entrar no sistema.");
     }
 
-    public function reativar(User $usuario): RedirectResponse
+    public function reativar(Request $request, User $usuario): RedirectResponse
     {
         Gate::authorize('alterarStatus', $usuario);
+        $motivo = $this->motivo($request);
 
         $usuario->status = User::STATUS_ATIVO;
         $usuario->save();
-        Auditoria::registrar('reativou', $usuario);
+        Auditoria::registrar('reativou', $usuario, motivo: $motivo);
 
         return back()->with('sucesso', "Usuário \"{$usuario->name}\" reativado.");
     }

@@ -16,7 +16,7 @@
 
 <div class="row g-3 mb-3">
     @foreach ($relatorio->indicadores() as $rotulo => $valor)
-        <div class="col-md-4">
+        <div class="col-sm-6 col-lg">{{-- colunas iguais: 3 ou 4 indicadores numa linha só --}}
             <div class="mm-card p-3 h-100">
                 <div class="text-muted small">{{ $rotulo }}</div>
                 <div class="fs-3 fw-bold">{{ $valor }}</div>
