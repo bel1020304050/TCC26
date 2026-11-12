@@ -8,6 +8,7 @@ use App\Models\Produto;
 use App\Models\User;
 use App\Pagamentos\PagamentoException;
 use App\Support\Auditoria;
+use App\Support\Rastreio;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -38,8 +39,17 @@ class AndamentoPedido
             }
 
             $anterior = $pedido->status;
-            $pedido->registrarStatus($novoStatus, $responsavel);
-            Auditoria::registrar('alterou_status', $pedido, ['de' => $anterior, 'para' => $novoStatus], autor: $responsavel);
+            $observacao = null;
+
+            // Regra: ao passar para "Enviado", o pedido ganha um código de rastreio (simulado, formato dos Correios)
+            if ($novoStatus === Pedido::ENVIADO && ! $pedido->codigo_rastreio) {
+                $pedido->codigo_rastreio = Rastreio::gerar();
+                $observacao = "Código de rastreio (simulado): {$pedido->codigo_rastreio}";
+            }
+
+            $pedido->registrarStatus($novoStatus, $responsavel, $observacao);
+            Auditoria::registrar('alterou_status', $pedido, array_filter(
+                ['de' => $anterior, 'para' => $novoStatus, 'rastreio' => $pedido->codigo_rastreio]), autor: $responsavel);
         });
     }
 

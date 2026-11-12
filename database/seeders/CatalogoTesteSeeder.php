@@ -14,6 +14,16 @@ use Illuminate\Database\Seeder;
  */
 class CatalogoTesteSeeder extends Seeder
 {
+    // Descrições de exemplo, mostradas na página do produto
+    private const DESCRICOES = [
+        'Vestido Floral' => "Vestido midi em viscose com estampa floral, alças finas e amarração na cintura.\nLeve e fresco, ideal para o dia a dia e para eventos durante o dia.",
+        'Blusa Básica' => 'Blusa de malha 100% algodão, gola redonda e modelagem reta. Combina com tudo.',
+        'Blusa Social' => 'Blusa de crepe com botões frontais e punho ajustável, perfeita para o trabalho.',
+        'Saia Midi' => 'Saia midi plissada com cós elástico e forro, em tecido que não amassa.',
+        'Saia Jeans' => 'Saia jeans com lavagem média, cintura alta e botões frontais.',
+        'Jaqueta Jeans' => 'Jaqueta jeans clássica com bolsos frontais.',
+    ];
+
     public function run(): void
     {
         $categorias = [];
@@ -60,6 +70,10 @@ class CatalogoTesteSeeder extends Seeder
         foreach ([
             ['Vestido Floral', 'Vestidos', 'Confecções Aurora Ltda', 'M', 'Preto', 129.90, 8, Status::ATIVO],
             ['Vestido Floral', 'Vestidos', 'Confecções Aurora Ltda', 'G', 'Preto', 129.90, 15, Status::ATIVO],
+            // Mais variações do vestido, para mostrar os botões de tamanho/cor na página do produto:
+            // P/Preto com estoque baixo ("Últimas 3 unidades!") e M/Azul esgotado (botão riscado)
+            ['Vestido Floral', 'Vestidos', 'Confecções Aurora Ltda', 'P', 'Preto', 129.90, 3, Status::ATIVO],
+            ['Vestido Floral', 'Vestidos', 'Confecções Aurora Ltda', 'M', 'Azul', 129.90, 0, Status::ATIVO],
             ['Blusa Básica', 'Blusas', 'Malharia Boa Vista Ltda', 'P', 'Branco', 59.90, 25, Status::ATIVO],
             ['Blusa Social', 'Blusas', 'Malharia Boa Vista Ltda', 'P', 'Branco', 89.90, 12, Status::ATIVO],
             ['Saia Midi', 'Saias', 'Confecções Aurora Ltda', 'M', 'Bege', 119.90, 6, Status::ATIVO],
@@ -69,7 +83,8 @@ class CatalogoTesteSeeder extends Seeder
             $produto = Produto::firstOrNew([
                 'nome' => $nome, 'categoria_id' => $categorias[$categoria]->id, 'tamanho' => $tamanho, 'cor' => $cor,
             ]);
-            $produto->fill(['fornecedor_id' => $fornecedores[$fornecedor]->id, 'preco' => $preco, 'estoque' => $estoque]);
+            $produto->fill(['fornecedor_id' => $fornecedores[$fornecedor]->id, 'preco' => $preco, 'estoque' => $estoque,
+                'descricao' => self::DESCRICOES[$nome] ?? null]);
             $produto->status = $status;
             $produto->save();
         }

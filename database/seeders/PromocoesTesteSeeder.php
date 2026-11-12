@@ -21,7 +21,10 @@ class PromocoesTesteSeeder extends Seeder
         foreach ([
             ['Semana Mary', 'cupom', 'MARY20', 'percentual', 20, -7, 7, 'geral', null, Status::ATIVO],
             ['Queima de Saias', 'automatica', null, 'percentual', 15, -3, 14, 'categoria', 'Saias', Status::ATIVO],
-            ['Cliente VIP', 'cupom', 'VIP30', 'percentual', 30, 10, 25, 'geral', null, Status::ATIVO],
+            // Cupom de categoria (antes era o "Cliente VIP"): mostra a dica de cupom na página dos vestidos
+            ['Festival de Vestidos', 'cupom', 'VESTIDO30', 'percentual', 30, -2, 10, 'categoria', 'Vestidos', Status::ATIVO],
+            // Agendada: ainda não aparece na lista de cupons do carrinho
+            ['Black Friday', 'cupom', 'BLACK25', 'percentual', 25, 15, 18, 'geral', null, Status::ATIVO],
             ['Desconto Blusas', 'automatica', null, 'valor', 10, -10, 20, 'categoria', 'Blusas', Status::INATIVO],
             ['Liquidação Inverno', 'automatica', null, 'percentual', 25, -60, -30, 'categoria', 'Jaquetas', Status::ATIVO],
         ] as [$nome, $modo, $codigo, $tipo, $valor, $inicio, $fim, $aplicacao, $alvo, $status]) {

@@ -9,6 +9,7 @@ use App\Http\Controllers\Loja\CarrinhoController;
 use App\Http\Controllers\Loja\ContaController;
 use App\Http\Controllers\Loja\PagamentoController;
 use App\Http\Controllers\Loja\PedidoController;
+use App\Http\Controllers\Loja\ProdutoController as LojaProdutoController;
 use App\Http\Controllers\Loja\VitrineController;
 use App\Http\Controllers\Painel\CategoriaController;
 use App\Http\Controllers\Painel\FornecedorController;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Route;
 */
 // Vitrine (aberta para visitantes)
 Route::get('/', VitrineController::class)->name('loja.inicio');
+Route::get('/produtos/{produto}', [LojaProdutoController::class, 'show'])->name('loja.produto'); // página do produto (pública)
 
 // Área do cliente: minha conta, carrinho, pedidos e pagamento. Só clientes logados.
 Route::name('loja.')->middleware(['auth', 'perfil:cliente'])->group(function () {

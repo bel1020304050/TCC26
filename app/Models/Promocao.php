@@ -183,6 +183,38 @@ class Promocao extends Model
             : Dinheiro::formatar($this->valor);
     }
 
+    /**
+     * Melhor promoção automática para um produto (a que dá o maior desconto).
+     * $automaticas = promoções automáticas Ativas e Vigentes, buscadas uma vez só (vitrine e página do produto).
+     */
+    public static function melhorAutomatica(Produto $produto, \Illuminate\Support\Collection $automaticas): ?self
+    {
+        return $automaticas->filter(fn (self $p) => $p->aplicaA($produto))
+            ->sortByDesc(fn (self $p) => $p->descontoSobre((float) $produto->preco))
+            ->first();
+    }
+
+    // Cupons que o cliente pode usar agora, para a lista "Cupons disponíveis" do carrinho
+    public static function cuponsDisponiveis(): \Illuminate\Database\Eloquent\Collection
+    {
+        return static::validas()->where('modo', self::CUPOM)->with(['categoria:id,nome', 'produto:id,nome,tamanho,cor'])
+            ->orderBy('data_fim')->get();
+    }
+
+    // "MARY20 · 20% em todos os produtos · válido até 15/11"
+    public function descricaoCupom(): string
+    {
+        $onde = match ($this->aplicacao) {
+            self::CATEGORIA => 'em '.($this->categoria?->nome ?? 'uma categoria'),
+            self::PRODUTO => 'em '.($this->produto ? $this->produto->nome.' ('.$this->produto->variacao().')' : 'um produto'),
+            default => 'em todos os produtos',
+        };
+
+        $desconto = $this->tipo === self::PERCENTUAL ? $this->descontoLabel() : $this->descontoLabel().' de desconto';
+
+        return $this->codigo.' · '.$desconto.' '.$onde.' · válido até '.$this->data_fim->format('d/m');
+    }
+
     public function seloLabel(): string
     {
         return $this->tipo === self::PERCENTUAL ? '-'.$this->descontoLabel() : $this->descontoLabel().' OFF';

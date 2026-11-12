@@ -22,8 +22,15 @@ class LoginController extends Controller
     private const MAX_TENTATIVAS = 5;
     private const BLOQUEIO_SEGUNDOS = 60;
 
-    public function create(): View
+    public function create(Request $request): View
     {
+        // "Entrar para comprar" na página do produto: depois do login, volta para o mesmo produto.
+        // Segurança: só aceita caminho do próprio site ("/produtos/5"), nunca outro endereço ("//site.com", "https://...")
+        $voltar = (string) $request->query('voltar');
+        if (preg_match('#^/(?![/\\\\])#', $voltar)) {
+            $request->session()->put('url.intended', url($voltar));
+        }
+
         return view('auth.login');
     }
 

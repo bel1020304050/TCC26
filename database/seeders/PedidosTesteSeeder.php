@@ -7,6 +7,7 @@ use App\Models\Pagamento;
 use App\Models\Pedido;
 use App\Models\Produto;
 use App\Models\User;
+use App\Support\Rastreio;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
@@ -73,6 +74,10 @@ class PedidosTesteSeeder extends Seeder
             $pedido->{$campo} = $cliente->{$campo};
         }
         $pedido->status = end($historico)[0];
+        // Pedido que já foi enviado tem código de rastreio (simulado)
+        if (collect($historico)->contains(fn ($h) => $h[0] === Pedido::ENVIADO)) {
+            $pedido->codigo_rastreio = Rastreio::gerar();
+        }
         $pedido->created_at = $criadoEm;
         $pedido->updated_at = Carbon::parse(end($historico)[1]);
         $pedido->save();

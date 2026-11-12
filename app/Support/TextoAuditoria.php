@@ -86,7 +86,8 @@ final class TextoAuditoria
 
         return match (true) {
             isset($d['campos']) => 'Alterou: '.implode(', ', $d['campos']),
-            isset($d['de'], $d['para']) => self::status($d['de']).' → '.self::status($d['para']),
+            isset($d['de'], $d['para']) => self::status($d['de']).' → '.self::status($d['para'])
+                .(isset($d['rastreio']) && $d['para'] === Pedido::ENVIADO ? ' · rastreio '.$d['rastreio'] : ''),
             $registro->acao === 'cancelou' => (isset($d['de']) ? self::status($d['de']).' → ' : '').'Cancelado',
             isset($d['forma']) => (Pedido::FORMAS_PAGAMENTO[$d['forma']] ?? $d['forma']).' · '.self::dinheiro($d['valor'] ?? 0)
                 .(! empty($d['manual']) ? ' · confirmado manualmente' : '')
