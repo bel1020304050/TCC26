@@ -111,7 +111,7 @@ Criados pelo `php artisan migrate --seed` (os de teste só em `APP_ENV=local`):
 | Cliente | ana@email.com | `cliente123` | CPF 123.456.789-09 e endereço completo em Umuarama/PR |
 
 O seeder também cria o **catálogo de exemplo** dos wireframes: categorias (Vestidos, Blusas, Saias, Acessórios e Jaquetas inativa),
-6 fornecedores com endereço (um com **CNPJ alfanumérico** e um **pessoa física**) e 7 produtos. Dica de teste: tente inativar **Vestidos** (tem produtos ativos → bloqueia)
+6 fornecedores com endereço (um com **CNPJ alfanumérico** e um **pessoa física**) e 9 produtos (o Vestido Floral tem 4 variações, uma esgotada). Dica de teste: tente inativar **Vestidos** (tem produtos ativos → bloqueia)
 e depois **Acessórios** (sem produtos → inativa).
 
 ## 5. O que já funciona
@@ -216,7 +216,7 @@ e depois **Acessórios** (sem produtos → inativa).
 - **Carrinho**: campo de **cupom**. O servidor sempre recalcula e **os descontos não se somam**: vale só o maior
   entre as automáticas e o cupom. Valor fixo nunca deixa o total negativo. Cupom inativado depois sai do carrinho com aviso.
 - O **pedido guarda o desconto e o cupom usados**, e o pagamento cobra esse valor congelado.
-- Dados de teste: cupom **MARY20** (20%, vigente), **VIP30** (agendado), **Queima de Saias** (15% automática nas saias),
+- Dados de teste: cupom **MARY20** (20%, vigente), **VESTIDO30** (30% nos vestidos, vigente), **BLACK25** (agendado), **Queima de Saias** (15% automática nas saias),
   **Desconto Blusas** (inativa) e **Liquidação Inverno** (expirada).
 
 ### Fase 9 — Conta do cliente (stories 3.10–3.12)
@@ -360,6 +360,26 @@ Problemas encontrados e corrigidos:
 - O seed cria um pequeno histórico de exemplo, explicando por que Jaquetas, Jeans Sul, Jaqueta Jeans, Desconto Blusas
   e Juliana estão inativos, para o relatório já abrir com conteúdo.
 
+### Fase 17 — Melhorias na loja (stories 3.2, 3.20 e 3.30)
+- **Página do produto** (`/produtos/{id}`), aberta ao clicar na foto ou no nome na vitrine, **na mesma aba**:
+  trilha (Início › Categoria › Produto), foto grande, categoria, nome, descrição e preço **"de … por …"** com selo
+  quando há promoção automática.
+  - **Tamanho e cor**: cada combinação é um produto no banco, então cada botão leva à página da outra variação
+    (sem preço no botão). Variação esgotada aparece riscada. Os tamanhos são os da mesma cor.
+  - **"Últimas X unidades!"** só com estoque de 5 ou menos; produto esgotado mostra aviso e não tem botão de compra.
+  - **"Adicionar ao carrinho"** coloca 1 unidade (a quantidade se ajusta no carrinho) e volta para a página.
+    O visitante vê **"Entrar para comprar"** e, depois do login, volta para o mesmo produto
+    (só endereços do próprio site são aceitos, para o link não poder levar a um site falso).
+  - **Dica de cupom**: mostra o cupom válido que dá o maior desconto neste produto.
+  - Produto inativo ou de categoria inativa: página não existe (404).
+- **Cupons disponíveis** no carrinho: "Ver cupons disponíveis (N)" lista todos os cupons **Ativos e Vigentes**, com
+  descrição automática (ex.: *MARY20 · 20% em todos os produtos · válido até 18/11*). Clicar preenche o campo.
+  Não existe mais cupom "VIP": o antigo VIP30 virou o **VESTIDO30** (30% nos vestidos) e entrou um **BLACK25** agendado,
+  que só aparece na lista quando começar.
+- **Código de rastreio simulado**: ao passar o pedido para **Enviado**, o sistema gera um código no formato dos
+  Correios (padrão S10: `MM` + 8 números + dígito verificador + `BR`, ex.: `MM116046056BR`). Ele aparece para o cliente
+  e para a equipe, com o selo "simulado", fica no histórico do pedido e na auditoria. O rastreio real fica para o futuro.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -380,7 +400,7 @@ Problemas encontrados e corrigidos:
 | 14 | Contas e senhas (verificação de e-mail, recuperação e senha provisória) | 3.5–3.13 | ✅ Pronta |
 | 15 | PDF com dompdf | 3.32–3.34 | ✅ Pronta |
 | 16 | Auditoria (motivo obrigatório e relatório) | 3.35 | ✅ Pronta |
-| 17 | Melhorias na loja (página do produto, cupons visíveis, rastreio) | 3.2, 3.20, 3.30 | A fazer |
+| 17 | Melhorias na loja (página do produto, cupons visíveis, rastreio) | 3.2, 3.20, 3.30 | ✅ Pronta |
 | 18 | Pagamento no sandbox do Asaas | 3.31 | A fazer |
 | 19 | Fechamento (documentação e apresentação) | — | A fazer |
 
@@ -415,6 +435,7 @@ Problemas encontrados e corrigidos:
 | 3.30 | Carrinho e cupom | `Loja/CarrinhoController`, `Models/Carrinho` (`totais()`) |
 | 3.31 ⭐ | Processo de pagamento | `Services/FinalizarCompra`, `Loja/PagamentoController`, `Pagamentos/` |
 | 3.32–3.34 | Relatórios | `Painel/RelatorioController`, `Relatorios/RelatorioVendas`, `RelatorioEstoque`, `RelatorioClientes`, `Support/Pdf` |
+| 3.2, 3.20, 3.30 | Página do produto, rastreio e cupons | `Loja/ProdutoController`, `Support/Rastreio`, `Promocao::cuponsDisponiveis` |
 | 3.35 | Auditoria | `Support/Auditoria`, `Models/Auditoria`, `Relatorios/RelatorioAuditoria`, `Support/TextoAuditoria`, `public/js/motivo.js` |
 
 Os testes de cada story ficam em `tests/Feature`, e cada caso de teste do documento é marcado com o código dele (ex.: `CT-3-18-01`).
@@ -459,7 +480,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (350 testes: 282 das fases + 68 de quebra) |
+| `php artisan test` | Roda os testes automatizados (363 testes: 295 das fases + 68 de quebra) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
 

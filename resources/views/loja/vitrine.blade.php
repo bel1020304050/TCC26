@@ -78,14 +78,15 @@
             <div class="col">
                 <div class="mm-card h-100 p-2 mm-produto d-flex flex-column">
                     @php $promo = $promocoes[$produto->id] ?? null; @endphp
-                    <div class="position-relative">
+                    {{-- Foto e nome levam à página do produto --}}
+                    <a href="{{ route('loja.produto', $produto) }}" class="position-relative d-block mm-produto-link">
                         <img src="{{ $produto->imagemUrl() }}" alt="{{ $produto->nome }}" class="w-100 rounded mb-2" loading="lazy">
                         @if ($promo)
                             <span class="badge rounded-pill mm-selo position-absolute top-0 start-0 m-2" title="{{ $promo->nome }}">{{ $promo->seloLabel() }}</span>
                         @endif
-                    </div>
+                    </a>
                     <div class="px-1 pb-1 d-flex flex-column flex-grow-1">
-                        <div class="fw-semibold">{{ $produto->nome }}</div>
+                        <a href="{{ route('loja.produto', $produto) }}" class="mm-produto-link"><div class="fw-semibold">{{ $produto->nome }}</div></a>
                         <div class="text-muted small mb-1">{{ $produto->categoria->nome }} · {{ $produto->tamanho }} · {{ $produto->cor }}</div>
                         <div class="mb-2 mt-auto">
                             @if ($promo && $promo->tipo === 'percentual')

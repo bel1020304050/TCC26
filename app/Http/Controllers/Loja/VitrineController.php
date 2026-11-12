@@ -56,9 +56,7 @@ class VitrineController extends Controller
         // Cupom não aparece na vitrine, porque depende do código digitado no carrinho.
         $automaticas = Promocao::validas()->where('modo', Promocao::AUTOMATICA)->get();
         $promocoes = $produtos->getCollection()->mapWithKeys(fn (Produto $produto) => [
-            $produto->id => $automaticas->filter(fn (Promocao $p) => $p->aplicaA($produto))
-                ->sortByDesc(fn (Promocao $p) => $p->descontoSobre((float) $produto->preco))
-                ->first(),
+            $produto->id => Promocao::melhorAutomatica($produto, $automaticas),
         ]);
 
         return view('loja.vitrine', compact('produtos', 'filtros', 'categorias', 'tamanhos', 'cores', 'promocoes'));

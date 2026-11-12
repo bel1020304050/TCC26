@@ -34,6 +34,8 @@ class CarrinhoController extends Controller
             'carrinho' => $carrinho,
             'totais' => $carrinho->totais(),
             'problemas' => $carrinho->problemasDeEstoque(),
+            // Regra: o cliente vê todos os cupons Ativos e Vigentes (não existe cupom "secreto" ou VIP)
+            'cupons' => Promocao::cuponsDisponiveis(),
         ]);
     }
 

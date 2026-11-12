@@ -42,6 +42,17 @@
             <div class="text-muted small mb-2">{{ $pedido->enderecoLinha2() }}</div>
             <div class="small"><span class="text-muted">Pagamento:</span> {{ $pedido->formaPagamentoLabel() }}</div>
             <div class="small text-muted">Frete: não calculado nesta versão.</div>
+            @if ($pedido->codigo_rastreio)
+                {{-- Código gerado quando o pedido foi enviado. Simulado: ainda não consultamos os Correios. --}}
+                <div class="border rounded p-2 mt-2 bg-light">
+                    <div class="small text-muted">Código de rastreio</div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fs-5 font-monospace fw-semibold" id="codigo-rastreio">{{ $pedido->codigo_rastreio }}</span>
+                        <span class="badge text-bg-warning">simulado</span>
+                    </div>
+                    <div class="small text-muted">Código de exemplo, no formato dos Correios. O rastreio real fica para uma versão futura.</div>
+                </div>
+            @endif
         </div>
         @if ($pedido->pagamentos->isNotEmpty())
             <div class="mm-card p-4">

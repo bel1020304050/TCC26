@@ -92,6 +92,23 @@
                         </div>
                         @error('cupom') <div class="small text-danger mt-1">{{ $message }}</div> @enderror
                     </form>
+
+                    @if ($cupons->isNotEmpty())
+                        {{-- Cupons disponíveis: clicar preenche o campo (o cliente ainda confirma em "Aplicar") --}}
+                        <button class="btn btn-link btn-sm p-0 mb-2 text-decoration-none" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#cupons-disponiveis" aria-expanded="false" aria-controls="cupons-disponiveis">
+                            <i class="bi bi-ticket-perforated"></i> Ver cupons disponíveis ({{ $cupons->count() }})
+                        </button>
+                        <div class="collapse" id="cupons-disponiveis">
+                            <div class="list-group list-group-flush border rounded mb-2">
+                                @foreach ($cupons as $disponivel)
+                                    <button type="button" class="list-group-item list-group-item-action small" data-usar-cupom="{{ $disponivel->codigo }}">
+                                        {{ $disponivel->descricaoCupom() }}
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 @endif
 
                 @if ($totais['promocao'])
@@ -133,3 +150,16 @@
     </div>
 @endif
 @endsection
+
+@push('scripts')
+<script>
+    // Clicar num cupom da lista preenche o campo e leva o cursor ao botão "Aplicar"
+    document.querySelectorAll('[data-usar-cupom]').forEach(function (botao) {
+        botao.addEventListener('click', function () {
+            const campo = document.getElementById('cupom');
+            campo.value = botao.dataset.usarCupom;
+            campo.closest('form').querySelector('button[type="submit"]').focus();
+        });
+    });
+</script>
+@endpush
