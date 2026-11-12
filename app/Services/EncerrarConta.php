@@ -40,6 +40,7 @@ class EncerrarConta
                 'email' => "removido-{$cliente->id}@conta-encerrada.invalid",
                 'telefone' => null,
                 'cpf' => null, // LGPD: o CPF sai junto; o mesmo CPF pode abrir uma conta nova depois
+                'asaas_cliente_id' => null, // o vínculo com o cliente no Asaas também sai
                 'cep' => null, 'rua' => null, 'numero' => null, 'complemento' => null,
                 'bairro' => null, 'cidade' => null, 'uf' => null,
                 'password' => Hash::make(Str::random(40)), // ninguém sabe a senha

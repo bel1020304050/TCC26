@@ -78,7 +78,7 @@ class Pagamento extends Model
     public function detalhe(): string
     {
         return match ($this->forma) {
-            'cartao' => trim("{$this->cartao_bandeira} final {$this->cartao_final}"),
+            'cartao' => $this->cartao_final ? trim("{$this->cartao_bandeira} final {$this->cartao_final}") : '',
             'boleto' => $this->boleto_vencimento ? 'Vence em '.$this->boleto_vencimento->format('d/m/Y') : '',
             default => '',
         };

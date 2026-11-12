@@ -21,6 +21,7 @@ use App\Http\Controllers\Painel\ProdutoController;
 use App\Http\Controllers\Painel\PromocaoController;
 use App\Http\Controllers\Painel\RelatorioController;
 use App\Http\Controllers\Painel\UsuarioController;
+use App\Http\Controllers\Webhook\AsaasWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -61,6 +62,8 @@ Route::name('loja.')->middleware(['auth', 'perfil:cliente'])->group(function () 
     Route::get('/meus-pedidos/{pedido}/pagamento', [PagamentoController::class, 'create'])->name('pagamento.create');
     Route::post('/meus-pedidos/{pedido}/pagamento', [PagamentoController::class, 'store'])->name('pagamento.store');
     Route::post('/meus-pedidos/{pedido}/pagamento/{pagamento}/simular-pix', [PagamentoController::class, 'simularPix'])->name('pagamento.simular-pix');
+    // Consulta automática do status (a tela pergunta a cada 5 s; 30 por minuto deixa folga para duas abas abertas)
+    Route::get('/meus-pedidos/{pedido}/pagamento/{pagamento}/status', [PagamentoController::class, 'status'])->middleware('throttle:30,1')->name('pagamento.status');
     Route::get('/meus-pedidos/{pedido}/concluido', [PagamentoController::class, 'concluido'])->name('pagamento.concluido');
 });
 
@@ -166,3 +169,12 @@ Route::prefix('painel')->name('painel.')->middleware(['auth', 'perfil:admin,gere
     Route::patch('usuarios/{usuario}/reativar', [UsuarioController::class, 'reativar'])->name('usuarios.reativar');
     Route::post('usuarios/{usuario}/redefinir-senha', [UsuarioController::class, 'redefinirSenha'])->name('usuarios.redefinir-senha');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Avisos automáticos (webhooks) de serviços externos
+|--------------------------------------------------------------------------
+*/
+// Asaas avisa mudanças de status das cobranças. Sem login e sem CSRF (quem chama é o servidor do Asaas);
+// a proteção é o token no cabeçalho "asaas-access-token" (ver AsaasWebhookController).
+Route::post('/webhooks/asaas', AsaasWebhookController::class)->middleware('throttle:60,1')->name('webhooks.asaas');

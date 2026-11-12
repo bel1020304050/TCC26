@@ -7,9 +7,11 @@ use App\Models\Pagamento;
 use App\Models\Pedido;
 use App\Models\Produto;
 use App\Models\User;
+use App\Pagamentos\Asaas\ErroAsaas;
 use App\Pagamentos\PagamentoException;
 use App\Pagamentos\ProvedorIndisponivel;
 use App\Pagamentos\ProvedorPagamento;
+use App\Pagamentos\RespostaProvedor;
 use App\Support\Auditoria;
 use Illuminate\Support\Facades\DB;
 
@@ -52,6 +54,7 @@ class FinalizarCompra
         }
 
         // 3. Registra a tentativa como Pendente. Um PIX/boleto anterior ainda pendente deixa de valer.
+        $substituidos = $pedido->pagamentos()->where('status', Pagamento::PENDENTE)->get();
         $pagamento = DB::transaction(function () use ($pedido, $forma) {
             $pedido->pagamentos()->where('status', Pagamento::PENDENTE)->update([
                 'status' => Pagamento::RECUSADO,
@@ -67,16 +70,26 @@ class FinalizarCompra
             return $pagamento;
         });
 
+        // A cobrança antiga também é cancelada no provedor (senão o cliente ainda conseguiria pagá-la)
+        $substituidos->each(fn (Pagamento $antigo) => $this->provedor->cancelar($antigo));
+
         // 3/4. Envia ao provedor e grava o retorno
         try {
             $resposta = $this->provedor->cobrar($pagamento, $dadosCartao);
         } catch (ProvedorIndisponivel) {
-            $pagamento->status = Pagamento::RECUSADO;
-            $pagamento->mensagem = 'Falha temporária de comunicação com o provedor.';
-            $pagamento->save();
-            self::auditarPagamento('pagamento_recusado', $pagamento, $pedido, sistema: true);
+            $this->recusarTentativa($pagamento, $pedido, 'Falha temporária de comunicação com o provedor.');
 
             throw new PagamentoException('O serviço de pagamento está temporariamente indisponível. Tente de novo em instantes; o seu pedido continua reservado para pagamento.');
+        } catch (ErroAsaas $e) {
+            // O Asaas recusou o pedido de cobrança (ex.: CPF inválido, valor abaixo do mínimo)
+            $this->recusarTentativa($pagamento, $pedido, 'Asaas: '.$e->getMessage());
+
+            throw new PagamentoException('O Asaas não aceitou a cobrança: '.$e->getMessage());
+        } catch (PagamentoException $e) {
+            // Falta algo do lado do cliente (ex.: CPF) — a mensagem já é para a tela
+            $this->recusarTentativa($pagamento, $pedido, $e->getMessage());
+
+            throw $e;
         }
 
         $pagamento->referencia = $resposta->referencia;
@@ -99,7 +112,85 @@ class FinalizarCompra
     }
 
     /**
-     * Etapa 5 — retorno de APROVAÇÃO do provedor (no Mercado Pago, viria por webhook).
+     * Consulta automática da tela de pagamento e aviso (webhook): pergunta ao provedor como está a cobrança.
+     * Não confia em quem chamou: o status vem sempre da consulta ao provedor.
+     *
+     * @throws PagamentoException quando o provedor não responde
+     */
+    public function verificar(Pagamento $pagamento): Pagamento
+    {
+        if (! $pagamento->isPendente() || ! $pagamento->referencia) {
+            return $pagamento;
+        }
+
+        try {
+            $resposta = $this->provedor->consultar($pagamento);
+        } catch (ProvedorIndisponivel|ErroAsaas $e) {
+            throw new PagamentoException('Não foi possível consultar o pagamento agora: '.$e->getMessage());
+        }
+
+        return $this->aplicarResposta($pagamento, $resposta);
+    }
+
+    /**
+     * Ambiente de testes: faz de conta que o PIX/boleto foi pago.
+     * No simulado aprova direto; no Asaas, pede ao sandbox para confirmar e depois consulta o status.
+     *
+     * @param  User|null  $responsavel  quem confirmou à mão (ex.: Gerente no boleto); null = sistema
+     *
+     * @throws PagamentoException
+     */
+    public function simular(Pagamento $pagamento, ?User $responsavel = null): Pagamento
+    {
+        if (! $pagamento->isPendente()) {
+            return $pagamento;
+        }
+
+        try {
+            $resposta = $this->provedor->simularPagamento($pagamento);
+        } catch (ProvedorIndisponivel|ErroAsaas $e) {
+            throw new PagamentoException('Não foi possível simular o pagamento: '.$e->getMessage());
+        }
+
+        return $this->aplicarResposta($pagamento, $resposta, $responsavel);
+    }
+
+    // Aplica o que o provedor respondeu: aprovado finaliza; recusado/estornado encerra a tentativa; pendente não muda nada
+    private function aplicarResposta(Pagamento $pagamento, RespostaProvedor $resposta, ?User $responsavel = null): Pagamento
+    {
+        if ($resposta->status === Pagamento::APROVADO) {
+            if ($resposta->dados) {
+                $pagamento->forceFill($resposta->dados)->save(); // bandeira e final do cartão pago na fatura
+            }
+
+            return $this->confirmarAprovacao($pagamento, $responsavel);
+        }
+
+        if (in_array($resposta->status, [Pagamento::RECUSADO, Pagamento::ESTORNADO], true)) {
+            return DB::transaction(function () use ($pagamento, $resposta) {
+                $pagamento = Pagamento::whereKey($pagamento->id)->lockForUpdate()->firstOrFail();
+                if ($pagamento->isPendente() && ! $pagamento->processado_em) {
+                    // Uma cobrança que nunca foi aprovada e voltou como estornada é tratada como recusada
+                    $this->recusarTentativa($pagamento, $pagamento->pedido, $resposta->mensagem ?? 'Cobrança encerrada pelo provedor.');
+                }
+
+                return $pagamento;
+            });
+        }
+
+        return $pagamento->fresh();
+    }
+
+    private function recusarTentativa(Pagamento $pagamento, Pedido $pedido, string $mensagem): void
+    {
+        $pagamento->status = Pagamento::RECUSADO;
+        $pagamento->mensagem = mb_substr($mensagem, 0, 255);
+        $pagamento->save();
+        self::auditarPagamento('pagamento_recusado', $pagamento, $pedido, sistema: true);
+    }
+
+    /**
+     * Etapa 5 — retorno de APROVAÇÃO do provedor (no Asaas, chega pelo aviso/webhook ou pela consulta automática da tela).
      * Pode ser chamado mais de uma vez para o mesmo pagamento: só a primeira tem efeito
      * (idempotência — o estoque nunca é baixado duas vezes).
      *

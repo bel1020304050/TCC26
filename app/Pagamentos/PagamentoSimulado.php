@@ -33,6 +33,22 @@ class PagamentoSimulado implements ProvedorPagamento
         };
     }
 
+    // No simulado ninguém paga "por fora": a cobrança só muda quando alguém clica em Simular
+    public function consultar(Pagamento $pagamento): RespostaProvedor
+    {
+        return new RespostaProvedor(Pagamento::PENDENTE, (string) $pagamento->referencia, 'Ainda não identificamos o pagamento.');
+    }
+
+    public function simularPagamento(Pagamento $pagamento): RespostaProvedor
+    {
+        return new RespostaProvedor(Pagamento::APROVADO, (string) $pagamento->referencia, 'Pagamento aprovado.');
+    }
+
+    public function cancelar(Pagamento $pagamento): void
+    {
+        // Nada a avisar: a cobrança simulada só existe no nosso banco
+    }
+
     private function cartao(array $dados, string $referencia): RespostaProvedor
     {
         $numero = preg_replace('/\D/', '', $dados['cartao_numero'] ?? '');

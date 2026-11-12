@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Painel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pagamento;
+use App\Pagamentos\PagamentoException;
 use App\Services\FinalizarCompra;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,16 +19,23 @@ class PagamentoController extends Controller
     {
         Gate::authorize('confirmarBoleto', $pagamento);
 
-        // A auditoria ("pagamento aprovado" por quem confirmou) é registrada dentro do processo
-        $pagamento = $processo->confirmarAprovacao($pagamento, $request->user());
+        // A auditoria ("pagamento aprovado" por quem confirmou) é registrada dentro do processo.
+        // No Asaas (sandbox), a confirmação é enviada para lá e o status volta pela consulta.
+        try {
+            $pagamento = $processo->simular($pagamento, $request->user());
+        } catch (PagamentoException $e) {
+            return back()->with('erro', $e->getMessage());
+        }
 
         $pedido = $pagamento->pedido;
 
         return back()->with(
             $pagamento->status === Pagamento::APROVADO ? 'sucesso' : 'erro',
-            $pagamento->status === Pagamento::APROVADO
-                ? "Boleto compensado: o pedido {$pedido->numero()} agora está Pago e o estoque foi baixado."
-                : "Não foi possível aprovar: {$pagamento->mensagem}"
+            match ($pagamento->status) {
+                Pagamento::APROVADO => "Boleto compensado: o pedido {$pedido->numero()} agora está Pago e o estoque foi baixado.",
+                Pagamento::PENDENTE => 'O Asaas ainda não confirmou o boleto. Tente de novo em alguns segundos.',
+                default => "Não foi possível aprovar: {$pagamento->mensagem}",
+            }
         );
     }
 }
