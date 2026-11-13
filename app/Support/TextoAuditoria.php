@@ -90,8 +90,7 @@ final class TextoAuditoria
                 .(isset($d['rastreio']) && $d['para'] === Pedido::ENVIADO ? ' · rastreio '.$d['rastreio'] : ''),
             $registro->acao === 'cancelou' => (isset($d['de']) ? self::status($d['de']).' → ' : '').'Cancelado',
             isset($d['forma']) => (Pedido::FORMAS_PAGAMENTO[$d['forma']] ?? $d['forma']).' · '.self::dinheiro($d['valor'] ?? 0)
-                .(! empty($d['manual']) ? ' · confirmado manualmente' : '')
-                .($registro->acao === 'pagamento_recusado' && ! empty($d['mensagem']) ? ' · '.$d['mensagem'] : ''),
+                .self::complementoPagamento($registro, $d),
             isset($d['total']) => 'Total '.self::dinheiro($d['total']),
             isset($d['perfil']) => 'Perfil: '.self::perfil($d['perfil']),
             $registro->acao === 'inativou' => 'Ativo → Inativo',
@@ -126,5 +125,23 @@ final class TextoAuditoria
     private static function dinheiro(mixed $valor): string
     {
         return 'R$ '.number_format((float) $valor, 2, ',', '.');
+    }
+
+    /**
+     * Complemento da linha de pagamento:
+     * - estorno: quem autorizou ("estornado por Bruno Costa") ou "estornado pelo sistema" (com o motivo)
+     * - aprovação à mão (boleto): "confirmado manualmente"
+     * - recusa: o motivo devolvido pelo provedor
+     */
+    private static function complementoPagamento(Auditoria $registro, array $d): string
+    {
+        return match (true) {
+            $registro->acao === 'pagamento_estornado' => ! empty($d['manual'])
+                ? ' · estornado por '.($registro->usuario?->name ?? 'usuário removido')
+                : ' · estornado pelo sistema'.(! empty($d['mensagem']) ? ' · '.$d['mensagem'] : ''),
+            ! empty($d['manual']) => ' · confirmado manualmente',
+            $registro->acao === 'pagamento_recusado' && ! empty($d['mensagem']) => ' · '.$d['mensagem'],
+            default => '',
+        };
     }
 }

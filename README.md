@@ -421,6 +421,16 @@ reais no [sandbox do Asaas](https://docs.asaas.com)). Nenhum dinheiro é movimen
   a do cartão pela fatura.
 - Nos testes automatizados o Asaas é **imitado** (`tests/Support/AsaasFalso.php`): nenhuma chamada sai para a internet.
 
+### Fase 19 — Fechamento
+- **Auditoria**: o estorno de um pedido pago mostra quem autorizou (`PIX · R$ 100,00 · estornado por Bruno Costa`).
+  Quando o estorno é automático (ex.: estoque insuficiente na aprovação), aparece `estornado pelo sistema` com o motivo.
+  A aprovação manual do boleto continua `confirmado manualmente`. Vale na tela, no PDF e no CSV.
+- **Diagramas** em `docs/diagramas/`: `mary-modas-diagramas.drawio` (abra em [app.diagrams.net](https://app.diagrams.net)),
+  com duas abas — **DER lógico** em notação IE (pé de galinha), com os nomes iguais aos do banco, e **diagrama de classes**
+  de domínio. Os PNGs prontos para o documento estão na mesma pasta.
+- **Wireframes** das telas novas em `docs/wireframes/` (página do produto, fornecedor, usuários, cupons, auditoria e telas de senha).
+- Documentação (user stories, nova story 3.35 e Implementações Futuras) atualizada no documento do grupo.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -443,7 +453,7 @@ reais no [sandbox do Asaas](https://docs.asaas.com)). Nenhum dinheiro é movimen
 | 16 | Auditoria (motivo obrigatório e relatório) | 3.35 | ✅ Pronta |
 | 17 | Melhorias na loja (página do produto, cupons visíveis, rastreio) | 3.2, 3.20, 3.30 | ✅ Pronta |
 | 18 | Pagamento no sandbox do Asaas | 3.31 | ✅ Pronta |
-| 19 | Fechamento (documentação e apresentação) | — | A fazer |
+| 19 | Fechamento (auditoria do estorno, documentação, diagramas e wireframes) | 3.35 | ✅ Pronta |
 
 ### Fase 11 — Revisão de comentários
 - Os comentários do código explicam **o que o trecho faz e por quê**, com rótulos: `Validação:`, `Regra:`, `Segurança:`, `Banco:` e `LGPD:`.
@@ -489,7 +499,7 @@ app/Http/Controllers/Loja/      Vitrine, carrinho e pedidos do cliente
 app/Http/Controllers/Painel/    Telas do painel administrativo
 app/Http/Middleware/            VerificaPerfil (perfil:admin,...) e EncerraSessaoInativa
 app/Http/Requests/              Validações (Form Requests)
-app/Models/                     User, Categoria, Fornecedor, Produto, Auditoria, Carrinho, Pedido
+app/Models/                     User, Categoria, Fornecedor, Produto, Promocao, Carrinho, Pedido, Pagamento, Auditoria...
 app/Models/Concerns/TemStatus   Comportamento comum de Ativo/Inativo (exclusão lógica)
 app/Pagamentos/                 Provedor de pagamento (interface + simulado + Asaas)
 app/Console/Commands/           Comando php artisan asaas:testar
@@ -514,6 +524,9 @@ storage/app/public/produtos/    Imagens enviadas no cadastro (não vão para o G
 resources/views/                Telas (Blade)
 routes/web.php                  Rotas
 tests/Feature/                  Testes automatizados
+tests/Quebra/                   Testes de quebra (tentativas de burlar regras e permissões)
+docs/diagramas/                 DER lógico (IE) e diagrama de classes: .drawio editável + PNG
+docs/wireframes/                Wireframes das telas novas (PNG)
 ```
 
 ## 8. Comandos úteis
@@ -522,7 +535,7 @@ tests/Feature/                  Testes automatizados
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (391 testes: 323 das fases + 68 de quebra) |
+| `php artisan test` | Roda os testes automatizados (392 testes: 324 das fases + 68 de quebra) |
 | `php artisan asaas:testar` | Testa a integração com o sandbox do Asaas (precisa da chave no `.env`) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |

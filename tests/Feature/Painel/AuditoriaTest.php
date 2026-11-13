@@ -169,6 +169,27 @@ class AuditoriaTest extends TestCase
         $this->assertDatabaseHas('auditorias', ['acao' => 'pagamento_estornado', 'entidade_id' => $pedido->id, 'user_id' => $this->gerente->id]);
 
         $this->relatorio('&acao=cancelou')->assertSee('Pago → Cancelado')->assertSee('Cliente desistiu da compra');
+
+        // O estorno mostra quem autorizou (e não "confirmado manualmente", que é da aprovação do boleto)
+        $this->relatorio('&acao=pagamento_estornado')
+            ->assertSee('PIX · R$ 100,00 · estornado por Bruno Costa', false)
+            ->assertDontSee('confirmado manualmente');
+        $csv = $this->actingAs($this->admin)->get('/painel/relatorios/auditoria?exportar=csv&acao=pagamento_estornado&de='.today()->subDay()->toDateString().'&ate='.today()->toDateString())->streamedContent();
+        $this->assertStringContainsString('estornado por Bruno Costa', $csv);
+        $pdf = $this->actingAs($this->admin)->get('/painel/relatorios/auditoria?exportar=pdf&acao=pagamento_estornado&de='.today()->subDay()->toDateString().'&ate='.today()->toDateString());
+        $pdf->assertOk()->assertHeader('content-type', 'application/pdf');
+    }
+
+    // A aprovação manual do boleto continua "confirmado manualmente"
+    public function test_boleto_confirmado_a_mao_continua_confirmado_manualmente(): void
+    {
+        $pedido = $this->pedidoDoCliente();
+        $this->actingAs($this->cliente)->post("/meus-pedidos/{$pedido->id}/pagamento", ['forma' => 'boleto']);
+        $boleto = Pagamento::where('pedido_id', $pedido->id)->sole();
+
+        $this->actingAs($this->gerente)->post("/painel/pagamentos/{$boleto->id}/confirmar-boleto");
+
+        $this->relatorio('&acao=pagamento_aprovado')->assertSee('Boleto Bancário · R$ 100,00 · confirmado manualmente', false)->assertDontSee('estornado por');
     }
 
     // Duas pessoas pagam a última peça: o segundo pedido é cancelado pelo "Sistema"
@@ -191,6 +212,7 @@ class AuditoriaTest extends TestCase
         $this->assertSame('sistema', $cancelou->perfil);
         $this->assertStringContainsString('estoque insuficiente', $cancelou->motivo);
         $this->relatorio('&usuario=sistema&acao=cancelou')->assertSee('Sistema')->assertSee('estoque insuficiente');
+        $this->relatorio('&acao=pagamento_estornado')->assertSee('estornado pelo sistema')->assertSee('Estoque insuficiente no momento da aprovação');
     }
 
     public function test_conta_criada_fica_registrada(): void
