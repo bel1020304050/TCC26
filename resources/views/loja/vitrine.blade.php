@@ -72,12 +72,15 @@
         Nenhum produto encontrado. Tente outro termo ou limpe os filtros.
     </div>
 @else
-    {{-- Cada combinação de tamanho e cor é um card separado (MVP) --}}
+    {{-- Um card por produto; os tamanhos e cores disponíveis aparecem no card e são escolhidos na página do produto --}}
     <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
         @foreach ($produtos as $produto)
             <div class="col">
                 <div class="mm-card h-100 p-2 mm-produto d-flex flex-column">
-                    @php $promo = $promocoes[$produto->id] ?? null; @endphp
+                    @php
+                        $promo = $promocoes[$produto->id] ?? null;
+                        $opcao = $opcoes[$produto->id];
+                    @endphp
                     {{-- Foto e nome levam à página do produto --}}
                     <a href="{{ route('loja.produto', $produto) }}" class="position-relative d-block mm-produto-link">
                         <img src="{{ $produto->imagemUrl() }}" alt="{{ $produto->nome }}" class="w-100 rounded mb-2" loading="lazy">
@@ -87,7 +90,12 @@
                     </a>
                     <div class="px-1 pb-1 d-flex flex-column flex-grow-1">
                         <a href="{{ route('loja.produto', $produto) }}" class="mm-produto-link"><div class="fw-semibold">{{ $produto->nome }}</div></a>
-                        <div class="text-muted small mb-1">{{ $produto->categoria->nome }} · {{ $produto->tamanho }} · {{ $produto->cor }}</div>
+                        <div class="text-muted small">{{ $produto->categoria->nome }} · {{ $opcao['cores']->implode(', ') }}</div>
+                        <div class="d-flex flex-wrap gap-1 my-1" aria-label="Tamanhos disponíveis">
+                            @foreach ($opcao['tamanhos'] as $tamanho)
+                                <span class="badge text-bg-light border fw-normal">{{ $tamanho }}</span>
+                            @endforeach
+                        </div>
                         <div class="mb-2 mt-auto">
                             @if ($promo && $promo->tipo === 'percentual')
                                 <span class="text-muted text-decoration-line-through small">{{ $produto->precoFormatado() }}</span>
@@ -99,7 +107,10 @@
                         </div>
                         {{-- Só cliente logado adiciona ao carrinho; o visitante vai para o login --}}
                         @auth
-                            @if (auth()->user()->isCliente())
+                            @if (auth()->user()->isCliente() && $opcao['variacoes'] > 1)
+                                {{-- Vários tamanhos/cores: a cliente escolhe na página do produto --}}
+                                <a href="{{ route('loja.produto', $produto) }}" class="btn btn-sm btn-mm w-100"><i class="bi bi-rulers"></i> Escolher tamanho</a>
+                            @elseif (auth()->user()->isCliente())
                                 <form method="POST" action="{{ route('loja.carrinho.adicionar') }}">
                                     @csrf
                                     <input type="hidden" name="produto_id" value="{{ $produto->id }}">

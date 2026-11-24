@@ -431,6 +431,26 @@ reais no [sandbox do Asaas](https://docs.asaas.com)). Nenhum dinheiro é movimen
 - **Wireframes** das telas novas em `docs/wireframes/` (página do produto, fornecedor, usuários, cupons, auditoria e telas de senha).
 - Documentação (user stories, nova story 3.35 e Implementações Futuras) atualizada no documento do grupo.
 
+### Fase 20 — Dados de demonstração
+- Seeder **`DemonstracaoSeeder`**: 6 meses de loja funcionando (junho a novembro de 2026), para a apresentação e os relatórios.
+  ```
+  php artisan migrate:fresh --seed --seeder=DemonstracaoSeeder
+  ```
+  ⚠️ Apaga o banco e recria tudo. O seed normal (`php artisan migrate:fresh --seed`) continua igual.
+- **Catálogo**: 11 categorias (2 inativas ao longo do tempo, 1 reativada), 5 fornecedores (1 pessoa física, inativada)
+  e 8 produtos **com foto** em vários tamanhos (32 variações), com estoque baixo em algumas e o GG da jaqueta fora de linha.
+- **10 clientes** em Umuarama/PR (senha `cliente123`), **cerca de 74 pedidos** em PIX, cartão e boleto, com cartões recusados,
+  boletos confirmados pela gerência, desistências, estornos e pedidos de hoje ainda aguardando pagamento.
+- **Promoções** vencidas, ativa, agendada e uma inativada; pedidos usando cupom e promoção automática (ex.: Black Friday).
+- **Auditoria** com cadastros, edições (preço, estoque, telefone), inativações, senha provisória e ações do sistema.
+- Tudo é gerado pelas **regras reais** do sistema (compra, pagamento simulado, andamento do pedido e auditoria) com o relógio
+  voltado para a data de cada acontecimento; por isso estoque, pagamentos, histórico e auditoria batem entre si.
+  O pagamento é sempre o simulado, mesmo com o Asaas configurado. As fotos ficam em `database/seeders/imagens/`.
+- **Vitrine com um card por produto**: as variações (tamanho/cor) com o mesmo nome e categoria aparecem num card só,
+  com as cores e os tamanhos disponíveis. Com vários tamanhos, o botão vira **Escolher tamanho** (leva à página do produto);
+  filtrando um tamanho, o card abre direto nessa variação.
+- Senha de teste do atendente Rafael atualizada para `rafa123456`.
+
 ## 6. Ordem de desenvolvimento
 
 | Fase | Entrega | Stories | Situação |
@@ -454,6 +474,7 @@ reais no [sandbox do Asaas](https://docs.asaas.com)). Nenhum dinheiro é movimen
 | 17 | Melhorias na loja (página do produto, cupons visíveis, rastreio) | 3.2, 3.20, 3.30 | ✅ Pronta |
 | 18 | Pagamento no sandbox do Asaas | 3.31 | ✅ Pronta |
 | 19 | Fechamento (auditoria do estorno, documentação, diagramas e wireframes) | 3.35 | ✅ Pronta |
+| 20 | Dados de demonstração e vitrine com um card por produto | 3.2 | ✅ Pronta |
 
 ### Fase 11 — Revisão de comentários
 - Os comentários do código explicam **o que o trecho faz e por quê**, com rótulos: `Validação:`, `Regra:`, `Segurança:`, `Banco:` e `LGPD:`.
@@ -535,7 +556,7 @@ docs/wireframes/                Wireframes das telas novas (PNG)
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (392 testes: 324 das fases + 68 de quebra) |
+| `php artisan test` | Roda os testes automatizados (395 testes: 327 das fases + 68 de quebra) |
 | `php artisan asaas:testar` | Testa a integração com o sandbox do Asaas (precisa da chave no `.env`) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |

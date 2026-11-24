@@ -20,7 +20,7 @@ class UsuariosTesteSeeder extends Seeder
             ],
             [
                 'dados' => ['name' => 'Rafael Martins', 'email' => 'rafael@marymodas.com.br', 'telefone' => '(44) 99876-1020'],
-                'perfil' => User::PERFIL_ATENDENTE, 'status' => User::STATUS_ATIVO, 'senha' => 'func12345',
+                'perfil' => User::PERFIL_ATENDENTE, 'status' => User::STATUS_ATIVO, 'senha' => 'rafa123456',
             ],
             [
                 'dados' => ['name' => 'Juliana Lima', 'email' => 'juliana@marymodas.com.br'],
