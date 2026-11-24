@@ -4,6 +4,7 @@ namespace Tests\Feature\Loja;
 
 use App\Models\Categoria;
 use App\Models\Produto;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -73,6 +74,28 @@ class VitrineTest extends TestCase
         $this->get("/?categoria={$vestidos->id}")->assertSee('Vestido Floral')->assertDontSee('Saia Jeans');
         $this->get('/?tamanho=38')->assertSee('Saia Jeans')->assertDontSee('Vestido Floral');
         $this->get('/?cor=Preto')->assertSee('Vestido Floral')->assertDontSee('Saia Jeans');
+    }
+
+    public function test_variacoes_do_mesmo_produto_viram_um_card_so(): void
+    {
+        foreach (['G' => 3, 'P' => 2, 'M' => 0] as $tamanho => $estoque) {
+            Produto::factory()->create(['nome' => 'Saia Plissada', 'categoria_id' => $this->saias->id, 'tamanho' => $tamanho, 'cor' => 'Preto', 'estoque' => $estoque]);
+        }
+        Produto::factory()->create(['nome' => 'Saia Jeans', 'categoria_id' => $this->saias->id, 'tamanho' => '38', 'cor' => 'Azul', 'estoque' => 1]);
+
+        $resposta = $this->get('/');
+        $this->assertCount(2, $resposta->viewData('produtos'));
+        $resposta->assertSee('2 produto(s) encontrado(s)')
+            ->assertSeeInOrder(['Saia Plissada', 'Saias · Preto', '>P<', '>G<'], false) // tamanhos com estoque, na ordem certa
+            ->assertDontSee('>M<', false); // M está sem estoque
+
+        // Filtrando o tamanho G, o card leva direto para a variação G
+        $g = Produto::where('nome', 'Saia Plissada')->where('tamanho', 'G')->sole();
+        $this->get('/?tamanho=G')->assertSee(route('loja.produto', $g))->assertDontSee('Saia Jeans');
+
+        // Cliente: produto com vários tamanhos pede para escolher na página; com um só, adiciona direto
+        $cliente = User::factory()->create();
+        $this->actingAs($cliente)->get('/')->assertSee('Escolher tamanho')->assertSee('Adicionar ao carrinho');
     }
 
     public function test_ordenacao_por_preco(): void

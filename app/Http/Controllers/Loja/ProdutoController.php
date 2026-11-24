@@ -64,7 +64,7 @@ class ProdutoController extends Controller
     }
 
     // PP, P, M, G, GG, XG na ordem certa; numeração (36, 38...) depois, em ordem crescente
-    private static function ordemTamanho(string $tamanho): string
+    public static function ordemTamanho(string $tamanho): string
     {
         $ordem = array_flip(['PP', 'P', 'M', 'G', 'GG', 'XG', 'U']);
 

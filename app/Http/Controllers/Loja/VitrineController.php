@@ -34,22 +34,45 @@ class VitrineController extends Controller
 
         [$coluna, $direcao] = self::ORDENACOES[$filtros['ordem']];
 
-        $produtos = Produto::query()
+        // Um card por produto: cada tamanho/cor é uma linha no banco, mas as variações com o mesmo nome e categoria
+        // viram um card só, representado pela primeira variação que passou nos filtros
+        // (ex.: filtrando o tamanho G, o card já leva para a página do G).
+        $representantes = Produto::query()
             ->naVitrine()
-            ->with('categoria:id,nome')
             // LIKE encontra parte do nome; no MySQL/MariaDB ignora maiúsculas/minúsculas
             ->when($filtros['busca'] !== '', fn ($q) => $q->where('nome', 'like', '%'.$filtros['busca'].'%'))
             ->when($filtros['categoria'], fn ($q) => $q->where('categoria_id', $filtros['categoria']))
             ->when($filtros['tamanho'] !== '', fn ($q) => $q->where('tamanho', $filtros['tamanho']))
             ->when($filtros['cor'] !== '', fn ($q) => $q->where('cor', $filtros['cor']))
+            ->selectRaw('MIN(id)')
+            ->groupBy('nome', 'categoria_id');
+
+        $produtos = Produto::query()
+            ->whereIn('id', $representantes)
+            ->with('categoria:id,nome')
             ->orderBy($coluna, $direcao)
             ->orderBy('id', 'desc')
             ->paginate(self::POR_PAGINA)
             ->withQueryString();
 
+        // Tamanhos e cores disponíveis de cada produto da página, mostrados no card
+        $variacoes = Produto::naVitrine()
+            ->whereIn('nome', $produtos->pluck('nome'))
+            ->get(['id', 'nome', 'categoria_id', 'tamanho', 'cor'])
+            ->groupBy(fn (Produto $p) => $p->nome.'|'.$p->categoria_id);
+        $opcoes = $produtos->getCollection()->mapWithKeys(function (Produto $produto) use ($variacoes) {
+            $grupo = $variacoes[$produto->nome.'|'.$produto->categoria_id] ?? collect([$produto]);
+
+            return [$produto->id => [
+                'tamanhos' => $grupo->pluck('tamanho')->unique()->sortBy(fn ($t) => ProdutoController::ordemTamanho($t))->values(),
+                'cores' => $grupo->pluck('cor')->unique()->sort()->values(),
+                'variacoes' => $grupo->count(),
+            ]];
+        });
+
         // Opções dos filtros: só o que existe na vitrine (categorias ativas)
         $categorias = Categoria::ativos()->orderBy('nome')->get(['id', 'nome']);
-        $tamanhos = Produto::naVitrine()->distinct()->orderBy('tamanho')->pluck('tamanho');
+        $tamanhos = Produto::naVitrine()->distinct()->pluck('tamanho')->sortBy(fn ($t) => ProdutoController::ordemTamanho($t))->values();
         $cores = Produto::naVitrine()->distinct()->orderBy('cor')->pluck('cor');
 
         // Regra: o selo e o preço promocional usam só promoções AUTOMÁTICAS, Ativas e Vigentes.
@@ -59,6 +82,6 @@ class VitrineController extends Controller
             $produto->id => Promocao::melhorAutomatica($produto, $automaticas),
         ]);
 
-        return view('loja.vitrine', compact('produtos', 'filtros', 'categorias', 'tamanhos', 'cores', 'promocoes'));
+        return view('loja.vitrine', compact('produtos', 'filtros', 'categorias', 'tamanhos', 'cores', 'promocoes', 'opcoes'));
     }
 }
