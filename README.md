@@ -121,7 +121,7 @@ Criados pelo `php artisan migrate --seed` (os de teste só em `APP_ENV=local`):
 |---|---|---|---|
 | Administrador | mary@marymodas.com.br | `admin12345` | Dona da loja (vem do `SEED_ADMIN_PASSWORD` do `.env`) |
 | Gerente | bruno@marymodas.com.br | `gerente123` | Gerencia a loja, menos a equipe |
-| Atendente/Vendedor | rafael@marymodas.com.br | `func12345` | Produtos e pedidos do dia a dia |
+| Atendente/Vendedor | rafael@marymodas.com.br | `rafa123456` | Produtos e pedidos do dia a dia |
 | Atendente/Vendedor inativo | juliana@marymodas.com.br | `func12345` | Não consegue entrar (teste) |
 | Cliente | ana@email.com | `cliente123` | CPF 123.456.789-09 e endereço completo em Umuarama/PR |
 
