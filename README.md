@@ -556,7 +556,7 @@ docs/wireframes/                Wireframes das telas novas (PNG)
 |---|---|
 | `php artisan serve` | Sobe o site em http://127.0.0.1:8000 |
 | `php artisan migrate:fresh --seed` | **Apaga e recria** todas as tabelas com os dados iniciais |
-| `php artisan test` | Roda os testes automatizados (395 testes: 327 das fases + 68 de quebra) |
+| `php artisan test` | Roda os testes automatizados (396 testes: 328 das fases + 68 de quebra) |
 | `php artisan asaas:testar` | Testa a integração com o sandbox do Asaas (precisa da chave no `.env`) |
 | `php artisan route:list --except-vendor` | Lista as rotas do sistema |
 | `php artisan optimize:clear` | Limpa caches (use se algo "não atualizar") |
