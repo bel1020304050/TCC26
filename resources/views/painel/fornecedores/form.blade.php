@@ -39,7 +39,7 @@
             <div class="col-md-6 mb-3">
                 <label for="documento" class="form-label">
                     <span data-rotulo>{{ $tipo === 'fisica' ? 'CPF' : ($tipo === 'juridica' ? 'CNPJ' : 'CPF / CNPJ') }}</span>
-                    <span class="opcional">(opcional)</span>
+                    <span class="obrigatorio">*</span>
                 </label>
                 <input type="text" id="documento" name="documento" value="{{ old('documento', $fornecedor->documentoFormatado()) }}"
                        class="form-control @error('documento') is-invalid @enderror" maxlength="18" autocomplete="off"
@@ -47,7 +47,7 @@
                 @error('documento')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @else
-                    <div class="form-text">Validado e único quando informado. O CNPJ aceita o formato novo, com letras.</div>
+                    <div class="form-text">Validado e único. O CNPJ aceita o formato novo, com letras.</div>
                 @enderror
             </div>
 

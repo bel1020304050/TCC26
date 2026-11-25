@@ -15,7 +15,7 @@ use Illuminate\Validation\Rule;
 /**
  * Validação do formulário de Fornecedor (cadastrar e editar).
  * Regra: o tipo de pessoa decide o documento aceito (Física = CPF, Jurídica = CNPJ, inclusive alfanumérico).
- * O documento continua opcional; o endereço completo é obrigatório.
+ * O documento (CPF ou CNPJ) e o endereço completo são obrigatórios.
  */
 class FornecedorRequest extends FormRequest
 {
@@ -47,7 +47,7 @@ class FornecedorRequest extends FormRequest
             'nome' => ['required', 'string', 'max:150'],
             'tipo_pessoa' => ['required', Rule::in(array_keys(Fornecedor::TIPOS))],
             'documento' => [
-                'nullable', new CpfCnpj($tipoDocumento),
+                'required', new CpfCnpj($tipoDocumento),
                 // Único entre todos os fornecedores, inclusive inativos (comparando sem pontuação)
                 function (string $attribute, mixed $value, Closure $fail) use ($fornecedor) {
                     $existe = Fornecedor::where('documento', Documento::limpar($value))
@@ -80,6 +80,7 @@ class FornecedorRequest extends FormRequest
     {
         return [
             'tipo_pessoa.required' => 'Escolha se o fornecedor é Pessoa Física ou Pessoa Jurídica.',
+            'documento.required' => 'Informe o CPF ou o CNPJ do fornecedor.',
             'cep.regex' => Cep::MENSAGEM,
             'uf.in' => 'Selecione uma UF válida.',
         ];

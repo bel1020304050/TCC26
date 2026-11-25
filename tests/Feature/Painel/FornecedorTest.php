@@ -110,13 +110,13 @@ class FornecedorTest extends TestCase
         $this->actingAs($this->admin)->get('/painel/fornecedores?busca=12abc345')->assertSee('Confecções Aurora Ltda');
     }
 
-    public function test_cpf_cnpj_e_contatos_sao_opcionais(): void
+    public function test_contatos_sao_opcionais(): void
     {
         $this->actingAs($this->admin)
-            ->post('/painel/fornecedores', $this->dados(['nome' => 'Bijus Maringá Ltda', 'documento' => '', 'telefone' => '', 'email' => '']))
+            ->post('/painel/fornecedores', $this->dados(['nome' => 'Bijus Maringá Ltda', 'telefone' => '', 'email' => '']))
             ->assertSessionHasNoErrors();
 
-        $this->assertNull(Fornecedor::sole()->documento);
+        $this->assertNotNull(Fornecedor::sole()->documento);
     }
 
     // O endereço do fornecedor é obrigatório (complemento continua opcional)
@@ -147,14 +147,16 @@ class FornecedorTest extends TestCase
             ->assertSee('name="cep"', false)->assertSee('js/viacep.js', false)->assertSee('js/documento.js', false);
     }
 
-    public function test_varios_fornecedores_sem_documento_sao_permitidos(): void
+    public function test_cpf_ou_cnpj_e_obrigatorio(): void
     {
-        Fornecedor::factory()->create(['documento' => null]);
-
-        $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['documento' => '']))
-            ->assertSessionHasNoErrors();
-
-        $this->assertSame(2, Fornecedor::count());
+        foreach (['juridica', 'fisica'] as $tipo) {
+            $this->actingAs($this->admin)->post('/painel/fornecedores', $this->dados(['tipo_pessoa' => $tipo, 'documento' => '']))
+                ->assertSessionHasErrors(['documento' => 'Informe o CPF ou o CNPJ do fornecedor.']);
+        }
+        $this->assertSame(0, Fornecedor::count());
+        // Na tela, o rótulo do documento leva o asterisco de obrigatório
+        $tela = $this->actingAs($this->admin)->get('/painel/fornecedores/novo')->getContent();
+        $this->assertMatchesRegularExpression('/data-rotulo>[^<]*<\/span>\s*<span class="obrigatorio">\*<\/span>/', $tela);
     }
 
     public function test_documento_invalido_e_recusado(): void
