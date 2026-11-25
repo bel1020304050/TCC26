@@ -50,8 +50,10 @@ class ProdutoRequest extends FormRequest
             'descricao' => ['nullable', 'string', 'max:2000'],
             'preco' => ['required', 'numeric', 'gt:0', 'max:99999999.99'],
             'estoque' => ['required', 'integer', 'min:0', 'max:1000000'],
-            'tamanho' => ['required', 'string', 'max:20'],
-            'cor' => ['required', 'string', 'max:30'],
+            // Tamanho: só letras e números (P, GG, 38, Único). Cor: letras e números, separados por espaço ou hífen
+            // (Azul-marinho, Verde militar). \pL aceita letras com acento; o "u" no fim liga o modo UTF-8.
+            'tamanho' => ['required', 'string', 'max:20', 'regex:/^[\pL\pN]+$/u'],
+            'cor' => ['required', 'string', 'max:30', 'regex:/^[\pL\pN]+(?:[ -][\pL\pN]+)*$/u'],
             // Só categorias e fornecedores Ativos. Na edição, o vínculo atual é aceito mesmo se ficou inativo.
             'categoria_id' => ['required', $this->existeAtivo('categorias', $produto?->categoria_id)],
             'fornecedor_id' => ['nullable', $this->existeAtivo('fornecedores', $produto?->fornecedor_id)],
@@ -71,6 +73,8 @@ class ProdutoRequest extends FormRequest
     {
         return [
             'preco.gt' => 'O preço deve ser maior que zero.',
+            'tamanho.regex' => 'O tamanho deve ter só letras e números, sem espaços (ex.: P, GG, 38).',
+            'cor.regex' => 'A cor deve ter só letras e números, separados por espaço ou hífen (ex.: Azul-marinho).',
             'estoque.min' => 'O estoque não pode ser negativo.',
             'imagem.max' => 'A imagem deve ter no máximo 2 MB.',
             'imagem.mimes' => 'A imagem deve ser JPG ou PNG.',

@@ -89,6 +89,27 @@ class ProdutoTest extends TestCase
         $this->assertNull(Produto::sole()->imagem);
     }
 
+    public function test_tamanho_e_cor_aceitam_so_letras_e_numeros(): void
+    {
+        // Símbolos, espaços sobrando e código são recusados, com a mensagem no campo
+        foreach (['<b>', 'M!', 'P M', '38/40', '@'] as $tamanho) {
+            $this->actingAs($this->admin)->post('/painel/produtos', $this->dados(['tamanho' => $tamanho]))
+                ->assertSessionHasErrors(['tamanho' => 'O tamanho deve ter só letras e números, sem espaços (ex.: P, GG, 38).']);
+        }
+        foreach (['<script>', 'Azul!', 'Azul--marinho', '-Azul', 'Rosa_claro', '#FF0000'] as $cor) {
+            $this->actingAs($this->admin)->post('/painel/produtos', $this->dados(['cor' => $cor]))
+                ->assertSessionHasErrors(['cor' => 'A cor deve ter só letras e números, separados por espaço ou hífen (ex.: Azul-marinho).']);
+        }
+        $this->assertSame(0, Produto::count());
+
+        // Valores comuns de roupa passam (acentos, espaço e hífen na cor)
+        foreach ([['GG', 'Azul-marinho'], ['38', 'Verde militar'], ['Único', 'Off-white floral'], ['U', 'Marrom café']] as $i => [$tamanho, $cor]) {
+            $this->actingAs($this->admin)->post('/painel/produtos', $this->dados(['nome' => "Peça {$i}", 'tamanho' => $tamanho, 'cor' => $cor]))
+                ->assertSessionHasNoErrors();
+        }
+        $this->assertSame(4, Produto::count());
+    }
+
     public function test_mesma_variacao_nao_pode_repetir(): void
     {
         Produto::factory()->create(['nome' => 'Vestido Floral', 'categoria_id' => $this->vestidos->id, 'tamanho' => 'G', 'cor' => 'Preto']);
